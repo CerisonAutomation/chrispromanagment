@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 4%;
+    --foreground: 40 20% 95%;
+
+    --card: 220 18% 7%;
+    --card-foreground: 40 20% 95%;
+
+    --popover: 220 18% 7%;
+    --popover-foreground: 40 20% 95%;
+
+    --primary: 42 76% 55%;
+    --primary-foreground: 220 20% 4%;
+
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 40 20% 90%;
+
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 220 15% 15%;
+    --accent-foreground: 40 20% 95%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 40 20% 95%;
+
+    --border: 220 15% 15%;
+    --input: 220 15% 15%;
+    --ring: 42 76% 55%;
+
+    --radius: 0.5rem;
+
+    --luxury-gold: 42 76% 55%;
+    --luxury-gold-light: 42 76% 65%;
+    --luxury-gold-dark: 42 76% 40%;
+
+    --gradient-hero-overlay: linear-gradient(180deg, hsla(220, 20%, 4%, 0.3) 0%, hsla(220, 20%, 4%, 0.6) 40%, hsla(220, 20%, 4%, 0.92) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(42, 76%, 55%), hsl(42, 76%, 70%));
+    --shadow-gold: 0 8px 32px -8px hsla(42, 76%, 55%, 0.25);
+    --surface-overlay: hsla(220, 20%, 4%, 0.85);
+
+    --sidebar-background: 220 18% 7%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 42 76% 55%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 220 15% 12%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 42 76% 55%;
+
+    /* Layout tokens */
+    --header-height: 4rem;
+    --section-padding: clamp(3.5rem, 8vh, 7rem);
+    --container-max: 70rem;
+    --container-padding: clamp(1rem, 4vw, 2.5rem);
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --header-height: 5rem;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
+    line-height: 1.6;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--header-height);
+  }
+
+  /* Responsive typography */
+  h1 {
+    font-size: clamp(2rem, 1.4rem + 2.5vw, 3.5rem);
+    line-height: 1.1;
+  }
+  h2 {
+    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+    line-height: 1.15;
+  }
+  h3 {
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+    line-height: 1.25;
+  }
+}
+
+@layer utilities {
+  .font-script {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .gold-text {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-surface {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .section-container {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+  }
+
+  .section-padding {
+    padding-block: var(--section-padding);
+  }
+
+  .micro-type {
+    @apply text-xs font-semibold uppercase tracking-[0.25em];
+  }
+
+  /* Text line length cap */
+  .prose-cap {
+    max-width: 70ch;
+  }
+
+  /* Parallax background layers */
+  .parallax-bg {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
+  /* Reduced motion — disable parallax & reveals */
+  @media (prefers-reduced-motion: reduce) {
+    .parallax-bg {
+      transform: none !important;
+      will-change: auto;
+    }
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
