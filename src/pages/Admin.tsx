@@ -9,8 +9,29 @@ import BlockEditor from "@/components/admin/BlockEditor";
 import SettingsEditor from "@/components/admin/SettingsEditor";
 import IntegrationsPanel from "@/components/admin/IntegrationsPanel";
 import AdminDashboard from "@/components/admin/AdminDashboard";
-import ThemeController from "@/components/admin/ThemeController";
+import AdvancedThemeController from "@/components/admin/AdvancedThemeController";
+import DragDropPageBuilder, { type BlockConfig } from "@/components/admin/DragDropPageBuilder";
+import PagesManager from "@/components/admin/PagesManager";
+import MediaManager from "@/components/admin/MediaManager";
+import ComponentLibrary from "@/components/admin/ComponentLibrary";
+import TemplatesManager from "@/components/admin/TemplatesManager";
+import ActivityFeed from "@/components/admin/ActivityFeed";
 import type { Session } from "@supabase/supabase-js";
+
+function PageBuilderWrapper({ onSave, isSaving }: { onSave: (key: string, content: Json) => Promise<void>; isSaving: boolean }) {
+  const [blocks, setBlocks] = useState<BlockConfig[]>([]);
+  return (
+    <div>
+      <h2 className="font-serif text-2xl font-semibold text-foreground mb-6">Page Builder</h2>
+      <DragDropPageBuilder
+        blocks={blocks}
+        onChange={setBlocks}
+        onSave={() => onSave("page-builder", blocks as unknown as Json)}
+        isSaving={isSaving}
+      />
+    </div>
+  );
+}
 
 export default function Admin() {
   const [session, setSession] = useState<Session | null>(null);
@@ -20,12 +41,13 @@ export default function Admin() {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -75,7 +97,7 @@ export default function Admin() {
         onLogout={() => supabase.auth.signOut()}
       />
       <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {activeTab === "dashboard" && (
             <AdminDashboard
               sections={sections || []}
@@ -95,7 +117,14 @@ export default function Admin() {
               isSaving={updateContent.isPending}
             />
           )}
-          {activeTab === "theme" && <ThemeController />}
+          {activeTab === "pages" && <PagesManager />}
+          {activeTab === "templates" && <TemplatesManager />}
+          {activeTab === "components" && <ComponentLibrary />}
+          {activeTab === "media" && <MediaManager />}
+          {activeTab === "theme" && <AdvancedThemeController onSaveTheme={(t) => handleSaveSetting("theme", t)} isSaving={updateSetting.isPending} />}
+          {activeTab === "page-builder" && (
+            <PageBuilderWrapper onSave={handleSaveContent} isSaving={updateContent.isPending} />
+          )}
           {activeTab === "settings" && (
             <SettingsEditor
               settings={settings || []}
@@ -110,6 +139,7 @@ export default function Admin() {
               onSaveSetting={handleSaveSetting}
             />
           )}
+          {activeTab === "activity" && <ActivityFeed />}
         </div>
       </main>
     </div>

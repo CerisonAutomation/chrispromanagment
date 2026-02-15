@@ -45,7 +45,7 @@ export function useSectionContent<T = unknown>(sectionKey: string): {
         .from("cms_content")
         .select("content, is_visible")
         .eq("section_key", sectionKey)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },

@@ -42,7 +42,7 @@ export function useCmsSection(sectionKey: string) {
         .from("cms_content")
         .select("*")
         .eq("section_key", sectionKey)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data as CmsContent;
     },
