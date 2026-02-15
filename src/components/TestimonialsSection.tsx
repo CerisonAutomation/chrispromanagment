@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react";
 import { useSectionContent } from "@/hooks/use-section-content";
 
@@ -20,6 +20,7 @@ interface TestimonialsContent {
 
 export default function TestimonialsSection() {
   const [current, setCurrent] = useState(0);
+  const prefersReduced = useReducedMotion();
   const { data: testimonials } = useSectionContent<TestimonialsContent>("testimonials");
 
   if (!testimonials) return null;
@@ -35,9 +36,9 @@ export default function TestimonialsSection() {
     <section id="testimonials" className="section-padding">
       <div className="section-container w-full">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={prefersReduced ? {} : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-10%" }}
           className="text-center mb-10 sm:mb-14"
         >
           <p className="micro-type text-primary mb-3">{testimonials.eyebrow}</p>
@@ -47,32 +48,36 @@ export default function TestimonialsSection() {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visible.map((t, i) => (
-            <motion.div
-              key={`${current}-${i}`}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-surface rounded-lg p-6 flex flex-col hover:border-primary/30 transition-colors"
-            >
-              <Quote size={20} className="text-primary/30 mb-3" />
-              <div className="flex items-center gap-0.5 mb-3">
-                {Array.from({ length: t.rating || 5 }).map((_, s) => (
-                  <Star key={s} size={12} className="text-primary fill-primary" />
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">{t.quote}</p>
-              <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-primary">{t.name[0]}</span>
+          <AnimatePresence mode="wait">
+            {visible.map((t, i) => (
+              <motion.div
+                key={`${current}-${i}`}
+                initial={prefersReduced ? {} : { opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={prefersReduced ? {} : { opacity: 0, y: -10, scale: 0.95 }}
+                transition={{ delay: i * 0.08, duration: 0.4 }}
+                whileHover={prefersReduced ? {} : { y: -3 }}
+                className="glass-surface rounded-lg p-6 flex flex-col hover:border-primary/30 transition-all duration-300 hover:shadow-[var(--shadow-gold)]"
+              >
+                <Quote size={20} className="text-primary/30 mb-3" />
+                <div className="flex items-center gap-0.5 mb-3">
+                  {Array.from({ length: t.rating || 5 }).map((_, s) => (
+                    <Star key={s} size={12} className="text-primary fill-primary" />
+                  ))}
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.date}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">{t.quote}</p>
+                <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-primary">{t.name[0]}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.date}</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         {maxIndex > 0 && (

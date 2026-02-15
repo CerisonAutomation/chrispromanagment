@@ -35,9 +35,10 @@ export default function PricingSection({ onOpenWizard }: PricingSectionProps) {
     <section id="pricing" className="section-padding">
       <div className="section-container">
         <motion.div
-          initial={prefersReduced ? {} : { opacity: 0, y: 16 }}
+          initial={prefersReduced ? {} : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 0.5 }}
           className="text-center mb-10 sm:mb-14"
         >
           <p className="micro-type text-primary mb-2">{pricing.eyebrow}</p>
@@ -51,11 +52,12 @@ export default function PricingSection({ onOpenWizard }: PricingSectionProps) {
           {pricing.plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={prefersReduced ? {} : { opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className={`glass-surface rounded-lg p-6 sm:p-7 relative ${plan.badge ? "border-primary/50 shadow-[var(--shadow-gold)]" : ""}`}
+              initial={prefersReduced ? {} : { opacity: 0, y: 30, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "-5%" }}
+              transition={{ delay: i * 0.15, duration: 0.5 }}
+              whileHover={prefersReduced ? {} : { y: -4 }}
+              className={`glass-surface rounded-lg p-6 sm:p-7 relative transition-all duration-300 ${plan.badge ? "border-primary/50 shadow-[var(--shadow-gold)]" : "hover:shadow-[var(--shadow-gold)]"}`}
             >
               {plan.badge && (
                 <span className="absolute -top-3 left-6 micro-type px-3 py-1 bg-primary text-primary-foreground rounded-full text-[0.6rem]">
@@ -76,12 +78,14 @@ export default function PricingSection({ onOpenWizard }: PricingSectionProps) {
                   </li>
                 ))}
               </ul>
-              <button
+              <motion.button
                 onClick={onOpenWizard}
+                whileHover={prefersReduced ? {} : { scale: 1.02 }}
+                whileTap={prefersReduced ? {} : { scale: 0.98 }}
                 className={`w-full py-3 text-sm font-semibold rounded transition-colors ${plan.badge ? "bg-primary text-primary-foreground hover:bg-gold-light" : "border border-border text-foreground hover:border-primary hover:text-primary"}`}
               >
                 Get Started
-              </button>
+              </motion.button>
             </motion.div>
           ))}
         </div>

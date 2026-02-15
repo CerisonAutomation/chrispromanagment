@@ -12,6 +12,7 @@ import CTABanner from "@/components/CTABanner";
 import Footer from "@/components/Footer";
 import FloatingCTA from "@/components/FloatingCTA";
 import WizardModal from "@/components/WizardModal";
+import ScrollSection from "@/components/ScrollSection";
 
 const Index = () => {
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -21,15 +22,33 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar onOpenWizard={openWizard} />
       <main id="main">
-        <Hero onOpenWizard={openWizard} />
-        <ProofStrip />
-        <ProcessSection onOpenWizard={openWizard} />
-        <PortfolioSection />
-        <PricingSection onOpenWizard={openWizard} />
-        <TestimonialsSection />
-        <AboutSection onOpenWizard={openWizard} />
-        <CTABanner onOpenWizard={openWizard} />
-        <FAQSection />
+        <ScrollSection>
+          <Hero onOpenWizard={openWizard} />
+        </ScrollSection>
+        <ScrollSection>
+          <ProofStrip />
+        </ScrollSection>
+        <ScrollSection>
+          <ProcessSection onOpenWizard={openWizard} />
+        </ScrollSection>
+        <ScrollSection>
+          <PortfolioSection />
+        </ScrollSection>
+        <ScrollSection>
+          <PricingSection onOpenWizard={openWizard} />
+        </ScrollSection>
+        <ScrollSection>
+          <TestimonialsSection />
+        </ScrollSection>
+        <ScrollSection>
+          <AboutSection onOpenWizard={openWizard} />
+        </ScrollSection>
+        <ScrollSection>
+          <CTABanner onOpenWizard={openWizard} />
+        </ScrollSection>
+        <ScrollSection>
+          <FAQSection />
+        </ScrollSection>
       </main>
       <Footer />
       <FloatingCTA onOpenWizard={openWizard} />
