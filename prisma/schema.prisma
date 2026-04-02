@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model CmsPage {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  data      String
+  status    String   @default("draft")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Property {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  type          String   @default("apartment")
+  description   String
+  location      String
+  city          String   @default("Valletta")
+  address       String   @default("")
+  latitude      String   @default("35.8992")
+  longitude     String   @default("14.5140")
+  bedrooms      Int      @default(2)
+  bathrooms     Int      @default(2)
+  maxGuests     Int      @default(4)
+  basePrice     Float    @default(150)
+  currency      String   @default("EUR")
+  cleaningFee   Float    @default(50)
+  minStay       Int      @default(2)
+  maxStay       Int      @default(30)
+  checkInTime   String   @default("15:00")
+  checkOutTime  String   @default("11:00")
+  amenities     String   @default("[]")
+  images        String   @default("[]")
+  rating        Float    @default(4.9)
+  reviewCount   Int      @default(0)
+  featured      Boolean  @default(false)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  confirmationCode String @unique
+  propertyId    String
+  propertyName  String   @default("")
+  guestName     String
+  guestEmail    String
+  guestPhone    String
+  guestAddress  String   @default("")
+  guestCity     String   @default("")
+  guestCountry  String   @default("")
+  checkIn       String
+  checkOut      String
+  nights        Int      @default(1)
+  guests        Int      @default(1)
+  basePrice     Float    @default(0)
+  cleaningFee   Float    @default(0)
+  serviceFee    Float    @default(0)
+  totalPrice    Float    @default(0)
+  currency      String   @default("EUR")
+  status        String   @default("pending")
+  source        String   @default("direct")
+  specialRequests String @default("")
+  notes         String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id])
+
+  @@index([propertyId, status])
+  @@index([propertyId, checkIn, checkOut])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,149 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Puck Block Animations — shared across all rendered blocks
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Core Keyframes ── */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+@keyframes expandWidth {
+  0% { width: 0; }
+  100% { width: 4rem; }
+}
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes chevronRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
+}
+
+/* ── Page Skeleton Loader Animations ── */
+@keyframes logoBreath {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Premium Keyframes ── */
+@keyframes revealDown {
+  0% { opacity: 0; transform: translateY(-16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmerGold {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes borderGlow {
+  0%, 100% { box-shadow: 0 0 0px rgba(200, 169, 106, 0); }
+  50% { box-shadow: 0 0 16px rgba(200, 169, 106, 0.45); }
+}
+@keyframes particleFloat {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-20px); opacity: 0; }
+}
+@keyframes countPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes cardReveal {
+  0% { perspective: 1000px; transform: rotateX(8deg); opacity: 0; }
+  100% { perspective: 1000px; transform: rotateX(0deg); opacity: 1; }
+}
+@keyframes lineExpand {
+  0% { width: 0; background-image: linear-gradient(90deg, #c8a96a, #e8d5a8, #c8a96a); }
+  100% { width: 100%; background-image: linear-gradient(90deg, #c8a96a, #e8d5a8, #c8a96a); }
+}
+@keyframes breatheGold {
+  0%, 100% { box-shadow: 0 0 20px rgba(200, 169, 106, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(200, 169, 106, 0.25); }
+}
+@keyframes typewriter {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+@keyframes dashDraw {
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* ── Animation Utility Classes ── */
+@utility animate-reveal-down {
+  animation: revealDown 0.5s ease-out both;
+}
+@utility animate-shimmer-gold {
+  animation: shimmerGold 2.5s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+@utility animate-border-glow {
+  animation: borderGlow 3s ease-in-out infinite;
+}
+@utility animate-particle-float {
+  animation: particleFloat 6s ease-in-out infinite;
+}
+@utility animate-count-pulse {
+  animation: countPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@utility animate-card-reveal {
+  animation: cardReveal 0.7s ease-out both;
+}
+@utility animate-line-expand {
+  animation: lineExpand 0.8s ease-out forwards;
+}
+@utility animate-breathe-gold {
+  animation: breatheGold 3s ease-in-out infinite;
+}
+
+/* ── Transition Utility Classes ── */
+@utility transition-luxury {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@utility transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Accessibility: Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
