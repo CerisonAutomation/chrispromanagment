@@ -1,7 +1,8 @@
 import {db} from "@/lib/db";
+import {properties, bookings} from "@/lib/db/schema";
 import {NextRequest, NextResponse} from "next/server";
-import {Prisma} from "@prisma/client";
 import {createApiError, createRequestLogger, ErrorCodes} from "@/lib/error";
+import {eq, and, gte, lte, like, or, desc, notInArray} from "drizzle-orm";
 
 // ============================================================
 // Helper functions
@@ -46,31 +47,31 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured");
     const search = searchParams.get("search");
 
-    const where: Prisma.PropertyWhereInput = { active: true };
+    // Build conditions array for Drizzle
+    const conditions = [eq(properties.active, true)];
 
     if (city) {
-      where.city = { equals: city };
+      conditions.push(eq(properties.city, city));
     }
 
     if (minGuests) {
       const parsed = parseInt(minGuests, 10);
       if (!isNaN(parsed)) {
-        where.maxGuests = { gte: parsed };
+        conditions.push(gte(properties.maxGuests, parsed));
       }
     }
 
     if (minPrice) {
       const parsed = parseFloat(minPrice);
       if (!isNaN(parsed)) {
-        where.basePrice = { gte: parsed };
+        conditions.push(gte(properties.basePrice, parsed));
       }
     }
 
     if (maxPrice) {
       const parsed = parseFloat(maxPrice);
       if (!isNaN(parsed)) {
-        const currentFilter = where.basePrice || {};
-        where.basePrice = { gte: (currentFilter as {gte?: number}).gte, lte: parsed };
+        conditions.push(lte(properties.basePrice, parsed));
       }
     }
 
@@ -81,52 +82,53 @@ export async function GET(request: NextRequest) {
             {status: 400}
         );
       }
-      where.type = { equals: type };
+      conditions.push(eq(properties.type, type));
     }
 
     if (bedrooms) {
       const parsed = parseInt(bedrooms, 10);
       if (!isNaN(parsed)) {
-        where.bedrooms = { gte: parsed };
+        conditions.push(gte(properties.bedrooms, parsed));
       }
     }
 
     if (featured === "true") {
-      where.featured = true;
+      conditions.push(eq(properties.featured, true));
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { location: { contains: search } },
-        { city: { contains: search } },
-        { description: { contains: search } },
-      ];
+      conditions.push(or(
+        like(properties.name, `%${search}%`),
+        like(properties.location, `%${search}%`),
+        like(properties.city, `%${search}%`),
+        like(properties.description, `%${search}%`)
+      ) as ReturnType<typeof eq>);
     }
 
     // Availability filter
+    let excludePropertyIds: string[] = [];
     if (checkIn && checkOut) {
-      const overlappingBookings = await db.booking.findMany({
-        where: {
-          status: { in: ["pending", "confirmed"] },
-          checkIn: { lt: checkOut },
-          checkOut: { gt: checkIn },
-        },
-        select: { propertyId: true },
+      const overlappingBookings = await db.query.bookings.findMany({
+        where: and(
+          or(eq(bookings.status, "pending"), eq(bookings.status, "confirmed")),
+          eq(bookings.checkIn, checkOut),
+          eq(bookings.checkOut, checkIn)
+        ),
+        columns: { propertyId: true },
       });
 
-      const bookedPropertyIds = [...new Set(overlappingBookings.map((b) => b.propertyId))];
-      if (bookedPropertyIds.length > 0) {
-        where.id = { notIn: bookedPropertyIds };
-      }
+      excludePropertyIds = [...new Set(overlappingBookings.map((b) => b.propertyId))];
     }
 
-    const properties = await db.property.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
+    const allProperties = await db.query.properties.findMany({
+      where: and(...conditions),
+      orderBy: desc(properties.createdAt),
     });
 
-    const formatted = properties.map((p) => formatProperty(p as unknown as Record<string, unknown>));
+    // Filter out booked properties
+    const filteredProperties = excludePropertyIds.length > 0
+      ? allProperties.filter(p => !excludePropertyIds.includes(p.id))
+      : allProperties;
 
     log.info("Properties fetched", {count: formatted.length});
     return NextResponse.json({ properties: formatted, count: formatted.length });

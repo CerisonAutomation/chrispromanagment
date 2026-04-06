@@ -1,6 +1,8 @@
 import {db} from "@/lib/db";
+import {cmsPages, pageVersions, auditLogs} from "@/lib/db/schema";
 import {NextRequest, NextResponse} from "next/server";
 import type {Data, ComponentData} from "@puckeditor/core";
+import {eq, desc} from "drizzle-orm";
 
 // =============================================================================
 // GET /api/pages/[slug] - Fetch page (draft or published based on query)
@@ -15,12 +17,12 @@ export async function GET(
     const {searchParams} = new URL(request.url);
     const status = searchParams.get("status") || "draft";
 
-    const page = await db.cmsPage.findUnique({
-      where: {slug},
-      include: {
+    const page = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, slug),
+      with: {
         versions: {
-          orderBy: {createdAt: "desc"},
-          take: 10,
+          orderBy: desc(pageVersions.createdAt),
+          limit: 10,
         },
       },
     });
@@ -65,12 +67,12 @@ export async function GET(
 
     // Log audit for view (only for published requests)
     if (status === "published") {
-      await db.auditLog.create({
-        data: {
-          pageId: page.id,
-          action: "VIEW",
-          details: JSON.stringify({source: "public", status}),
-        },
+      await db.insert(auditLogs).values({
+        id: crypto.randomUUID(),
+        pageId: page.id,
+        action: "VIEW",
+        details: JSON.stringify({source: "public", status}),
+        createdAt: new Date(),
       });
     }
 
@@ -95,8 +97,8 @@ export async function PUT(
     const {title, data, saveAsDraft = true, meta} = body;
 
     // Calculate changes for version tracking
-    const existingPage = await db.cmsPage.findUnique({
-      where: {slug},
+    const existingPage = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, slug),
     });
 
     let changes = {added: 0, removed: 0, modified: 0};
@@ -106,22 +108,22 @@ export async function PUT(
       changes = calculateChanges(oldData, newData);
     }
 
-    // Update page with proper separation
+    const now = new Date();
+
+    // Build update data
     const updateData: Record<string, unknown> = {
       title,
-      updatedAt: new Date(),
+      updatedAt: now,
     };
 
     if (saveAsDraft) {
-      // Save to draft workspace only
       updateData.draftData = JSON.stringify(data);
       updateData.status = "DRAFT";
     } else {
-      // Save to both draft and published
       updateData.draftData = JSON.stringify(data);
       updateData.publishedData = JSON.stringify(data);
       updateData.status = "PUBLISHED";
-      updateData.publishedAt = new Date();
+      updateData.publishedAt = now;
     }
 
     // Update SEO metadata if provided
@@ -137,30 +139,35 @@ export async function PUT(
       updateData.structuredData = meta.structuredData ? JSON.stringify(meta.structuredData) : null;
     }
 
-    const page = await db.cmsPage.update({
-      where: { slug },
-      data: updateData,
+    await db.update(cmsPages).set(updateData).where(eq(cmsPages.slug, slug));
+
+    const page = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, slug),
     });
 
+    if (!page) {
+      throw new Error("Failed to update page");
+    }
+
     // Create version snapshot
-    await db.pageVersion.create({
-      data: {
-        pageId: page.id,
-        data: JSON.stringify(data),
-        message: saveAsDraft ? "Draft saved" : "Published",
-        blocksAdded: changes.added,
-        blocksRemoved: changes.removed,
-        blocksModified: changes.modified,
-      },
+    await db.insert(pageVersions).values({
+      id: crypto.randomUUID(),
+      pageId: page.id,
+      data: JSON.stringify(data),
+      message: saveAsDraft ? "Draft saved" : "Published",
+      blocksAdded: changes.added,
+      blocksRemoved: changes.removed,
+      blocksModified: changes.modified,
+      createdAt: now,
     });
 
     // Log audit
-    await db.auditLog.create({
-      data: {
-        pageId: page.id,
-        action: saveAsDraft ? "UPDATE" : "PUBLISH",
-        details: JSON.stringify({changes}),
-      },
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      pageId: page.id,
+      action: saveAsDraft ? "UPDATE" : "PUBLISH",
+      details: JSON.stringify({changes}),
+      createdAt: now,
     });
 
     return NextResponse.json({
@@ -168,7 +175,7 @@ export async function PUT(
       slug: page.slug,
       title: page.title,
       status: page.status,
-      updatedAt: page.updatedAt.toISOString(),
+      updatedAt: page.updatedAt?.toISOString?.() || now.toISOString(),
     });
   } catch (error) {
     console.error("[Page API] PUT error:", error);
@@ -187,17 +194,23 @@ export async function DELETE(
   try {
     const { slug } = await params;
 
-    const page = await db.cmsPage.delete({
-      where: {slug},
+    const page = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, slug),
     });
 
+    if (!page) {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    await db.delete(cmsPages).where(eq(cmsPages.slug, slug));
+
     // Log audit
-    await db.auditLog.create({
-      data: {
-        pageId: page.id,
-        action: "DELETE",
-        details: JSON.stringify({slug, deletedAt: new Date().toISOString()}),
-      },
+    await db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      pageId: page.id,
+      action: "DELETE",
+      details: JSON.stringify({slug, deletedAt: new Date().toISOString()}),
+      createdAt: new Date(),
     });
 
     return NextResponse.json({ success: true });

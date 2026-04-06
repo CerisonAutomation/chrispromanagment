@@ -1,8 +1,10 @@
 import {revalidatePath} from "next/cache";
 import {db} from "@/lib/db";
+import {cmsPages, pageVersions} from "@/lib/db/schema";
 import {NextResponse} from "next/server";
 import type {Data} from "@puckeditor/core";
 import {createApiError, createRequestLogger, ErrorCodes} from "@/lib/error";
+import {eq, asc} from "drizzle-orm";
 
 // ============================================================
 // GET handler
@@ -12,9 +14,9 @@ export async function GET() {
   const log = createRequestLogger(`pages-get-${Date.now()}`);
 
   try {
-    const pages = await db.cmsPage.findMany({
-      select: { id: true, slug: true, title: true, status: true, updatedAt: true },
-      orderBy: { createdAt: "asc" },
+    const pages = await db.query.cmsPages.findMany({
+      columns: { id: true, slug: true, title: true, status: true, updatedAt: true },
+      orderBy: asc(cmsPages.createdAt),
     });
 
     log.info("Pages fetched", {count: pages.length});
@@ -70,38 +72,62 @@ export async function POST(request: Request) {
     const pageTitle = title || data?.root?.props?.title || "Untitled Page";
     const dataString = JSON.stringify(data);
 
-    const page = await db.cmsPage.upsert({
-      where: {slug: pageSlug},
-      update: {
+    // Check if page exists
+    const existingPage = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, pageSlug),
+    });
+
+    let pageId: string;
+    const now = new Date();
+
+    if (existingPage) {
+      // Update existing page
+      await db.update(cmsPages).set({
         title: pageTitle,
         draftData: dataString,
         ...(publish && {
           publishedData: dataString,
           status: "PUBLISHED",
-          publishedAt: new Date(),
+          publishedAt: now,
         }),
-        updatedAt: new Date(),
-      },
-      create: {
+        updatedAt: now,
+      }).where(eq(cmsPages.slug, pageSlug));
+      pageId = existingPage.id;
+    } else {
+      // Create new page
+      const id = crypto.randomUUID();
+      await db.insert(cmsPages).values({
+        id,
         slug: pageSlug,
         title: pageTitle,
         draftData: dataString,
         publishedData: publish ? dataString : null,
         status: publish ? "PUBLISHED" : "DRAFT",
-        ...(publish && {publishedAt: new Date()}),
-      },
+        ...(publish && { publishedAt: now }),
+        createdAt: now,
+        updatedAt: now,
+      });
+      pageId = id;
+    }
+
+    const page = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.id, pageId),
     });
 
+    if (!page) {
+      throw new Error("Failed to create/update page");
+    }
+
     // Create version snapshot
-    await db.pageVersion.create({
-      data: {
-        pageId: page.id,
-        data: dataString,
-        message: publish ? "Published" : "Draft saved",
-        blocksAdded: 0,
-        blocksRemoved: 0,
-        blocksModified: data?.content?.length || 0,
-      },
+    await db.insert(pageVersions).values({
+      id: crypto.randomUUID(),
+      pageId: page.id,
+      data: dataString,
+      message: publish ? "Published" : "Draft saved",
+      blocksAdded: 0,
+      blocksRemoved: 0,
+      blocksModified: data?.content?.length || 0,
+      createdAt: new Date(),
     });
 
     // Purge Next.js cache
@@ -115,7 +141,7 @@ export async function POST(request: Request) {
       slug: page.slug,
       title: page.title,
       pageStatus: page.status,
-      updatedAt: page.updatedAt.toISOString(),
+      updatedAt: page.updatedAt?.toISOString?.() || new Date().toISOString(),
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
