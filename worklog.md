@@ -1008,3 +1008,39 @@ Stage Summary:
 - Chat route now supports conversation history for multi-turn AI assistance
 - bun run lint: 0 errors, 0 warnings
 - Dev server: GET / 200 confirmed
+---
+Task ID: 13 - 21st-dev-effects-integration
+Agent: Main Orchestrator
+Task: Audit 21st.dev community components and integrate Magic UI effects into CPM blocks
+
+Work Log:
+- Crawled https://21st.dev/community/components, /components, /magicui (3 pages) via web-reader
+- Ran 3 web searches: component categories, Magic UI effects, usage patterns
+- Extracted component catalog: BlurFade, MorphingText, AnimatedShinyText, SparklesText, HyperText, RetroGrid, Particles, DotPattern, GridPattern, NumberTicker, Marquee, AnimatedTooltip, ShimmerButton
+- Installed dependencies: tailwind-merge@3.5.0, mini-svg-data-uri@1.4.4
+- Created 12 effect components under src/components/effects/:
+  1. blur-fade.tsx — BlurFade wrapper with framer-motion (replaces CSS fadeInUp)
+  2. blur-fade-text.tsx — Per-word/character staggered text entrance + directional variants
+  3. morphing-text.tsx — AnimatedText cycling with blur transitions (AnimatePresence)
+  4. animated-shiny-text.tsx — Shimmering light sweep across text (gold-tinted)
+  5. sparkles-text.tsx — Particle sparkles with SVG stars around text
+  6. hyper-text.tsx — CSS gradient hover effect (shifts on hover)
+  7. shimmer-button.tsx — Button with traveling shimmer overlay + motion scale
+  8. retro-grid.tsx — Animated scrolling grid background with radial mask
+  9. animated-tooltip.tsx — Hover-reactive avatar stack with spring physics
+  10. patterns.tsx — DotPattern + GridPattern SVG background utilities
+  11. particles.tsx — Canvas-based interactive particle system with connections
+  12. number-ticker.tsx — Animated number counter with eased counting + Marquee
+- Integrated effects into 4 blocks:
+  - hero-section.tsx: BlurFade (badge), BlurFadeText (title per-word), MorphingText (rotating badge text), ShimmerButton (CTA), RetroGrid (bg), Particles (bg), BlurFade (scroll indicator)
+  - stats-section.tsx: BlurFade (per-stat staggered entrance), NumberTicker (animated counting)
+  - cta-banner.tsx: BlurFade (heading/description/button staggered), SparklesText (heading), ShimmerButton (CTA), DotPattern (card overlay)
+  - social-proof-strip.tsx: BlurFade (desktop grid staggered), NumberTicker (mobile + desktop counting)
+
+Stage Summary:
+- 12 new effect components in src/components/effects/ (100% based on 21st.dev Magic UI patterns)
+- 4 blocks upgraded with premium animations (hero, stats, CTA, social-proof)
+- All effects use CPM brand tokens (--cpm-accent, --cpm-text-primary, etc.)
+- Framer Motion for all animations (physics-based, GPU-accelerated)
+- prefers-reduced-motion respected where applicable
+- Lint: 0 errors, 0 warnings. Dev server: GET / 200 confirmed

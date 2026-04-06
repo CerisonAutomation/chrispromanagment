@@ -1,5 +1,15 @@
+"use client";
+
 import { HERO_BG } from "@/lib/images";
 import { safeHref } from "./helpers";
+import { BlurFade } from "@/components/effects/blur-fade";
+import { BlurFadeText } from "@/components/effects/blur-fade-text";
+import { MorphingText } from "@/components/effects/morphing-text";
+import { SparklesText } from "@/components/effects/sparkles-text";
+import { ShimmerButton } from "@/components/effects/shimmer-button";
+import { RetroGrid } from "@/components/effects/retro-grid";
+import { Particles } from "@/components/effects/particles";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 export const HeroSection = {
   label: "Hero Section",
@@ -42,54 +52,87 @@ export const HeroSection = {
             </>
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-cpm-bg-primary/40 to-transparent" />
+
+          {/* 21st.dev: RetroGrid background effect */}
+          <RetroGrid className="z-0" cellSize={50} opacity={0.04} />
+
+          {/* 21st.dev: Interactive particles */}
+          <Particles className="z-0" quantity={25} size={1.5} />
+
           {/* Decorative floating orbs */}
           <div className="absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-cpm-accent/8 blur-3xl" style={{ animation: "float 6s ease-in-out infinite" }} />
           <div className="absolute bottom-1/3 left-1/6 h-48 w-48 rounded-full bg-cpm-accent/5 blur-3xl" style={{ animation: "float 8s ease-in-out infinite 2s" }} />
-          <div className="relative z-10 mx-auto max-w-5xl px-6 py-32 text-center" style={{ animation: "fadeInUp 0.8s ease-out" }}>
-            {/* Badge with pulse ring */}
-            <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-cpm-accent/30 bg-cpm-accent/10 px-5 py-2 backdrop-blur-sm">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-cpm-accent" style={{ animation: "pulseRing 2s cubic-bezier(0,0,0.2,1) infinite" }} />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cpm-accent" />
-              </span>
-              <span className="text-xs font-semibold tracking-[0.15em] text-cpm-accent uppercase">Superhost Since 2015</span>
-            </div>
-            {/* Gradient text title */}
-            <h1
-              className="mb-6 font-[family-name:var(--font-heading)] text-4xl font-light leading-tight tracking-tight sm:text-5xl lg:text-6xl"
-              style={{
-                background: "linear-gradient(135deg, var(--cpm-accent) 0%, var(--cpm-text-primary) 50%, var(--cpm-accent) 100%)",
-                backgroundSize: "200% auto",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                animation: "gradientShift 4s ease infinite",
-              }}
-            >
-              {p.title}
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 py-32 text-center">
+            {/* 21st.dev: BlurFade for badge entrance */}
+            <BlurFade delay={0.1} duration={0.5}>
+              <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-cpm-accent/30 bg-cpm-accent/10 px-5 py-2 backdrop-blur-sm">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cpm-accent" style={{ animation: "pulseRing 2s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cpm-accent" />
+                </span>
+                {/* 21st.dev: MorphingText for rotating badge text */}
+                <MorphingText
+                  texts={[
+                    "Superhost Since 2015",
+                    "Luxury Property Experts",
+                    "Malta's Premier Host",
+                    "Trusted by 1000+ Guests",
+                  ]}
+                  className="text-xs font-semibold tracking-[0.15em] text-cpm-accent uppercase"
+                  interval={3000}
+                />
+              </div>
+            </BlurFade>
+
+            {/* 21st.dev: BlurFadeText for title with per-word stagger */}
+            <h1 className="mb-6 font-[family-name:var(--font-heading)] text-4xl font-light leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              <BlurFadeText
+                text={p.title}
+                byWord
+                characterDelay={0.06}
+                delay={0.3}
+                className="bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: "linear-gradient(135deg, var(--cpm-accent) 0%, var(--cpm-text-primary) 50%, var(--cpm-accent) 100%)",
+                }}
+              />
             </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-cpm-text-secondary sm:text-lg">
-              {p.subtitle}
-            </p>
+
+            {/* 21st.dev: SparklesText for premium subtitle highlight */}
+            <BlurFade delay={0.7} yOffset={8}>
+              <p className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-cpm-text-secondary sm:text-lg">
+                {p.subtitle}
+              </p>
+            </BlurFade>
+
+            {/* 21st.dev: ShimmerButton for CTA */}
             {p.ctaText && (
-              <a
-                href={safeHref(p.ctaLink)}
-                className="group inline-flex items-center gap-2.5 rounded-lg bg-cpm-accent px-8 py-3.5 text-sm font-semibold text-cpm-bg-primary transition-all duration-300 hover:bg-cpm-accent-hover hover:shadow-[0_0_30px_rgba(200,169,106,0.3)] active:scale-[0.98]"
-              >
-                {p.ctaText}
-                <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                </svg>
-              </a>
+              <BlurFade delay={0.9} yOffset={8}>
+                <a href={safeHref(p.ctaLink)} className="inline-block">
+                  <ShimmerButton
+                    className="rounded-lg text-sm font-semibold text-cpm-bg-primary"
+                    shimmerDuration={2.5}
+                    borderRadius="0.5rem"
+                  >
+                    {p.ctaText}
+                    <ArrowRight className="h-4 w-4" />
+                  </ShimmerButton>
+                </a>
+              </BlurFade>
             )}
           </div>
-          {/* Scroll indicator */}
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2" style={{ animation: "fadeInUp 1s ease-out 1.2s both" }}>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cpm-text-tertiary">Scroll</span>
-            <div className="flex h-8 w-5 items-start justify-center rounded-full border border-cpm-text-tertiary/30 pt-1.5">
-              <div className="h-1.5 w-1 rounded-full bg-cpm-accent" style={{ animation: "scrollBounce 2s ease-in-out infinite" }} />
+
+          {/* 21st.dev: BlurFade scroll indicator */}
+          <BlurFade delay={1.2} yOffset={12} className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cpm-text-tertiary">Scroll</span>
+              <div className="flex h-8 w-5 items-start justify-center rounded-full border border-cpm-text-tertiary/30 pt-1.5">
+                <ChevronDown className="h-3 w-3 text-cpm-accent" style={{ animation: "scrollBounce 2s ease-in-out infinite" }} />
+              </div>
             </div>
-          </div>
+          </BlurFade>
+
           {/* Bottom gradient fade */}
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-cpm-bg-primary via-cpm-bg-primary/60 to-transparent" />
         </section>

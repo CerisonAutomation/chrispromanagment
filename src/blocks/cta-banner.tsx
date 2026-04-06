@@ -1,4 +1,13 @@
+"use client";
+
 import { safeHref } from "./helpers";
+import { BlurFade } from "@/components/effects/blur-fade";
+import { BlurFadeText } from "@/components/effects/blur-fade-text";
+import { ShimmerButton } from "@/components/effects/shimmer-button";
+import { SparklesText } from "@/components/effects/sparkles-text";
+import { RetroGrid } from "@/components/effects/retro-grid";
+import { DotPattern } from "@/components/effects/patterns";
+import { ArrowRight } from "lucide-react";
 
 export const CtaBanner = {
   label: "CTA Banner",
@@ -19,12 +28,15 @@ export const CtaBanner = {
     return (
       <>
         <section className="relative bg-cpm-bg-primary px-4 py-20 sm:px-8 overflow-hidden">
-          <div className="mx-auto max-w-4xl" style={{ animation: "scaleIn 0.6s ease-out" }}>
-            {/* Glassmorphism card */}
+          <div className="mx-auto max-w-4xl">
+            {/* 21st.dev: Glassmorphism card with premium effects */}
             <div
               className="relative rounded-2xl p-12 text-center backdrop-blur-xl overflow-hidden"
               style={{ background: "linear-gradient(135deg, rgba(200,169,106,0.08), rgba(200,169,106,0.03))", border: "1px solid rgba(200,169,106,0.15)" }}
             >
+              {/* 21st.dev: DotPattern overlay */}
+              <DotPattern className="inset-0" opacity={0.06} width={20} height={20} />
+
               {/* Top gradient accent line */}
               <div
                 className="absolute top-0 left-0 right-0 h-[2px]"
@@ -51,21 +63,37 @@ export const CtaBanner = {
                 style={{ background: "linear-gradient(135deg, var(--cpm-accent), var(--cpm-gold-dark))", animation: "float 8s ease-in-out infinite 2s" }}
               />
               <div className="relative z-10">
-                <h2 className="mb-4 font-[family-name:var(--font-heading)] text-3xl font-light tracking-tight text-cpm-text-primary sm:text-4xl">
-                  {p.heading}
-                </h2>
-                <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-cpm-text-secondary">{p.description}</p>
+                {/* 21st.dev: BlurFadeText for heading */}
+                <BlurFade delay={0.1}>
+                  <h2 className="mb-4 font-[family-name:var(--font-heading)] text-3xl font-light tracking-tight sm:text-4xl">
+                    <SparklesText
+                      className="bg-clip-text text-transparent"
+                      style={{
+                        backgroundImage: "linear-gradient(135deg, var(--cpm-text-primary), var(--cpm-accent))",
+                      }}
+                      sparklesCount={6}
+                    >
+                      {p.heading}
+                    </SparklesText>
+                  </h2>
+                </BlurFade>
+                <BlurFade delay={0.3} yOffset={8}>
+                  <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-cpm-text-secondary">{p.description}</p>
+                </BlurFade>
+                {/* 21st.dev: ShimmerButton for CTA */}
                 {p.buttonText && (
-                  <a
-                    href={safeHref(p.buttonLink)}
-                    className="group inline-flex items-center gap-2.5 rounded-xl px-8 py-3.5 text-sm font-semibold text-cpm-bg-primary transition-all duration-300 hover:shadow-[0_0_30px_rgba(200,169,106,0.3)] active:scale-[0.98]"
-                    style={{ background: "linear-gradient(135deg, var(--cpm-accent), var(--cpm-accent-hover))" }}
-                  >
-                    {p.buttonText}
-                    <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                    </svg>
-                  </a>
+                  <BlurFade delay={0.5} yOffset={8}>
+                    <a href={safeHref(p.buttonLink)} className="inline-block">
+                      <ShimmerButton
+                        className="rounded-xl text-sm font-semibold text-cpm-bg-primary"
+                        shimmerDuration={2}
+                        borderRadius="0.75rem"
+                      >
+                        {p.buttonText}
+                        <ArrowRight className="h-4 w-4" />
+                      </ShimmerButton>
+                    </a>
+                  </BlurFade>
                 )}
               </div>
             </div>

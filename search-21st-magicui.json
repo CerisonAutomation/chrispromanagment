@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://21st.dev/community/components/dillionverma/rainbow-button",
+    "name": "Rainbow Button | Community Components - 21st.dev",
+    "snippet": "Rainbow Button. An animated button with a rainbow effect. Created by. Magic UI. @magicui. Installation.",
+    "host_name": "21st.dev",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/magicui/morphing-text/default",
+    "name": "Morphing Text | Community Components - 21st.dev - The first vibe",
+    "snippet": "A dynamic text morphing component for Magic UI.",
+    "host_name": "21st.dev",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/dillionverma/animated-shiny-text",
+    "name": "Introducing Magic UI - 21st.dev",
+    "snippet": "Animated Shiny Text. A light glare effect which pans across text making it appear as if it is shimmering. Created by. Magic UI. @magicui. Installation.",
+    "host_name": "21st.dev",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/aceternity/framer-motion-switch",
+    "name": "Framer Motion Switch | Community Components - 21st Dev",
+    "snippet": "Framer Motion Switch. A smooth animated toggle switch built with Framer Motion. The thumb morphs and slides with a liquid animation effect.",
+    "host_name": "21st.dev",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev",
+    "name": "21st: Infrastructure and UI building blocks for the agentic internet | 21st",
+    "snippet": "Ship AI-powered products faster with 21st Agents SDK, open-source UI components, and developer tools built for the agentic internet. Missing: effects | Show results with: effects",
+    "host_name": "21st.dev",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/magicui/sparkles-text/default",
+    "name": "Sparkles Text | Community Components - 21st Dev",
+    "snippet": "Sparkles Text. A dynamic text that generates continuous sparkles with smooth transitions, perfect for highlighting text with animated stars.",
+    "host_name": "21st.dev",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/dillionverma/morphing-text",
+    "name": "Morphing Text - 21st Dev",
+    "snippet": "TextAnimation. Components•magicui•Morphing Text. Morphing Text. A dynamic text morphing component for Magic UI. Created by. Magic UI. @magicui. Installation.",
+    "host_name": "21st.dev",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/dillionverma/retro-grid",
+    "name": "Retro Grid | Community Components - 21st.dev - The first vibe",
+    "snippet": "An animated scrolling retro grid effect Add the following animations to your tailwind.config.js file: extend: { animation: { grid: \"grid 15s linear ...",
+    "host_name": "21st.dev",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/magicui/blur-fade/default",
+    "name": "Blur Fade | Community Components - 21st | 21st - 21st.dev",
+    "snippet": "Blur fade in and out animation. Used to smoothly fade in and out content.",
+    "host_name": "21st.dev",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://21st.dev/community/components/dillionverma/hyper-text",
+    "name": "Hyper Text | Community Components - 21st Dev",
+    "snippet": "Components•magicui•Hyper Text. Hyper Text. A hyper changing text animation as you hover. Created by. Magic UI. @magicui. Installation.",
+    "host_name": "21st.dev",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
