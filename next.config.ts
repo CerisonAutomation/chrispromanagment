@@ -8,7 +8,7 @@ import type {NextConfig} from "next";
 const nextConfig: NextConfig = {
   // Turbopack configuration - explicit root to avoid lockfile confusion
   turbopack: {
-    root: ".",
+    root: "/Users/cb/Downloads/CHRIS/Chrispm",
   },
 
   // =============================================================================
