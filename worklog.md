@@ -287,3 +287,81 @@ Used bracket-level replacement `[#hex]` → `cpm-name` (e.g., `[#c8a96a]` → `c
 - No logo URL replacements needed (none of these 5 files contained hardcoded logo URLs)
 
 **Verification:** `npm run lint` passes with 0 errors, 0 warnings. Zero `[#hex]` patterns remain across all 5 files.
+
+---
+## Task ID: 2 - modular-block-architecture
+### Work Task
+Refactor the monolithic `/home/z/my-project/src/puck.config.tsx` (4,460 lines, 35 block definitions) into a clean modular architecture with individual block files under `src/blocks/`.
+
+### Work Summary
+Split the 4,460-line `puck.config.tsx` monolith into 38 modular files:
+
+**Files Created:**
+
+1. **`src/blocks/helpers.ts`** — Shared utilities:
+   - `safeHref()` — URL validation helper (prevents XSS)
+   - 17 image alias exports (`PROP_1`, `PROP_2`, `PROP_3`, `PROP_VALLETTA`, `PROP_MADLIENA`, `PROP_GZIRA`, `IMG_2625`–`IMG_6115`) mapping to centralized `@/lib/images` constants
+
+2. **35 individual block files** (`src/blocks/*.tsx`):
+   - `hero-section.tsx`, `about-section.tsx`, `why-choose-us.tsx`, `services-section.tsx`, `property-showcase.tsx`
+   - `booking-section.tsx`, `pricing-table.tsx`, `testimonial-section.tsx`, `faq-section.tsx`, `contact-section.tsx`
+   - `logo-bar.tsx`, `cta-banner.tsx`, `stats-section.tsx`, `footer-section.tsx`, `divider.tsx`
+   - `guesty-property-search.tsx`, `guesty-property-grid.tsx`, `guesty-property-detail.tsx`, `guesty-booking-widget.tsx`, `guesty-booking-confirmation.tsx`, `guesty-booking-dashboard.tsx`
+   - `image-gallery.tsx`, `timeline.tsx`, `text-block.tsx`, `feature-grid.tsx`, `map-section.tsx`, `spacer.tsx`, `theme-settings.tsx`
+   - `team-section.tsx`, `video-section.tsx`, `newsletter-section.tsx`, `comparison-section.tsx`, `image-with-text.tsx`, `malta-map-section.tsx`, `social-proof-strip.tsx`
+
+3. **`src/blocks/index.ts`** — Aggregator importing all 35 blocks and exporting the `config` object with identical shape
+
+**Files Modified:**
+
+4. **`src/puck.config.tsx`** — Reduced from 4,460 lines to 8 lines:
+   ```typescript
+   export { config as default } from "@/blocks";
+   ```
+
+**Key Architecture Decisions:**
+
+- Each block file imports only the dependencies it needs (React, toast, MaltaSVGLoader, image/constants, safeHref)
+- Helper components used only within single blocks (e.g., `GuestySkeletonCard`, `GuestyAmenityIcon`, `GuestyRenderStars`, `GuestyStatCard`) are defined locally in their respective block files rather than shared globally
+- The `config` export shape is preserved exactly: `{ components: { HeroSection, AboutSection, ... }, ... }`
+- `block-renderer.tsx` continues to import `config` from `@/puck.config` (backward compatible)
+
+**Verification:**
+- `npm run lint` — 0 errors, 0 warnings
+- Dev server `GET /` — 200 response confirmed
+
+---
+## Task ID: 12 - fix-all-critical-bugs
+### Work Task
+Fix all critical bugs preventing the application from running: parse errors, broken imports, and architectural issues.
+
+### Work Summary
+
+**Bug 1: page.tsx Parse Error (CRITICAL — app returning 500)**
+- Root cause: JSX comment at line 362 was missing its closing `}`
+- Before: `{/* Content-aware skeleton cascade */` (missing `}`)
+- After: `{/* Content-aware skeleton cascade */}`
+- This caused brace depth imbalance, making the SWC/Turbopack parser think we were still inside a JSX expression context at line 469
+- Error messages: "Unterminated regexp literal" (Turbopack), `'}' expected` (TypeScript)
+- Impact: **Entire app was returning HTTP 500** — completely broken
+- File: `src/app/page.tsx`
+
+**Bug 2: default-pages.ts Broken Imports**
+- Root cause: File used `PROP_VALLETTA`, `PROP_1`, `PROP_2`, `PROP_MADLIENA`, `PROP_3`, `PROP_GZIRA` variables that were only defined in `puck.config.tsx` (not imported)
+- Fix: Added local alias definitions at the top of `default-pages.ts` mapping to centralized `PROP_IMAGES` constants
+- Impact: Properties page and any page using property images would have undefined URLs at runtime
+- File: `src/lib/default-pages.ts`
+
+**Bug 3: puck.config.tsx Architecture (4,460-line monolith)**
+- Root cause: All 35 block definitions (fields + defaultProps + full JSX render functions) stuffed into a single file
+- This was a historical artifact from when `@puckeditor/core` required all blocks in one config object
+- After Puck was removed, the monolith was never refactored
+- Fix: Split into 38 modular files under `src/blocks/` with a clean aggregator pattern
+- Before: 1 file at 4,460 lines
+- After: 36 individual block files + 1 helpers file + 1 index.ts + 1 puck.config.tsx re-export (8 lines)
+- File: `src/puck.config.tsx` (4,460 → 8 lines), new `src/blocks/` directory
+
+**Verification:**
+- `bun run lint` — 0 errors, 0 warnings
+- `next build` — Clean production build (no errors)
+- Dev server `GET /` — 200 response confirmed

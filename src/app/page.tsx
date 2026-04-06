@@ -359,7 +359,7 @@ function PageSkeleton({ pageName }: { pageName: string }) {
         </p>
       </div>
 
-      {/* Content-aware skeleton cascade */
+      {/* Content-aware skeleton cascade */}
       <div
         className="relative z-10 mt-14 w-full max-w-3xl space-y-5"
         style={{

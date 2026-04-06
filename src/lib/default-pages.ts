@@ -2,6 +2,14 @@ import type { BlockData } from "@/lib/block-types";
 import { LOGO_URL, HERO_BG, ABOUT_IMG, PROP_IMAGES } from "@/lib/images";
 import { COPYRIGHT, CONTACT } from "@/lib/constants";
 
+// Short aliases for property images (used in page data)
+const PROP_1 = PROP_IMAGES.valletta2;
+const PROP_2 = PROP_IMAGES.baharIcCaghaq;
+const PROP_3 = PROP_IMAGES.pieta;
+const PROP_VALLETTA = PROP_IMAGES.valletta;
+const PROP_MADLIENA = PROP_IMAGES.madliena;
+const PROP_GZIRA = PROP_IMAGES.gzira;
+
 // ============================================================
 // DETERMINISTIC ID GENERATOR
 // ============================================================
