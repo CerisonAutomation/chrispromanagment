@@ -5,6 +5,7 @@
   "type": "module",
   "packageManager": "bun@1.2.5",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "NODE_ENV=production node .next/standalone/server.js",
