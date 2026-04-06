@@ -70,4 +70,5 @@ export const ImageGallery = {
       </>
     );
   },
+  ai: { instructions: "Image gallery for property photos or destination photos. Use high-quality CDN images." },
 };

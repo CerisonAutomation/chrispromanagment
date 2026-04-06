@@ -201,4 +201,5 @@ export const PricingTable = {
       </>
     );
   },
+  ai: { instructions: "Show 2-3 pricing tiers with clear value differentiation. Highlight recommended plan with gold accent styling." },
 };

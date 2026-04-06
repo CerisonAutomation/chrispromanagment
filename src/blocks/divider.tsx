@@ -31,4 +31,5 @@ export const Divider = {
       </>
     );
   },
+  ai: { instructions: "Optional text label centered on a subtle divider line. Leave empty string for plain separator." },
 };

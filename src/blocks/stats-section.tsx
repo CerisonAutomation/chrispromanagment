@@ -113,4 +113,5 @@ export const StatsSection = {
       </>
     );
   },
+  ai: { instructions: "3-4 key metrics. Use real CPM stats: 9+ years, 50+ properties, 1000+ guests, 4.9 rating. Values impressive but credible." },
 };

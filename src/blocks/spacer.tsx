@@ -12,4 +12,5 @@ export const Spacer = {
       <div style={{ height: `${p.size}px` }} className="w-full" />
     );
   },
+  ai: { instructions: "Vertical spacing block for layout control. Common values: 32px between sections, 64px for major breaks." },
 };

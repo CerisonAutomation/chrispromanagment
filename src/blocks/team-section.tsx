@@ -76,4 +76,5 @@ export const TeamSection = {
       </>
     );
   },
+  ai: { instructions: "2-6 team member cards with photo, name, role, bio. ALWAYS highlight Christiano as Founder with 9+ years Superhost experience." },
 };

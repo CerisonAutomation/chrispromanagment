@@ -67,4 +67,5 @@ export const LogoBar = {
       </>
     );
   },
+  ai: { instructions: "Minimal partner/trust badge section. Keep title short: 'Trusted Partners' or 'As Featured In'." },
 };

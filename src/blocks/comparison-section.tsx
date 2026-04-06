@@ -170,4 +170,5 @@ export const ComparisonSection = {
       </>
     );
   },
+  ai: { instructions: "2-4 column comparison table. Highlight recommended plan with gold border. Feature checkmarks vs dashes." },
 };

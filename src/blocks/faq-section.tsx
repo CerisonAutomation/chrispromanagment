@@ -91,4 +91,5 @@ export const FaqSection = {
       </>
     );
   },
+  ai: { instructions: "4-12 common questions from guests and owners. Answers 2-4 sentences. Cover booking, check-in, cancellation, amenities." },
 };

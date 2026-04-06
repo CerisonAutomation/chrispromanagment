@@ -331,6 +331,276 @@ Split the 4,460-line `puck.config.tsx` monolith into 38 modular files:
 - Dev server `GET /` — 200 response confirmed
 
 ---
+Task ID: 2-c
+Agent: Research Specialist - Puck AI Recipes
+Task: Crawl and extract Puck next-ai and next recipes for best practices
+
+Work Log:
+- Read full project worklog (12 previous tasks) to understand current architecture: 35 blocks in modular src/blocks/, custom SPA editor with hash routing, Prisma DB, Guesty API, no @puckeditor/core dependency
+- Crawled 4 primary GitHub URLs: next-ai README, next-ai tree, next README, next tree
+- Explored complete directory trees via GitHub API for both recipes
+- Extracted all source code files from next-ai recipe (13 files total)
+- Ran 3 web searches covering Puck AI best practices, plugin ecosystem, and source code
+- Crawled 6 official Puck documentation pages: AI Getting Started, AI Configuration, Business Context, Tools, Headless Generation, Plugin API
+- Crawled Puck 0.21 blog post and awesome-puck repo for plugin ecosystem
+
+Stage Summary:
+
+## 1. FILE STRUCTURE - next-ai recipe
+```
+recipes/next-ai/
+├── .env.example              # PUCK_API_KEY=your-api-key
+├── package.json              # @puckeditor/core, @puckeditor/cloud-client, @puckeditor/plugin-ai
+├── puck.config.tsx           # Minimal Puck config (HeadingBlock)
+├── proxy.ts                  # Dev proxy: /edit → /puck/* rewrite
+├── database.json             # JSON file-based persistence
+├── next.config.js
+├── app/
+│   ├── layout.tsx            # Root layout
+│   ├── page.tsx              # Re-exports from [...puckPath]
+│   ├── styles.css
+│   ├── [...puckPath]/
+│   │   ├── page.tsx          # Public page (force-static ISR, notFound if missing)
+│   │   └── client.tsx        # <Render config={config} data={data} />
+│   ├── puck/
+│   │   ├── page.tsx          # Re-exports from [...puckPath]
+│   │   └── [...puckPath]/
+│   │       ├── page.tsx      # Editor (force-dynamic, imports plugin-ai/styles.css)
+│   │       └── client.tsx    # <Puck plugins={[aiPlugin]} /> with onPublish
+│   └── api/
+│       ├── pages/
+│       │   └── route.ts      # POST: save to JSON + revalidatePath
+│       └── puck/
+│           └── [...all]/
+│               └── route.ts  # AI PROXY: puckHandler(request, { ai: { context } })
+└── lib/
+    └── get-page.ts           # getPage(path): read from database.json
+```
+
+## 2. KEY DIFFERENCES: next vs next-ai
+- next-ai adds: @puckeditor/cloud-client, @puckeditor/plugin-ai packages
+- next-ai adds: app/api/puck/[...all]/route.ts (AI proxy using puckHandler)
+- next-ai adds: PUCK_API_KEY env var, createAiPlugin() in editor client
+- next-ai adds: @puckeditor/plugin-ai/styles.css import in editor page
+- Both use identical ISR pattern (force-static for public, force-dynamic for editor)
+- Both use revalidatePath for cache invalidation on publish
+
+## 3. EXTRACTED CRITICAL SOURCE CODE
+
+### 3a. AI PROXY ROUTE (app/api/puck/[...all]/route.ts)
+```typescript
+import { NextRequest } from "next/server";
+import { puckHandler } from "@puckeditor/cloud-client";
+
+export const POST = (request: NextRequest) => {
+  return puckHandler(request, {
+    ai: {
+      context: "We are Google. You create Google landing pages.",
+    },
+  });
+};
+```
+
+### 3b. EDITOR CLIENT with AI Plugin (app/puck/[...puckPath]/client.tsx)
+```typescript
+"use client";
+import type { Data } from "@puckeditor/core";
+import { Puck } from "@puckeditor/core";
+import { createAiPlugin } from "@puckeditor/plugin-ai";
+import config from "../../../puck.config";
+
+const aiPlugin = createAiPlugin();
+
+export function Client({ path, data }: { path: string; data: Partial<Data> }) {
+  return (
+    <Puck
+      plugins={[aiPlugin]}
+      config={config}
+      data={data}
+      onPublish={async (data) => {
+        await fetch("/api/pages", {
+          method: "post",
+          body: JSON.stringify({ data, path }),
+        });
+      }}
+    />
+  );
+}
+```
+
+### 3c. EDITOR SERVER PAGE (app/puck/[...puckPath]/page.tsx)
+```typescript
+import "@puckeditor/core/puck.css";
+import "@puckeditor/plugin-ai/styles.css";
+import { Client } from "./client";
+import { Metadata } from "next";
+import { getPage } from "../../../lib/get-page";
+
+export async function generateMetadata({ params }: { params: Promise<{ puckPath: string[] }> }): Promise<Metadata> {
+  const { puckPath = [] } = await params;
+  const path = `/${puckPath.join("/")}`;
+  return { title: "Puck: " + path };
+}
+
+export default async function Page({ params }: { params: Promise<{ puckPath: string[] }> }) {
+  const { puckPath = [] } = await params;
+  const path = `/${puckPath.join("/")}`;
+  const data = getPage(path);
+  return <Client path={path} data={data || {}} />;
+}
+
+export const dynamic = "force-dynamic";
+```
+
+### 3d. PUBLIC PAGE with ISR (app/[...puckPath]/page.tsx)
+```typescript
+import { Client } from "./client";
+import { notFound } from "next/navigation";
+import { getPage } from "../../lib/get-page";
+
+export default async function Page({ params }: { params: Promise<{ puckPath: string[] }> }) {
+  const { puckPath = [] } = await params;
+  const path = `/${puckPath.join("/")}`;
+  const data = getPage(path);
+  if (!data) return notFound();
+  return <Client data={data} />;
+}
+
+export const dynamic = "force-static";
+```
+
+### 3e. PAGES API with Cache Invalidation (app/api/pages/route.ts)
+```typescript
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+import fs from "fs";
+
+export async function POST(request: Request) {
+  const payload = await request.json();
+  const existingData = JSON.parse(fs.existsSync("database.json") ? fs.readFileSync("database.json", "utf-8") : "{}");
+  const updatedData = { ...existingData, [payload.path]: payload.data };
+  fs.writeFileSync("database.json", JSON.stringify(updatedData));
+  revalidatePath(payload.path);
+  return NextResponse.json({ status: "ok" });
+}
+```
+
+### 3f. DEV PROXY for /edit rewrite (proxy.ts)
+```typescript
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export async function proxy(req: NextRequest) {
+  const res = NextResponse.next({ request: req });
+  if (req.method === "GET") {
+    if (req.nextUrl.pathname.endsWith("/edit")) {
+      const pathWithoutEdit = req.nextUrl.pathname.slice(0, req.nextUrl.pathname.length - 5);
+      return NextResponse.rewrite(new URL(`/puck${pathWithoutEdit}`, req.url));
+    }
+    if (req.nextUrl.pathname.startsWith("/puck")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+  }
+  return res;
+}
+```
+
+## 4. AI CONFIGURATION PATTERNS (from docs)
+
+### Component-Level AI Instructions
+```typescript
+ai: { instructions: "Always place this first" }
+```
+
+### Field-Level AI Config
+```typescript
+// Instructions
+ai: { instructions: "Always use caps" }
+// Schema for custom fields
+ai: { schema: z.toJSONSchema(z.object({ title: z.string() })) }
+// Exclude from AI
+ai: { exclude: true }
+// Control streaming
+ai: { stream: false }
+// Required fields
+ai: { required: true }
+// Bind tool result to field
+ai: { bind: "getImageUrl" }
+```
+
+## 5. TOOLS API - Server Functions AI Can Call
+```typescript
+import { puckHandler, tool } from "@puckeditor/cloud-client";
+import z from "zod/v4";
+
+const handler = puckHandler({
+  ai: {
+    tools: {
+      getImageUrl: tool({
+        description: "Get a property image",
+        inputSchema: z.object({ category: z.enum(["valletta", "gozo"]) }),
+        execute: ({ category }) => fetchPropertyImage(category),
+        mode: "auto",
+      }),
+    },
+  },
+});
+```
+
+## 6. HEADLESS GENERATION API
+```typescript
+import { generate } from "@puckeditor/cloud-client";
+
+const page = await generate({
+  prompt: "Create a luxury property landing page",
+  config: { components: { /* our 35 blocks */ } },
+  context: "We are Christiano Property Management in Malta...",
+});
+
+// Update existing page
+const updated = await generate({
+  prompt: "Make the hero section more vibrant",
+  config: { components: { /* ... */ } },
+  pageData: existingData,
+});
+```
+
+## 7. PLUGIN API (Puck 0.21)
+```typescript
+const MyPlugin = {
+  name: "my-plugin",
+  label: "My plugin",
+  icon: <svg />,
+  render: () => <div>Plugin UI</div>,
+  overrides: { drawerItem: ({ name }) => <div /> },
+  fieldTransforms: { text: ({ value }) => <span>{value}</span> },
+  mobilePanelHeight: "min-content",
+};
+```
+
+## 8. RECOMMENDED UPGRADE PATTERNS FOR CPM
+
+### Integration Strategy
+1. Install: @puckeditor/core, @puckeditor/cloud-client, @puckeditor/plugin-ai, zod
+2. Create: app/api/puck/[...all]/route.ts with CPM business context
+3. Create: app/api/pages/route.ts with Prisma + revalidatePath (replace JSON file DB)
+4. Add: createAiPlugin() to editor component alongside custom blocks
+5. Add: ai.instructions to each of 35 block definitions in src/blocks/
+6. Create: Server-side tools for property images, booking links
+7. Use: generate() API for existing ai-page-builder.tsx feature
+8. Add: PUCK_API_KEY to .env.local
+
+### Package Versions
+- @puckeditor/core: latest (was @measured/puck before 0.21)
+- @puckeditor/cloud-client: ^0.5.0
+- @puckeditor/plugin-ai: ^0.5.0
+- Requires: Next.js 16+, React 19+
+- Auth: MUST add authentication to /edit routes (recipe explicitly warns)
+
+### Recommended CPM Business Context
+We are Christiano Property Management, a premium vacation rental company in Birkirkara, Malta. Gold accent (#c8a96a), dark backgrounds (#0e0f11, #15171b), luxury aesthetic. 35 components available. Target: high-end vacation rental guests. Focus on Malta/Gozo destination appeal and guest experience.
+
+---
 ## Task ID: 12 - fix-all-critical-bugs
 ### Work Task
 Fix all critical bugs preventing the application from running: parse errors, broken imports, and architectural issues.
@@ -365,3 +635,376 @@ Fix all critical bugs preventing the application from running: parse errors, bro
 - `bun run lint` — 0 errors, 0 warnings
 - `next build` — Clean production build (no errors)
 - Dev server `GET /` — 200 response confirmed
+
+---
+Task ID: 2-d
+Agent: Research Specialist - AI Prompts
+Task: Crawl AI system prompts repo for best CMS/AI builder prompts
+
+Work Log:
+- Read full project worklog (13 previous tasks) to understand CPM architecture: 35 modular blocks in src/blocks/, custom SPA editor, Prisma DB, Guesty API, Puck AI integration planned
+- Crawled system-prompts-and-models-of-ai-tools repo: retrieved full directory tree via GitHub API (36 directories: v0, Cursor, Lovable, Leap.new, Manus, Claude Code, Devin AI, Windsurf, Replit, etc.)
+- Extracted full system prompts from 4 major AI web builders: v0 (36KB), Cursor Agent 2.0 (39KB), Lovable (20KB), Leap.new (52KB)
+- Ran 7 web searches: Puck AI blocks, v0/Next.js CMS, AI CMS editor prompts, lovabled.dev, awesome-ai-system-prompts, Puck editor AI generation, AI block component schema
+- Read Puck blog post "AI Slop vs Constrained UI" (Feb 2026) — comprehensive analysis of constrained generative UI patterns
+- Identified complementary resources: dontriskit/awesome-ai-system-prompts, instructa/ai-prompts, Builder.io ChatGPT prompts, Strapi AI prompts
+
+Stage Summary:
+
+## 1. REPO STRUCTURE: system-prompts-and-models-of-ai-tools
+```
+x1xhlol/system-prompts-and-models-of-ai-tools/
+├── v0 Prompts and Tools/     → Prompt.txt (36KB), Tools.json (29KB)
+├── Cursor Prompts/           → Agent Prompt 2.0.txt (39KB), v1.2 (32KB), Chat (13KB), Tools (24KB)
+├── Lovable/                  → Agent Prompt.txt (20KB), Agent Tools.json (28KB)
+├── Leap.new/                 → Prompts.txt (52KB), tools.json (17KB)
+├── Manus Agent Tools & Prompt/
+├── Anthropic/Claude Code/    → Prompt.txt, Tools.json
+├── Devin AI/
+├── Windsurf/
+├── Replit/                   → Tools.json
+├── Trae/                     → Builder Prompt.txt
+├── VSCode Agent/             → Prompt.txt
+├── Google/Antigravity/       → Fast Prompt.txt
+├── Augment Code/
+├── CodeBuddy Prompts/
+├── Comet Assistant/
+├── Same.dev/
+├── NotionAi/
+├── Perplexity/
+├── Poke/
+├── Qoder/
+├── Kiro/
+├── Emergent/
+├── Orchids.app/
+├── Warp.dev/
+├── Amp/
+├── Cluely/
+├── Junie/
+├── Xcode/
+├── Z.ai Code/
+├── dia/
+└── Open Source prompts/
+```
+
+## 2. EXTRACTED SYSTEM PROMPTS — KEY PATTERNS FOR CPM
+
+### 2a. VERCEL v0 SYSTEM PROMPT (36KB) — Key Extracts
+
+**Core Identity:**
+"You are v0, Vercel's highly skilled AI-powered assistant that always follows best practices."
+
+**Coding Guidelines (relevant to CPM):**
+- Default to Next.js App Router
+- Use SWR for data fetching, caching, and client-side state
+- Do NOT fetch inside useEffect
+- Split code into multiple components. Do NOT have one large page.tsx
+- Use semantic HTML (main, header) with ARIA roles
+- Mobile-first responsive design with iOS Safari optimization
+- 44px minimum touch targets for interactive elements
+
+**Design System Rules:**
+- ALWAYS use exactly 3-5 colors total (1 primary brand + 2-3 neutrals + 1-2 accents)
+- NEVER exceed 5 total colors without explicit permission
+- NEVER use purple or violet prominently unless asked
+- Avoid gradients unless explicitly asked; use solid colors
+- Maximum 2 font families (headings + body)
+- Use line-height 1.4-1.6 for body text
+- Use Tailwind spacing scale (p-4, mx-2), NOT arbitrary values
+- Use gap classes for spacing, NOT space-* classes
+
+**AI/Chatbot Apps:**
+- Use Vercel AI SDK ("ai": "^6.0.0", "@ai-sdk/react": "^3.0.0")
+- Uses Vercel AI Gateway by default (zero config for AWS Bedrock, Google Vertex, OpenAI, Anthropic)
+
+**Context Gathering Strategy:**
+- Don't stop at first match — examine ALL files
+- Understand the full system before changes
+- Search systematically: broad → specific → verify relationships
+- Use parallel tool calls wherever possible
+
+**Next.js 16 Features:**
+- middleware.ts → proxy.js (backwards compatible)
+- Turbopack default bundler (stable)
+- React Compiler Support (stable)
+- params/searchParams must be awaited (no longer synchronous)
+- New revalidateTag('tag', 'max') requires cacheLife profile
+- New updateTag() and refresh() Server Actions APIs
+- Cache Components: "use cache" directive for pages/components/functions
+
+### 2b. LOVABLE AGENT PROMPT (20KB) — Key Extracts
+
+**Core Identity:**
+"You are Lovable, an AI editor that creates and modifies web applications."
+
+**Tech Stack:** React, Vite, Tailwind CSS, TypeScript (NOT Next.js, Angular, Vue, Svelte)
+**Backend:** Supabase native integration only
+
+**Architecture Patterns:**
+- PERFECT ARCHITECTURE: Always consider refactoring. "Spaghetti code is your enemy."
+- MAXIMIZE EFFICIENCY: Invoke all relevant tools simultaneously
+- NEVER READ FILES ALREADY IN CONTEXT: Check "useful-context" first
+- BE CONCISE: <2 lines of text after editing code, unless detail requested
+- COMMUNICATE ACTIONS: Briefly inform user what you will do before changes
+
+**Workflow (7-step):**
+1. CHECK USEFUL-CONTEXT FIRST
+2. TOOL REVIEW: think about relevant tools
+3. DEFAULT TO DISCUSSION MODE: Assume user wants to discuss, not implement
+4. THINK & PLAN: Restate what user ACTUALLY asks for
+5. ASK CLARIFYING QUESTIONS before implementing
+6. GATHER CONTEXT EFFICIENTLY (batch file reads)
+7. IMPLEMENTATION: Focus on explicitly requested changes only
+8. VERIFY & CONCLUDE: Very concise summary
+
+**Design System Rules (CRITICAL):**
+- NEVER write custom styles in components — ALWAYS use the design system
+- NEVER use classes like text-white, bg-white — use design system tokens
+- Use HSL colors ONLY in index.css
+- Create component variants using design system tokens
+- Leverage index.css and tailwind.config.ts for consistent design
+- Customize shadcn components with correct variants
+- Pay attention to dark vs light mode contrast
+
+**SEO Requirements:**
+- Title tags < 60 chars with keyword
+- Meta description < 160 chars
+- Single H1 matching primary intent
+- Semantic HTML (header, nav, main, section, article, footer)
+- JSON-LD structured data for products/articles/FAQs
+- Lazy loading for images, canonical tags
+
+### 2c. CURSOR AGENT 2.0 PROMPT (39KB) — Key Extracts
+
+**Core Identity:**
+"You are an AI coding assistant, powered by GPT-4.1. You operate in Cursor."
+
+**Agent Behavior:**
+- "You are an agent — please keep going until the user's query is completely resolved"
+- Autonomously resolve query before coming back to user
+- If plan made, immediately follow it without waiting for user confirmation
+- Bias towards NOT asking user if answer can be found via tools
+
+**Tool Architecture (relevant to CPM editor):**
+- `codebase_search`: Semantic search that finds code by meaning, not exact text
+- `grep`: Powerful ripgrep-based search
+- `edit_file`: Propose edits with `// ... existing code ...` for unchanged lines
+- `read_file`: Read any file (supports images)
+- `list_dir`: List files/directories
+- `glob_file_search`: Find files by name pattern
+- `todo_write`: Manage task lists
+- `web_search`: Real-time information retrieval
+
+**Search Strategy:**
+- CRITICAL: Start with broad, high-level query
+- Break multi-part questions into focused sub-queries
+- MANDATORY: Run multiple searches with different wording
+- Keep searching until CONFIDENT nothing important remains
+
+**Code Change Rules:**
+- NEVER output code to user unless requested — use edit tools
+- Code must run immediately (include imports, deps, endpoints)
+- If linter errors introduced, fix if clear how to; stop after 3 loops on same file
+
+### 2d. LEAP.NEW PROMPT (52KB) — Key Extracts
+
+**Core Identity:**
+"You are Leap, an expert AI assistant and exceptional senior software developer."
+
+**Architecture:**
+- Frontend: React, TypeScript, Vite, Tailwind CSS v4, shadcn-ui, Lucide icons
+- Backend: Encore.ts (TypeScript REST API framework)
+- Output: Single `<leapArtifact>` containing `<leapFile>` elements
+
+**Key Patterns:**
+- Think HOLISTICALLY and COMPREHENSIVELY before creating artifacts
+- Consider ALL relevant files, review ALL previous changes
+- ALWAYS provide FULL updated content of modified files
+- NEVER use placeholders like "// rest of code remains same"
+- Split functionality into smaller modules
+- Keep files as small as possible
+- Use CSS variables for theming (text-foreground, not text-black/text-white)
+
+## 3. PUCK "AI SLOP VS CONSTRAINED UI" BLOG (Feb 2026) — Key Architecture Insights
+
+**Where AI excels in UI:**
+1. Translating intent into layout structure
+2. Generating first-pass scaffolding
+3. Automating repetitive component assembly
+4. Supporting rapid experimentation
+
+**Where unbounded generation fails:**
+1. Design system violations (arbitrary margins, inconsistent hierarchies)
+2. Inconsistent component usage (misusing primitives, bypassing abstractions)
+3. Non-deterministic outputs (identical prompts → different layouts)
+4. Brand and compliance drift (no regulatory/accessibility awareness)
+5. Output requiring engineering cleanup (normalization before integration)
+
+**The Solution — Constrained Generation:**
+1. **Component registry boundaries**: Limit to approved React components
+2. **Prop schema enforcement**: Validate against typed definitions
+3. **Layout rules and composition limits**: Restrict component nesting
+4. **Business context injection**: Embed brand, regulatory, domain constraints
+5. **Deterministic output structures**: Structured JSON for predictable rendering
+
+**Puck AI Implementation:**
+- Generates from registered components only (Hero, FeatureGrid, PricingTable)
+- Structured page schema output (component types → configured props → placement)
+- Business context and brand rules as configuration layers
+- Design system preservation through component implementation
+- Deterministic behavior via controlled configuration
+
+**Decision Framework:**
+| Scenario | AI SHOULD Generate | AI SHOULD NOT Generate |
+|----------|-------------------|----------------------|
+| Component Model | Predefined registry | Arbitrary markup |
+| Design System | Approved components | Direct styling without tokens |
+| Output Format | Validated JSON schema | Raw HTML/inline styles |
+| Context | Brand rules injected | Prompt-only guidance |
+| Determinism | Config-controlled variability | Divergent results per prompt |
+
+## 4. RECOMMENDED PROMPTS FOR CPM AI INTEGRATION
+
+### 4a. Business Context (for Puck AI proxy / ai-page-builder)
+```
+We are Christiano Property Management, a premium vacation rental company based in Birkirkara, Malta. We specialize in luxury short-term rentals across Malta and Gozo, targeting high-end travelers seeking exceptional Mediterranean experiences.
+
+Brand Identity:
+- Primary color: Gold accent (#c8a96a / hsl(var(--cpm-accent)))
+- Backgrounds: Dark luxury (#0e0f11 primary, #15171b secondary)
+- Text: Warm cream (#ede9e0 primary, #9a9690 secondary)
+- Typography: Clean sans-serif, elegant spacing
+- Aesthetic: Premium, sophisticated, Mediterranean luxury
+
+Available Components (35 blocks):
+- Content blocks: HeroSection, AboutSection, WhyChooseUs, ServicesSection, TextBlock, VideoSection, Timeline, NewsletterSection
+- Property blocks: PropertyShowcase, GuestyPropertySearch, GuestyPropertyGrid, GuestyPropertyDetail, GuestyBookingWidget
+- Social proof: TestimonialSection, StatsSection, LogoBar, SocialProofStrip, TeamSection
+- Conversion: BookingSection, PricingTable, CTASection, ComparisonSection
+- Utility: ImageGallery, ImageWithText, FeatureGrid, MapSection, MaltaMapSection, Spacer, Divider, FooterSection, ThemeSettings
+
+Content Guidelines:
+- Always mention Malta and Gozo as destinations
+- Emphasize personalized guest experience and local expertise
+- Use warm, inviting language with luxury connotations
+- Include specific locations: Valletta, Sliema, Mdina, Gozo
+- Reference 8+ years of experience, 20+ properties, Superhost status
+- Contact: info@christianopropertymanagement.com, +356 7979 0202
+
+Technical Constraints:
+- Always use semantic Tailwind theme tokens (cpm-*), never raw hex colors
+- All images from centralized CDN (PROP_IMAGES, GALLERY_IMAGES constants)
+- Mobile-first responsive design with 44px touch targets
+- Accessible: ARIA labels, alt text, keyboard navigation
+- Single H1 per page, proper heading hierarchy
+```
+
+### 4b. AI Page Generation Prompt Template (for ai-page-builder.tsx)
+```
+Create a [PAGE_TYPE] page for Christiano Property Management.
+
+Page goal: [SPECIFIC_GOAL]
+Target audience: [AUDIENCE]
+Key message: [MESSAGE]
+Call to action: [CTA]
+
+Use these components in this order:
+1. [Component 1] - [purpose]
+2. [Component 2] - [purpose]
+...
+
+Style: Luxury Mediterranean, gold accents on dark backgrounds.
+Tone: Warm, professional, inviting.
+```
+
+### 4c. Per-Block AI Instructions (add to each block in src/blocks/)
+```typescript
+// hero-section.tsx
+ai: {
+  instructions: "Always place as the first block. Use compelling headline about Malta/Gozo luxury experience. Background image from PROP_IMAGES. Gold accent gradient overlay.",
+}
+
+// property-showcase.tsx
+ai: {
+  instructions: "Display 3-6 properties in a responsive grid. Use real property names: Valletta, Madliena, Gzira, Pieta, Bahar ic-Caghaq. Each card shows image, name, location, price range, and Book Now CTA.",
+}
+
+// testimonial-section.tsx
+ai: {
+  instructions: "3 testimonials maximum. Use realistic guest names and nationalities. Mention specific properties or locations. 5-star ratings only. Include guest photos.",
+}
+
+// booking-section.tsx
+ai: {
+  instructions: "Integrate with Guesty Booking Engine. Show check-in/check-out date picker, guest count, and property selector. Gold CTA button. Display starting prices.",
+}
+
+// about-section.tsx
+ai: {
+  instructions: "Highlight 8+ years experience, 20+ properties, Superhost status. Use Malta/Gozo imagery. Emphasize personalized service and local expertise.",
+}
+
+// contact-section.tsx
+ai: {
+  instructions: "Include email (info@christianopropertymanagement.com), phone (+356 7979 0202), WhatsApp, and Google Maps embed of Birkirkara office. Social media links to Facebook, Instagram, LinkedIn.",
+}
+```
+
+## 5. CROSS-TOOL PATTERN COMPARISON
+
+| Pattern | v0 | Lovable | Cursor | Leap.new | Puck AI | CPM Should |
+|---------|-----|---------|--------|----------|---------|-----------|
+| Component Registry | Implicit (shadcn) | shadcn + custom | N/A | shadcn pre-installed | Explicit config | ✅ Explicit 35 blocks |
+| Design Tokens | Tailwind tokens | CSS vars (HSL) | N/A | CSS variables | Component-level | ✅ cpm-* Tailwind tokens |
+| Mobile-First | ✅ Required | ✅ Required | N/A | ✅ Required | Via components | ✅ Already implemented |
+| Color Limit | 3-5 colors | Design system only | N/A | Via CSS vars | Via components | ✅ Gold + neutrals |
+| AI Context | Implicit (prompt) | Business rules | Codebase | Backend schema | Business context | ✅ Inject Malta context |
+| Output Format | Files | Search-replace | Edit tool | Artifact XML | Puck Data JSON | ✅ Block data JSON |
+| SEO | Auto (layout.tsx) | Auto (per-page) | N/A | N/A | N/A | ✅ PAGE_META constants |
+| Auth Required | Vercel project | Supabase | N/A | Clerk | /edit routes | ✅ ADMIN_AUTH already exists |
+
+## 6. ACTIONABLE RECOMMENDATIONS FOR CPM
+
+1. **Adopt v0's color constraint**: Limit to 3-5 colors (already done with cpm-* tokens)
+2. **Adopt Lovable's discussion-first workflow**: AI editor should plan before implementing
+3. **Adopt Cursor's semantic search**: Add codebase search to AI page builder for context
+4. **Adopt Leap's holistic approach**: Always consider ALL blocks before generating a page
+5. **Adopt Puck AI's constrained generation**: Only use registered 35 blocks, never arbitrary markup
+6. **Add per-block AI instructions**: Add `ai.instructions` to each of 35 block definitions
+7. **Use business context injection**: Malta brand identity, property data, contact info
+8. **Implement Puck's tool API**: Server-side tools for property images, booking links, weather data
+9. **Follow v0's Next.js 16 patterns**: Await params, use "use cache", new caching APIs
+10. **Follow Lovable's SEO auto-generation**: Auto-generate meta tags, JSON-LD, canonical URLs
+
+---
+Task ID: 13 - AI-POWERED CMS UPGRADE
+Agent: Main Orchestrator (parallel execution)
+Task: Crawl Puck AI recipes + system prompts repos, build AI context, install Puck AI plugins, integrate AI into editor and all blocks
+
+Work Log:
+- Crawled github.com/puckeditor/puck/tree/main/recipes/next-ai — extracted official AI proxy pattern, plugin API, tools API, headless generation
+- Crawled github.com/puckeditor/puck/tree/main/recipes/next — extracted ISR pattern (force-static/force-dynamic), revalidatePath
+- Crawled x1xhlol/system-prompts-and-models-of-ai-tools — extracted prompts from v0 (36KB), Cursor Agent 2.0 (39KB), Lovable (20KB), Leap.new (52KB)
+- Installed @puckeditor/cloud-client@0.6.0 and @puckeditor/plugin-ai@0.6.0
+- Created /home/z/my-project/src/lib/ai-context.ts with 5 exports:
+  - BUSINESS_CONTEXT (CPM brand identity for Puck AI)
+  - BLOCK_INSTRUCTIONS (per-block AI guidance for all 35 blocks)
+  - AI_SYSTEM_PROMPT (master prompt combining v0/Lovable/Cursor/Puck best patterns)
+  - BLOCK_EDIT_PROMPT (specialized for block editing)
+  - PAGE_GENERATION_PROMPT (specialized for page generation)
+- Created /home/z/my-project/src/app/api/puck/[...all]/route.ts — Puck AI proxy route using puckHandler with CPM business context
+- Verified puck-editor.tsx already had createAiPlugin and plugins={[aiPlugin]} integrated (from previous session)
+- Upgraded /home/z/my-project/src/app/api/ai/build-page/route.ts — imports from ai-context.ts, injects per-block instructions
+- Upgraded /home/z/my-project/src/app/api/ai/edit-block/route.ts — imports BLOCK_EDIT_PROMPT + BLOCK_INSTRUCTIONS
+- Rewrote /home/z/my-project/src/app/api/ai/chat/route.ts — added conversation history support (max 10 messages), imports full AI_SYSTEM_PROMPT
+- Added ai: { instructions: "..." } property to ALL 35 block files in src/blocks/
+
+Stage Summary:
+- Puck AI plugin ecosystem fully integrated: @puckeditor/plugin-ai + @puckeditor/cloud-client
+- AI proxy route at /api/puck/[...all] ready for Puck Cloud connection
+- 5 specialized AI prompts in ai-context.ts combining patterns from v0, Lovable, Cursor, Leap.new, and Puck constrained UI
+- All 35 CMS blocks now carry AI metadata for contextual content generation
+- All 3 AI API routes upgraded with business context, block schemas, and per-block instructions
+- Chat route now supports conversation history for multi-turn AI assistance
+- bun run lint: 0 errors, 0 warnings
+- Dev server: GET / 200 confirmed

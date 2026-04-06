@@ -96,4 +96,5 @@ export const HeroSection = {
       </>
     );
   },
+  ai: { instructions: "Create impactful headlines under 80 characters with benefit-focused messaging about luxury Malta stays. Subtitle 2-3 sentences max, under 300 chars. CTA 2-4 action words. Background image must be from the CDN." },
 };

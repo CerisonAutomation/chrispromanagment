@@ -74,4 +74,5 @@ export const CtaBanner = {
       </>
     );
   },
+  ai: { instructions: "Action-oriented headline (4-8 words). Supporting description 1-2 sentences. Button 2-5 words. Use #contact or #booking as link." },
 };

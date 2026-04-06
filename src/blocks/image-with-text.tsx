@@ -102,4 +102,5 @@ export const ImageWithText = {
       </>
     );
   },
+  ai: { instructions: "Image and text side-by-side layout. Support left/right/top positions. Optional badge and CTA. 100-300 words." },
 };

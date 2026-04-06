@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { Puck, usePuck, type Data, type PuckAction } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
+import "@puckeditor/plugin-ai/styles.css";
 import { toast } from "sonner";
 import {
   Save,
@@ -34,6 +35,9 @@ import config from "@/puck.config";
 import AiPageBuilder from "./ai-page-builder";
 import AiBlockEditor from "./ai-block-editor";
 import BlockBuilder from "./block-builder";
+import { createAiPlugin } from "@puckeditor/plugin-ai";
+
+const aiPlugin = createAiPlugin();
 
 // ============================================================
 // EDITOR CONTEXT
@@ -639,6 +643,7 @@ export default function PuckEditor({
           <Puck
             key={puckKey}
             config={config}
+            plugins={[aiPlugin]}
             data={readyData}
             overrides={{
               header: () => <EditorHeader onBack={onBack} />,

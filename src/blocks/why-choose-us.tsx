@@ -96,4 +96,5 @@ export const WhyChooseUs = {
       </>
     );
   },
+  ai: { instructions: "3-6 feature cards with concise titles (3-6 words) and short descriptions (under 200 chars). Use lucide icons: star, award, gem, check-circle, settings, shield, home, key. Focus on CPM differentiators." },
 };

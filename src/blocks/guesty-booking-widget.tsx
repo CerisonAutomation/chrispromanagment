@@ -256,4 +256,5 @@ export const GuestyBookingWidget = {
       </>
     );
   },
+  ai: { instructions: "Direct booking interface with date selection, guest count, pricing breakdown. Clean, trustworthy design." },
 };

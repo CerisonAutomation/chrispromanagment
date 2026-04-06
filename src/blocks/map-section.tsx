@@ -50,4 +50,5 @@ export const MapSection = {
       </>
     );
   },
+  ai: { instructions: "Embedded Google Map showing CPM Birkirkara Malta location. Coordinates: 35.8961327, 14.4644929." },
 };

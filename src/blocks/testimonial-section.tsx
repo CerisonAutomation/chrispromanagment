@@ -114,4 +114,5 @@ export const TestimonialSection = {
       </>
     );
   },
+  ai: { instructions: "2-6 authentic guest testimonials. Quotes must mention specific CPM strengths: cleanliness, location, responsiveness. Ratings 4-5 stars." },
 };

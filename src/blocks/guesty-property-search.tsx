@@ -151,4 +151,5 @@ export const GuestyPropertySearch = {
       </>
     );
   },
+  ai: { instructions: "Property search interface with clear call-to-action. Emphasize luxury Malta vacation rentals." },
 };

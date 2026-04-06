@@ -188,4 +188,5 @@ export const GuestyPropertyGrid = {
       </>
     );
   },
+  ai: { instructions: "Property listing grid showing available luxury properties. Professional card layout with images, prices, ratings." },
 };

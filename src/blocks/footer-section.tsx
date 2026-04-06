@@ -110,4 +110,5 @@ export const FooterSection = {
       </>
     );
   },
+  ai: { instructions: "Professional footer with CPM branding, navigation links, contact info, and copyright. Keep minimal and elegant." },
 };

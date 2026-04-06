@@ -106,4 +106,5 @@ export const PropertyShowcase = {
       </>
     );
   },
+  ai: { instructions: "3-6 properties with name, CDN image URL, and caption in format 'X Bed · Y Bath · Sleeps Z'. Use real Malta location names." },
 };

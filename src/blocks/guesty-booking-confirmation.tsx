@@ -89,4 +89,5 @@ export const GuestyBookingConfirmation = {
       </>
     );
   },
+  ai: { instructions: "Booking success confirmation with reservation details and next steps. Celebratory but professional tone." },
 };

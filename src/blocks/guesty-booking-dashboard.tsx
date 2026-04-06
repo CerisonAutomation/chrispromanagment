@@ -221,4 +221,5 @@ export const GuestyBookingDashboard = {
       </>
     );
   },
+  ai: { instructions: "Booking management overview with status tracking, upcoming check-ins, and reservation history." },
 };

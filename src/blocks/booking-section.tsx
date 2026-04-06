@@ -194,4 +194,5 @@ export const BookingSection = {
       </>
     );
   },
+  ai: { instructions: "Encourage direct booking with urgency and value. Emphasize best price guarantee and no hidden fees." },
 };

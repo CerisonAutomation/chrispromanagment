@@ -211,4 +211,5 @@ export const ContactSection = {
       </>
     );
   },
+  ai: { instructions: "Professional contact section. Use CPM actual details: info@christianopropertymanagement.com, +35679790202, Birkirkara Malta." },
 };

@@ -120,4 +120,5 @@ export const NewsletterSection = {
       </>
     );
   },
+  ai: { instructions: "Email subscription section. Encourage sign-ups with value proposition about Malta deals and tips." },
 };

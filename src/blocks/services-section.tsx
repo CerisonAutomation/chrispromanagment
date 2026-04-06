@@ -163,4 +163,5 @@ export const ServicesSection = {
       </>
     );
   },
+  ai: { instructions: "List 4-6 core property management services as included items. Add 2-3 premium extras with prices. Keep descriptions brief." },
 };

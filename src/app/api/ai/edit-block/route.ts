@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import { BLOCK_REGISTRY, buildSchemaSummary } from "@/lib/block-registry";
+import { BUSINESS_CONTEXT, BLOCK_EDIT_PROMPT, BLOCK_INSTRUCTIONS } from "@/lib/ai-context";
 
 // ============================================================
 // Shared helpers
@@ -102,17 +103,14 @@ function buildBlockEditorPrompt(blockType: string, schema: ReturnType<typeof BLO
     })
     .join("\n");
 
-  return `You are an expert content editor for Christiano Property Management — a luxury short-term rental management company in Malta. You edit individual Puck editor block props.
+  const blockInstruction = BLOCK_INSTRUCTIONS[blockType] || "";
 
-## COMPANY CONTEXT
-- Brand: Christiano Property Management
-- Industry: Luxury short-term rental management  
-- Location: Malta
-- Tone: Premium, professional, trustworthy, warm
-- 9+ years experience, Superhost, international hospitality standards
+  return `${BLOCK_EDIT_PROMPT}
+
+${BUSINESS_CONTEXT}
 
 ## BLOCK TYPE: ${blockType} (${schema.label})
-Fields schema:
+${blockInstruction ? `## AI GUIDANCE\n${blockInstruction}\n` : ""}Fields schema:
 ${fieldsDescription}
 
 ## DEFAULT PROPS (baseline values):
@@ -124,7 +122,7 @@ ${JSON.stringify(schema.defaultProps, null, 2)}
 3. Every field from the schema must be present in the output
 4. For array fields, keep the same structure — modify content but preserve field keys
 5. For select fields, use ONLY the exact values listed in the schema
-6. Keep copy concise, premium, and relevant to luxury property management
+6. Keep copy concise, premium, and relevant to luxury property management in Malta
 7. If the instruction asks to add items to an array, add 1-3 items max
 8. If the instruction asks to remove items, keep at least 1 item in the array
 9. Do NOT modify field names or create new fields not in the schema

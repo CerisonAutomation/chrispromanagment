@@ -89,4 +89,5 @@ export const VideoSection = {
       </>
     );
   },
+  ai: { instructions: "Embedded video section (YouTube/Vimeo). Professional presentation with play overlay. Support 16:9, 4:3, 1:1." },
 };

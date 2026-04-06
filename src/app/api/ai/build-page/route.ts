@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import { BLOCK_REGISTRY, buildSchemaSummary, BLOCK_TYPE_NAMES } from "@/lib/block-registry";
+import { BUSINESS_CONTEXT, PAGE_GENERATION_PROMPT, BLOCK_INSTRUCTIONS } from "@/lib/ai-context";
 
 // ============================================================
 // Shared helpers
@@ -92,22 +93,24 @@ function extractJSON(text: string): unknown {
 function buildSystemPrompt(): string {
   const schemaSummary = buildSchemaSummary();
 
-  return `You are an expert web page builder for Christiano Property Management — a luxury short-term rental management company in Malta. You generate complete page data for a Puck visual editor.
+  // Build block-specific instructions from ai-context
+  const blockInstructionEntries = Object.entries(BLOCK_INSTRUCTIONS)
+    .filter(([type]) => BLOCK_REGISTRY[type])
+    .map(([type, instruction]) => `### ${type}\n${instruction}`)
+    .join("\n");
 
-## COMPANY CONTEXT
-- Brand: Christiano Property Management
-- Industry: Luxury short-term rental management
-- Location: Malta (Valletta, Bahar ic-Caghaq, Madliena, Pieta, Gzira, Birkirkara)
-- Tone: Premium, professional, trustworthy, warm
-- Key themes: Superhost excellence, transparency, selective portfolio, international hospitality standards
-- Colors: Gold #c8a96a, dark #0e0f11, light text #ede9e0
-- 9+ years experience, 50+ properties, 1000+ guests, 4.9 avg rating
+  return `${PAGE_GENERATION_PROMPT}
+
+${BUSINESS_CONTEXT}
 
 ## AVAILABLE BLOCK TYPES & SCHEMAS
 Each block has a "type" and a "props" object. Use ONLY these exact block types:
 ${schemaSummary}
 
-## PUZZLE DATA FORMAT
+## PER-BLOCK AI INSTRUCTIONS
+${blockInstructionEntries}
+
+## DATA FORMAT
 Return ONLY a JSON object with this exact structure:
 {
   "content": [
@@ -122,10 +125,10 @@ Return ONLY a JSON object with this exact structure:
 2. Every field in "props" must match the schema exactly
 3. For array fields, each item must have all keys from defaultItemProps
 4. For select fields, use ONLY the exact values listed
-5. Create 4-10 blocks per page — not too few, not too many
-6. Recommended page order: HeroSection → AboutSection/WhyChooseUs → ServicesSection/PropertyShowcase → StatsSection → TestimonialSection → CtaBanner → FooterSection
+5. Create 6-10 blocks per page — quality over quantity
+6. Recommended page order: HeroSection → SocialProofStrip → AboutSection/WhyChooseUs → ServicesSection/PropertyShowcase → TestimonialSection → FaqSection → CtaBanner → ContactSection → FooterSection
 7. Always end with FooterSection
-8. Keep copy concise and premium — no filler text
+8. Every section must add unique value — no redundancy
 9. Generate realistic, compelling copy relevant to the prompt
 10. Return ONLY the JSON object, no explanation text`;
 }

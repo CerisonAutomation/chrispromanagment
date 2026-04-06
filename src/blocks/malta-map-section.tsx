@@ -106,4 +106,5 @@ export const MaltaMapSection = {
       </section>
     );
   },
+  ai: { instructions: "Animated SVG map of Malta and Gozo islands. Gold stroke animation on load. Optional label and brand tagline." },
 };

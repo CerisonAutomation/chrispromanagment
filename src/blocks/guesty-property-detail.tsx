@@ -269,4 +269,5 @@ export const GuestyPropertyDetail = {
       </>
     );
   },
+  ai: { instructions: "Detailed property view with amenities, photo gallery, location map, reviews, and booking widget." },
 };

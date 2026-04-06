@@ -67,4 +67,5 @@ export const FeatureGrid = {
       </>
     );
   },
+  ai: { instructions: "Grid of feature cards with icons, titles, and descriptions. 3-6 items in responsive grid." },
 };

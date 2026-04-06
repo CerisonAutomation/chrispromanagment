@@ -129,4 +129,5 @@ export const SocialProofStrip = {
       </>
     );
   },
+  ai: { instructions: "3-5 key metrics in horizontal strip. Use impressive numbers with labels: ratings, guests, response rate." },
 };

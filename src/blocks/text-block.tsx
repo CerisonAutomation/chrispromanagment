@@ -32,4 +32,5 @@ export const TextBlock = {
       </>
     );
   },
+  ai: { instructions: "Flexible text content block. Support for headings, paragraphs, and basic formatting." },
 };

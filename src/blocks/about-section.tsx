@@ -74,4 +74,5 @@ export const AboutSection = {
       </>
     );
   },
+  ai: { instructions: "Write 150-400 words about CPM luxury property management in Malta. Emphasize 9+ years Superhost experience, personal touch, local expertise. Use professional yet warm tone." },
 };

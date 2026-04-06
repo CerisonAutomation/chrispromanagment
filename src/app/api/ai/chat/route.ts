@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import { BLOCK_REGISTRY, buildSchemaSummary, BLOCK_TYPE_NAMES } from "@/lib/block-registry";
+import { BUSINESS_CONTEXT, AI_SYSTEM_PROMPT, BLOCK_INSTRUCTIONS } from "@/lib/ai-context";
 
 // ============================================================
 // Shared helpers
 // ============================================================
 
 async function callAI(
-  systemPrompt: string,
-  userMessage: string,
+  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
   timeoutMs: number = 20000,
   retries: number = 1
 ): Promise<string> {
@@ -19,10 +19,7 @@ async function callAI(
     try {
       const zai = await ZAI.create();
       const completion = await zai.chat.completions.create({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
+        messages,
         thinking: { type: "disabled" },
       });
       clearTimeout(timer);
@@ -55,40 +52,36 @@ async function callAI(
 function buildChatSystemPrompt(context?: Record<string, unknown>): string {
   const schemaSummary = buildSchemaSummary();
 
-  let systemPrompt = `You are a helpful AI assistant embedded in the Puck visual editor for Christiano Property Management — a luxury short-term rental management company in Malta.
+  // Build concise block listing with AI instructions
+  const blockList = Object.entries(BLOCK_INSTRUCTIONS)
+    .filter(([type]) => BLOCK_REGISTRY[type])
+    .map(([type, instruction]) => {
+      const schema = BLOCK_REGISTRY[type];
+      return `- **${type}** (${schema.label}): ${instruction.split(".")[0]}.`;
+    })
+    .join("\n");
 
-## YOUR ROLE
-You help users build and edit pages for a property management website. You can:
-1. Suggest page layouts and content improvements
-2. Explain how to use specific block types
-3. Recommend content strategies for luxury rental properties
-4. Provide copywriting assistance for property descriptions, CTAs, testimonials, etc.
-5. Help troubleshoot page structure and block placement
+  let systemPrompt = `${AI_SYSTEM_PROMPT}
 
-## COMPANY CONTEXT
-- Brand: Christiano Property Management
-- Industry: Luxury short-term rental management in Malta
-- Properties: Apartments in Valletta, villas in Bahar ic-Caghaq, event spaces in Madliena
-- Services: Full property management (pricing, cleaning, guest communication, maintenance)
-- Tone: Premium, professional, trustworthy, warm
-- Key differentiators: 9+ years Superhost, international luxury hotel background, selective portfolio
-- Contact: info@christianopropertymanagement.com, +35679790202
+${BUSINESS_CONTEXT}
 
-## AVAILABLE BLOCK TYPES
+## AVAILABLE BLOCK TYPES (35 total)
+${blockList}
+
+## BLOCK SCHEMAS (detailed)
 ${schemaSummary}
 
 ## RESPONSE GUIDELINES
 - Be concise and actionable — users are editing a live page
 - When suggesting blocks, use exact block type names from the list above
 - When suggesting props, reference exact field names from the schemas
-- For copywriting, match the premium tone described above
+- For copywriting, match the premium tone: sophisticated, warm, Mediterranean luxury
 - If the user asks about generating a full page, suggest they use the "Build with AI" feature
-- If the user asks about editing a specific block, suggest they use the block editor's quick actions
+- If the user asks about editing a specific block, suggest they use the block editor's "AI Edit" button
 - Format code/JSON in markdown code blocks when relevant
 - Keep responses under 300 words unless the user asks for detailed help`;
 
   if (context) {
-    // Add page context if available
     if (context.pageStructure) {
       systemPrompt += `\n\n## CURRENT PAGE STRUCTURE\nThe user's current page has these blocks:\n${JSON.stringify(context.pageStructure, null, 2)}`;
     }
@@ -101,15 +94,20 @@ ${schemaSummary}
 }
 
 // ============================================================
-// POST handler
+// POST handler — supports conversation history
 // ============================================================
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { message, context } = body as {
+    const {
+      message,
+      context,
+      history,
+    } = body as {
       message?: string;
       context?: Record<string, unknown>;
+      history?: Array<{ role: "user" | "assistant"; content: string }>;
     };
 
     if (!message || typeof message !== "string") {
@@ -130,20 +128,41 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildChatSystemPrompt(context as Record<string, unknown> | undefined);
 
-    const response = await callAI(systemPrompt, message, 20000, 1);
+    // Build messages array with conversation history (max 10 previous messages for context)
+    const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+      { role: "system", content: systemPrompt },
+    ];
+
+    // Add conversation history (limited to last 10 exchanges to stay within token limits)
+    if (Array.isArray(history) && history.length > 0) {
+      const recentHistory = history.slice(-10);
+      for (const entry of recentHistory) {
+        if (entry.role === "user" || entry.role === "assistant") {
+          messages.push({
+            role: entry.role,
+            content: entry.content.substring(0, 1000), // Truncate long messages
+          });
+        }
+      }
+    }
+
+    // Add current message
+    messages.push({ role: "user", content: message });
+
+    const response = await callAI(messages, 20000, 1);
 
     console.log("[chat] Response length:", response.length);
 
     return NextResponse.json({ success: true, response });
   } catch (err) {
     console.error("[chat] Error:", err);
-    const message = err instanceof Error ? err.message : "Unknown error";
-    const code = message.includes("timeout") || message.includes("timed out")
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const code = errorMessage.includes("timeout") || errorMessage.includes("timed out")
       ? "AI_TIMEOUT"
       : "AI_FAILURE";
 
     return NextResponse.json(
-      { success: false, error: message, code },
+      { success: false, error: errorMessage, code },
       { status: 500 }
     );
   }

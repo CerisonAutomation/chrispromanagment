@@ -63,4 +63,5 @@ export const Timeline = {
       </>
     );
   },
+  ai: { instructions: "Company history or guest journey timeline. Each item needs year/date and brief description (1-2 sentences)." },
 };

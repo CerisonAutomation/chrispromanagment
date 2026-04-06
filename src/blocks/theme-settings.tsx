@@ -219,4 +219,5 @@ export const ThemeSettings = {
       </>
     );
   },
+  ai: { instructions: "Theme customization block for accent color and background shade. Default accent gold #c8a96a." },
 };
