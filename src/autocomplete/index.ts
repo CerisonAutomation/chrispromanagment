@@ -4,6 +4,7 @@
 
 export * from './types';
 export * from './fuzzy-match';
+export * from './trie-index'; // O(1) prefix search optimization
 export * from './service';
 export * from './providers';
 export { 

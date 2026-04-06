@@ -175,10 +175,12 @@ const nextConfig: NextConfig = {
   },
 
   // =============================================================================
-  // TYPE CHECKING (disabled for faster builds)
+  // TYPE CHECKING - ENABLED for production safety
   // =============================================================================
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
+    // Additional type checking for stricter mode
+    tsconfigPath: "./tsconfig.json",
   },
 
   // =============================================================================

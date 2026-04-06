@@ -3,5 +3,30 @@
   "buildCommand": "bunx prisma generate && bun run build",
   "installCommand": "bun install",
   "framework": "nextjs",
-  "outputDirectory": ".next/standalone"
+  "outputDirectory": ".next/standalone",
+  "regions": ["iad1", "fra1"],
+  "functions": {
+    ".next/server/**/*.js": {
+      "maxDuration": 30
+    },
+    "api/**/*.ts": {
+      "maxDuration": 10
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

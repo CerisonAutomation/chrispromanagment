@@ -123,7 +123,6 @@ model CmsPage {
   audits      AuditLog[]
   edits       PageEdit[]
   abTests     ABTest[]
-  webhooks    WebhookEvent[]
   calendarEvents ContentCalendar[]
   
   // Cache
@@ -397,7 +396,7 @@ model Webhook {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
-  events_list WebhookEvent[]
+  deliveries WebhookDelivery[]
   
   @@index([isActive])
 }
