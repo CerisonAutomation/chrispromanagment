@@ -58,7 +58,7 @@ export async function POST(
     }
 
     // Parse current page data
-    const currentData = page.data ? JSON.parse(page.data) : { content: [], root: { props: {} } };
+    const currentData = page.draftData ? JSON.parse(page.draftData) : { content: [], root: { props: {} } };
     const currentContent: SyncChange[] = currentData.content || [];
 
     // Detect conflicts (blocks modified since last sync)
@@ -123,7 +123,7 @@ export async function POST(
     await db.cmsPage.update({
       where: { slug },
       data: {
-        data: JSON.stringify(updatedData),
+        draftData: JSON.stringify(updatedData),
         updatedAt: new Date(),
       },
     });
@@ -166,7 +166,7 @@ export async function GET(
       }, { status: 404 });
     }
 
-    const data = page.data ? JSON.parse(page.data) : { content: [], root: { props: {} } };
+    const data = page.draftData ? JSON.parse(page.draftData) : { content: [], root: { props: {} } };
 
     return NextResponse.json<SyncResponse>({
       success: true,

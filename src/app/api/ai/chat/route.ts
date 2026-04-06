@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import {BLOCK_REGISTRY, buildSchemaSummary} from "@/lib/block-registry";
 import {AI_SYSTEM_PROMPT, BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT} from "@/lib/ai-context";
-import {createApiError, createRequestLogger, ErrorCodes, withLogging} from "@/lib/error";
+import {createApiError, createRequestLogger, ErrorCodes, ErrorSeverity, withLogging} from "@/lib/error";
 
 // ============================================================
 // Shared helpers
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
     const response = await withLogging(
         () => callAI(messages, 20000, 1),
         "AI chat",
-        log.info
+        ErrorSeverity.INFO
     );
 
     log.info("Chat response sent", {responseLength: response.length});

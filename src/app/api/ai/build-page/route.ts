@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import {BLOCK_REGISTRY, buildSchemaSummary} from "@/lib/block-registry";
 import {BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT, PAGE_GENERATION_PROMPT} from "@/lib/ai-context";
-import {createApiError, createRequestLogger, ErrorCodes, withLogging} from "@/lib/error";
+import {createApiError, createRequestLogger, ErrorCodes, ErrorCode, ErrorSeverity, withLogging} from "@/lib/error";
 
 // ============================================================
 // Request-scoped logging
@@ -215,7 +215,7 @@ export async function POST(req: NextRequest) {
     const rawResponse = await withLogging(
         () => callAI(systemPrompt, userMessage, 30000, 1),
         "AI page generation",
-        log.info
+        ErrorSeverity.INFO
     );
 
     const parsed = extractJSON(rawResponse) as Record<string, unknown>;
@@ -278,7 +278,7 @@ export async function POST(req: NextRequest) {
     log.error("Page build failed", error, {duration});
 
     const message = error.message;
-    let code = ErrorCodes.INTERNAL_ERROR;
+    let code: ErrorCode = ErrorCodes.INTERNAL_ERROR;
 
     if (message.includes("timeout") || message.includes("timed out")) {
       code = ErrorCodes.AI_TIMEOUT;

@@ -213,10 +213,10 @@ export async function POST(request: NextRequest) {
     if (property) {
       const overlappingBookings = await db.booking.count({
         where: {
-          propertyId,
+          propertyId: propertyId as string,
           status: { in: ["pending", "confirmed"] },
-          checkIn: { lt: checkOut },
-          checkOut: { gt: checkIn },
+          checkIn: { lt: checkOut as string },
+          checkOut: { gt: checkIn as string },
         },
       });
 

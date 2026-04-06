@@ -68,7 +68,7 @@ export async function GET(
       await db.auditLog.create({
         data: {
           pageId: page.id,
-          action: "view",
+          action: "VIEW",
           details: JSON.stringify({source: "public", status}),
         },
       });
@@ -158,7 +158,7 @@ export async function PUT(
     await db.auditLog.create({
       data: {
         pageId: page.id,
-        action: saveAsDraft ? "save_draft" : "publish",
+        action: saveAsDraft ? "UPDATE" : "PUBLISH",
         details: JSON.stringify({changes}),
       },
     });
@@ -195,7 +195,7 @@ export async function DELETE(
     await db.auditLog.create({
       data: {
         pageId: page.id,
-        action: "delete",
+        action: "DELETE",
         details: JSON.stringify({slug, deletedAt: new Date().toISOString()}),
       },
     });

@@ -277,13 +277,13 @@ export async function POST() {
           update: {
             title: page.title,
             data: JSON.stringify(page.data),
-            status: "published",
+            status: "PUBLISHED",
           },
           create: {
             slug,
             title: page.title,
             data: JSON.stringify(page.data),
-            status: "published",
+            status: "PUBLISHED",
           },
         });
         results.push({ type: "page", slug: result.slug, title: result.title });

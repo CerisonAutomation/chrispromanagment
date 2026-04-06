@@ -62,14 +62,15 @@ export async function GET(request: NextRequest) {
     if (minPrice) {
       const parsed = parseFloat(minPrice);
       if (!isNaN(parsed)) {
-        where.basePrice = { ...((where.basePrice as Prisma.FloatNullableFilter) || {}), gte: parsed };
+        where.basePrice = { gte: parsed };
       }
     }
 
     if (maxPrice) {
       const parsed = parseFloat(maxPrice);
       if (!isNaN(parsed)) {
-        where.basePrice = { ...((where.basePrice as Prisma.FloatNullableFilter) || {}), lte: parsed };
+        const currentFilter = where.basePrice || {};
+        where.basePrice = { gte: (currentFilter as {gte?: number}).gte, lte: parsed };
       }
     }
 

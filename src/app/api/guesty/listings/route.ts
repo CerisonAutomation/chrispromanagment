@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     log.info("Listings fetched", {
       count: result.listings?.length || 0,
-      total: result.total,
+      total: result.count,
     });
 
     return NextResponse.json(result);

@@ -71,7 +71,7 @@ const withFields = (
 ): Record<string, unknown> => {
   return {
     ...component,
-    fields: { ...component.fields, ...fields },
+    fields: { ...(typeof component.fields === 'object' && component.fields !== null ? component.fields : {}), ...fields },
   };
 };
 
