@@ -19,6 +19,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.1.1",
     "@mdxeditor/editor": "^3.53.1",
+    "@measured/puck": "^0.20.2",
     "@prisma/client": "^6.11.1",
     "@puckeditor/cloud-client": "^0.6.0",
     "@puckeditor/core": "^0.21.2",
@@ -54,6 +55,7 @@
     "@tanstack/react-query": "^5.82.0",
     "@tanstack/react-query-devtools": "^5.96.2",
     "@tanstack/react-table": "^8.21.3",
+    "@types/uuid": "^11.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -85,11 +87,11 @@
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "uuid": "^11.1.0",
+    "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "z-ai-web-dev-sdk": "^0.0.17",
     "zod": "^4.0.2",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
