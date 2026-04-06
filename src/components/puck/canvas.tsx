@@ -3,11 +3,10 @@
 import {memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAppStore} from "@/store/puck-editor-store";
 import getClassNameFactory from "@/lib/get-class-name-factory";
-import styles from "./styles.module.css";
 import {Loader} from "@/components/ui/loader";
 import {ViewportControls} from "./viewport-controls";
 
-const getClassName = getClassNameFactory("PuckCanvas", styles);
+const getClassName = getClassNameFactory("puck-canvas");
 
 export type CanvasProps = {
   children?: ReactNode;

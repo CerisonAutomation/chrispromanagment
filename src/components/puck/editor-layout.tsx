@@ -3,15 +3,14 @@
 import {ReactNode, useCallback, useEffect, useState} from "react";
 import {useAppStore} from "@/store/puck-editor-store";
 import getClassNameFactory from "@/lib/get-class-name-factory";
-import styles from "./styles.module.css";
 import {MenuBar} from "./menu-bar";
 import {ResizeHandle} from "./resize-handle";
 import {Canvas} from "./canvas";
 import {Button, IconButton} from "@/components/ui/button";
 import {Globe, PanelLeft, PanelRight} from "lucide-react";
 
-const getClassName = getClassNameFactory("PuckLayout", styles);
-const getClassNameEditor = getClassNameFactory("PuckEditor", styles);
+const getClassName = getClassNameFactory("puck-layout");
+const getClassNameEditor = getClassNameFactory("puck-editor");
 
 export type EditorLayoutProps = {
   children?: ReactNode;
@@ -116,7 +115,7 @@ export const EditorLayout = ({
   const ready = status === "READY";
 
   return (
-    <div className={getClassNameEditor()} data-puck-editor>
+    <div className="puck-editor" data-puck-editor>
       {/* Header */}
       {header && <div className={getClassName("header")}>{header}</div>}
 
