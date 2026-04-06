@@ -5,7 +5,6 @@ import type { BlockData } from "@/lib/block-types";
 import { toast } from "sonner";
 import {
   Sparkles,
-  Loader2,
   X,
   Check,
   Copy,
@@ -18,6 +17,8 @@ import {
   CreditCard,
   Phone,
   CalendarCheck,
+  Send,
+  RotateCcw,
 } from "lucide-react";
 import {
   Dialog,
@@ -27,8 +28,21 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputAction,
+} from "@/components/ui/prompt-input";
+import {
+  PromptSuggestion,
+} from "@/components/ui/prompt-suggestion";
+import {
+  TextShimmerLoader,
+  Loader,
+} from "@/components/ui/loader";
+import { BlurFade } from "@/components/effects/blur-fade";
 
 // ============================================================
 // TYPES & CONSTANTS
@@ -93,6 +107,16 @@ const PRESET_TEMPLATES = [
   },
 ];
 
+const QUICK_SUGGESTIONS = [
+  "A luxury landing page for villa rentals",
+  "Property portfolio with 6 featured listings",
+  "Guest testimonials with 5-star ratings",
+  "About page with our Superhost story",
+  "Contact page with map and form",
+  "Pricing tiers for management services",
+  "FAQ section for common guest questions",
+];
+
 const STATUS_MESSAGES = [
   "Analyzing your requirements...",
   "Crafting page structure...",
@@ -119,7 +143,6 @@ export default function AiPageBuilder({
   const [statusIndex, setStatusIndex] = useState(0);
   const [blockSummary, setBlockSummary] = useState<string[]>([]);
   const abortRef = useRef<AbortController | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Cycling status messages during loading
   useEffect(() => {
@@ -158,12 +181,13 @@ export default function AiPageBuilder({
     (template: (typeof PRESET_TEMPLATES)[0]) => {
       setSelectedTemplate(template.id);
       setCustomInstruction(template.prompt);
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
     },
     []
   );
+
+  const handleSelectSuggestion = useCallback((suggestion: string) => {
+    setCustomInstruction(suggestion);
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     if (!customInstruction.trim()) {
@@ -327,18 +351,54 @@ export default function AiPageBuilder({
                 </div>
               </div>
 
-              {/* Custom instruction */}
+              {/* prompt-kit: Prompt Input with AI styling */}
               <div>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
-                  Custom Instructions
+                  Describe Your Page
                 </p>
-                <Textarea
-                  ref={textareaRef}
+                <PromptInput
                   value={customInstruction}
-                  onChange={(e) => setCustomInstruction(e.target.value)}
-                  placeholder="Describe the page you want to build... e.g. 'A luxury property listing page with a hero, property gallery, amenities, and booking form'"
-                  className="min-h-[120px] resize-none border-cpm-border bg-cpm-bg-secondary text-sm text-cpm-text-primary placeholder:text-cpm-text-tertiary focus:border-cpm-accent/40 focus-visible:ring-cpm-accent/10 focus-visible:ring-offset-0"
-                />
+                  onValueChange={setCustomInstruction}
+                  onSubmit={handleGenerate}
+                  maxHeight={180}
+                  className="border-cpm-border bg-cpm-bg-secondary focus-within:ring-1 focus-within:ring-cpm-accent/20"
+                >
+                  <PromptInputTextarea
+                    placeholder="Describe the page you want to build... e.g. 'A luxury property listing page with a hero, property gallery, amenities, and booking form'"
+                    className="placeholder:text-cpm-text-tertiary"
+                  />
+                  <PromptInputActions className="px-2 pb-1.5">
+                    <PromptInputAction tooltip="Generate with AI">
+                      <Button
+                        size="sm"
+                        disabled={!customInstruction.trim()}
+                        className="h-8 w-8 rounded-lg bg-cpm-accent p-0 text-cpm-bg-primary hover:bg-cpm-accent-hover disabled:opacity-40"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </PromptInputAction>
+                  </PromptInputActions>
+                </PromptInput>
+              </div>
+
+              {/* prompt-kit: Prompt Suggestions */}
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
+                  Or Try a Suggestion
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_SUGGESTIONS.map((suggestion) => (
+                    <PromptSuggestion
+                      key={suggestion}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      variant="outline"
+                      size="sm"
+                      className="border-cpm-border bg-cpm-bg-secondary text-cpm-text-secondary hover:border-cpm-accent/20 hover:text-cpm-accent hover:bg-cpm-accent/5 transition-all duration-200"
+                    >
+                      {suggestion}
+                    </PromptSuggestion>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -346,30 +406,36 @@ export default function AiPageBuilder({
           {/* === LOADING STAGE === */}
           {stage === "loading" && (
             <div className="flex flex-col items-center justify-center px-6 py-16">
-              <div className="relative mb-6">
-                {/* Spinning outer ring */}
-                <div className="h-16 w-16 rounded-full border-2 border-cpm-border border-t-cpm-accent animate-spin" />
-                {/* Pulsing inner dot */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="h-6 w-6 rounded-full bg-cpm-accent/20 animate-pulse" />
+              <BlurFade delay={0.1}>
+                <div className="mb-8 flex flex-col items-center gap-4">
+                  {/* prompt-kit: ShimmerLoader for premium loading text */}
+                  <TextShimmerLoader
+                    text="Generating your page"
+                    size="lg"
+                    className="text-cpm-text-primary"
+                  />
+                  <div className="mt-1">
+                    <Loader variant="dots" size="md" className="text-cpm-accent" />
+                  </div>
                 </div>
-              </div>
-              <p className="mb-2 text-sm font-medium text-cpm-text-primary">
-                Generating your page...
-              </p>
-              <p className="text-xs text-cpm-text-secondary transition-all duration-500">
-                {STATUS_MESSAGES[statusIndex]}
-              </p>
-              <button
-                onClick={() => {
-                  abortRef.current?.abort();
-                  handleBack();
-                }}
-                className="mt-6 flex items-center gap-1.5 text-xs text-cpm-text-tertiary transition-colors hover:text-cpm-text-secondary"
-              >
-                <X className="h-3.5 w-3.5" />
-                Cancel
-              </button>
+              </BlurFade>
+              <BlurFade delay={0.3}>
+                <p className="text-xs text-cpm-text-secondary transition-all duration-500">
+                  {STATUS_MESSAGES[statusIndex]}
+                </p>
+              </BlurFade>
+              <BlurFade delay={0.5}>
+                <button
+                  onClick={() => {
+                    abortRef.current?.abort();
+                    handleBack();
+                  }}
+                  className="mt-6 flex items-center gap-1.5 rounded-lg border border-cpm-border px-4 py-2 text-xs text-cpm-text-tertiary transition-all hover:border-cpm-accent/20 hover:text-cpm-text-secondary"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Cancel
+                </button>
+              </BlurFade>
             </div>
           )}
 
@@ -419,11 +485,7 @@ export default function AiPageBuilder({
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                   View JSON BlockData
                 </summary>
@@ -519,7 +581,7 @@ export default function AiPageBuilder({
                       onClick={handleRegenerate}
                       className="flex items-center gap-1.5 rounded-lg border border-cpm-border px-3 py-2 text-xs text-cpm-text-secondary transition-all hover:border-cpm-accent/20 hover:text-cpm-text-primary"
                     >
-                      <Wand2 className="h-3.5 w-3.5" />
+                      <RotateCcw className="h-3.5 w-3.5" />
                       Regenerate
                     </button>
                     <Button

@@ -23,8 +23,18 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputAction,
+} from "@/components/ui/prompt-input";
+import {
+  TextShimmerLoader,
+  Loader,
+} from "@/components/ui/loader";
+import { BlurFade } from "@/components/effects/blur-fade";
 
 // ============================================================
 // TYPES & CONSTANTS
@@ -89,19 +99,12 @@ export default function AiBlockEditor({
 }: AiBlockEditorProps) {
   const [instruction, setInstruction] = useState("");
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
-  const [completedActionId, setCompletedActionId] = useState<string | null>(
-    null
-  );
+  const [completedActionId, setCompletedActionId] = useState<string | null>(null);
   const [errorActionId, setErrorActionId] = useState<string | null>(null);
   const [customLoading, setCustomLoading] = useState(false);
-  const [generatedProps, setGeneratedProps] = useState<
-    Record<string, unknown> | null
-  >(null);
-  const [previousProps, setPreviousProps] = useState<
-    Record<string, unknown> | null
-  >(null);
+  const [generatedProps, setGeneratedProps] = useState<Record<string, unknown> | null>(null);
+  const [previousProps, setPreviousProps] = useState<Record<string, unknown> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -171,21 +174,18 @@ export default function AiBlockEditor({
           setGeneratedProps(newProps);
           setCustomLoading(false);
         } else {
-          // Quick action: auto-apply with confirmation
           setPreviousProps({ ...currentProps });
           onApply(newProps);
           setLoadingActionId(null);
           setCompletedActionId(actionId);
 
-          // Auto-dismiss confirmation after 2s
           setTimeout(() => {
             setCompletedActionId(null);
           }, 2000);
         }
       } catch (err) {
         if ((err as Error).name === "AbortError") return;
-        const message =
-          err instanceof Error ? err.message : "Failed to edit block";
+        const message = err instanceof Error ? err.message : "Failed to edit block";
 
         if (actionId === "custom") {
           setCustomLoading(false);
@@ -218,14 +218,13 @@ export default function AiBlockEditor({
   }, [previousProps, onApply]);
 
   const handleRetry = useCallback(
-    (actionId: string, instruction: string) => {
+    (actionId: string, inst: string) => {
       setErrorActionId(null);
-      handleEdit(actionId, instruction);
+      handleEdit(actionId, inst);
     },
     [handleEdit]
   );
 
-  // Format block type for display
   const formatBlockType = (type: string) =>
     type.replace(/([A-Z])/g, " $1").trim();
 
@@ -306,7 +305,7 @@ export default function AiBlockEditor({
                         }`}
                       >
                         {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-cpm-accent" />
+                          <Loader variant="dots" size="sm" className="text-cpm-accent" />
                         ) : isCompleted ? (
                           <Check className="h-4 w-4 text-emerald-400" />
                         ) : isError ? (
@@ -349,18 +348,38 @@ export default function AiBlockEditor({
               <div className="h-px flex-1 bg-cpm-border" />
             </div>
 
-            {/* Custom Instruction */}
+            {/* prompt-kit: Prompt Input for custom instruction */}
             <div>
               <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
                 Custom Edit Instruction
               </p>
-              <Textarea
-                ref={textareaRef}
+              <PromptInput
                 value={instruction}
-                onChange={(e) => setInstruction(e.target.value)}
-                placeholder="e.g. 'Change the heading to be more inviting' or 'Add information about our airport transfer service'"
-                className="min-h-[100px] resize-none border-cpm-border bg-cpm-bg-secondary text-sm text-cpm-text-primary placeholder:text-cpm-text-tertiary focus:border-cpm-accent/40 focus-visible:ring-cpm-accent/10 focus-visible:ring-offset-0"
-              />
+                onValueChange={setInstruction}
+                onSubmit={() => handleEdit("custom", instruction)}
+                maxHeight={120}
+                className="border-cpm-border bg-cpm-bg-secondary focus-within:ring-1 focus-within:ring-cpm-accent/20"
+              >
+                <PromptInputTextarea
+                  placeholder="e.g. 'Change the heading to be more inviting' or 'Add information about our airport transfer service'"
+                  className="placeholder:text-cpm-text-tertiary"
+                />
+                <PromptInputActions className="px-2 pb-1.5">
+                  <PromptInputAction tooltip="Edit with AI">
+                    <Button
+                      size="sm"
+                      disabled={!instruction.trim() || customLoading}
+                      className="h-8 w-8 rounded-lg bg-cpm-accent p-0 text-cpm-bg-primary hover:bg-cpm-accent-hover disabled:opacity-40"
+                    >
+                      {customLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                  </PromptInputAction>
+                </PromptInputActions>
+              </PromptInput>
             </div>
           </div>
         </div>
