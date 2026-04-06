@@ -433,10 +433,12 @@ export function UnifiedAdminDashboard({ navigate }: UnifiedAdminDashboardProps) 
   const fetchPages = async () => {
     try {
       const res = await fetch("/api/pages");
-      const json = await res.json();
-      setPages(json.pages || []);
+      const data = await res.json();
+      // API returns array directly, not { pages: [] }
+      setPages(Array.isArray(data) ? data : data.pages || []);
     } catch (error) {
       toast.error("Failed to load pages");
+      console.error("Failed to fetch pages:", error);
     } finally {
       setIsLoading(false);
     }

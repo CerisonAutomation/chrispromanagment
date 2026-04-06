@@ -1805,16 +1805,29 @@ function PageEditor({
   const lastSavedRef = useRef<string>("");
 
   const fetchPage = useCallback(async () => {
+    // Handle "new" page creation - don't fetch, just create empty
+    if (slug === "new") {
+      setPageData(createEmptyBlockData("New Page"));
+      setPageTitle("New Page");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch(`/api/pages/${slug}`);
       if (res.ok) {
         const data = await res.json();
-        const blockData: BlockData = data.data || createEmptyBlockData(slug);
+        const blockData: BlockData = data.draftData || data.data || createEmptyBlockData(slug);
         setPageData(blockData);
         setPageTitle(data.title || slug);
         lastSavedRef.current = JSON.stringify(blockData);
         setIsDirty(false);
+      } else if (res.status === 404) {
+        // Page doesn't exist - create new empty page with this slug
+        setPageData(createEmptyBlockData(slug));
+        setPageTitle(slug);
+        setIsDirty(true);
       } else {
         toast.error("Failed to load page");
         navigate("#/admin");
@@ -2529,6 +2542,11 @@ function PageEditor({
 export default function HomePage() {
   const { route, navigate } = useHashRouter();
   const { type, slug } = parseRoute(route);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [pageData, setPageData] = useState<BlockData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -2615,6 +2633,18 @@ export default function HomePage() {
   );
 
   // ---- RENDER ----
+
+  // Prevent hydration mismatch by rendering null until mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-cpm-bg-primary">
+        <div className="h-16" />
+        <div className="flex items-center justify-center py-32">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-cpm-accent/30 border-t-cpm-accent" />
+        </div>
+      </div>
+    );
+  }
 
   // Login screen
   if (showLogin) {

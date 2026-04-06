@@ -402,7 +402,7 @@ model Webhook {
   @@index([isActive])
 }
 
-model WebhookEvent {
+model WebhookDelivery {
   id          String   @id @default(cuid())
   webhookId   String
   
