@@ -13,16 +13,19 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { fetchMultipleStocks, fetchMarketOverview, fetchGlobalMacro } from "./dataFetcher";
-import { analyzeMultipleStocks, analyzeChartImage } from "./analyzer";
-import { analyzeDividends, formatDividendMarkdown } from "./dividend";
-import { scanRumors, formatRumorMarkdown } from "./rumorScanner";
+import {fetchGlobalMacro, fetchMarketOverview, fetchMultipleStocks} from "./dataFetcher";
+import {analyzeChartImage, analyzeMultipleStocks} from "./analyzer";
+import {analyzeDividends, formatDividendMarkdown} from "./dividend";
+import {formatRumorMarkdown, scanRumors} from "./rumorScanner";
 import {
-  addToWatchlist, removeFromWatchlist,
-  listWatchlist, checkAlerts,
-  formatWatchlistMarkdown, formatAlertsMarkdown,
+    addToWatchlist,
+    checkAlerts,
+    formatAlertsMarkdown,
+    formatWatchlistMarkdown,
+    listWatchlist,
+    removeFromWatchlist,
 } from "./watchlist";
-import { SkillInput, StockInput, OutputFormat, AnalysisResult, PositionInfo, Verdict } from "./types";
+import {AnalysisResult, OutputFormat, PositionInfo, StockInput, Verdict} from "./types";
 
 // ── 输入解析 ──────────────────────────────────────────────
 

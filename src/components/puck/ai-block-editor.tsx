@@ -1,40 +1,24 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {toast} from "sonner";
 import {
-  Sparkles,
-  Loader2,
-  X,
-  Check,
-  Wand2,
-  PenTool,
   Briefcase,
+  Check,
   FileText,
-  Minimize2,
   Languages,
+  Loader2,
+  Minimize2,
+  PenTool,
   RotateCcw,
+  Sparkles,
+  Wand2,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputActions,
-  PromptInputAction,
-} from "@/components/ui/prompt-input";
-import {
-  TextShimmerLoader,
-  Loader,
-} from "@/components/ui/loader";
-import { BlurFade } from "@/components/effects/blur-fade";
+import {Dialog, DialogContent, DialogDescription, DialogTitle,} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea,} from "@/components/ui/prompt-input";
+import {Loader,} from "@/components/ui/loader";
 
 // ============================================================
 // TYPES & CONSTANTS

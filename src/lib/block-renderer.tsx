@@ -7,7 +7,7 @@
 
 import React from "react";
 import config from "@/puck.config";
-import type { BlockData, BlockItem } from "@/lib/block-types";
+import type {BlockData, BlockItem} from "@/lib/block-types";
 
 // ---------------------------------------------------------------------------
 // Block Definition Type (matches puck.config structure)

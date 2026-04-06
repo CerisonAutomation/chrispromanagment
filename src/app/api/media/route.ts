@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 import manifest from "@/lib/media-manifest";
 
 export async function GET() {

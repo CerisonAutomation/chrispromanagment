@@ -1,0 +1,148 @@
+.layerTree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.layer {
+  position: relative;
+}
+
+.layer.inner {
+  position: relative;
+}
+
+.layer.clickable {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 12px;
+  padding-left: calc(12px + var(--depth, 0) * 16px);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 100ms ease;
+}
+
+.layer.clickable:hover {
+  background: var(--puck-color-grey-2);
+}
+
+.layer.isSelected > .inner > .clickable {
+  background: var(--puck-color-azure-soft);
+}
+
+.layer.isSelected > .inner > .clickable:hover {
+  background: var(--puck-color-azure-soft);
+}
+
+.layer.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--puck-color-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.layer.chevron:hover {
+  color: var(--puck-color-default);
+}
+
+.layer.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--puck-color-secondary);
+  flex-shrink: 0;
+}
+
+.layer.isSelected .layer.icon {
+  color: var(--puck-color-azure);
+}
+
+.layer.name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--puck-color-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layer.isSelected .layer.name {
+  font-weight: 500;
+}
+
+/* Zone styling */
+.layer.zones {
+  margin-top: 0;
+}
+
+.layer.zone {
+  margin-left: 8px;
+  border-left: 1px solid var(--puck-color-border);
+}
+
+.zoneTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  padding-left: calc(12px + var(--depth, 0) * 16px + 8px);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--puck-color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.zoneIcon {
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+/* Helper text */
+.helper {
+  padding: 8px 12px;
+  padding-left: calc(12px + var(--depth, 0) * 16px);
+  font-size: 12px;
+  color: var(--puck-color-secondary);
+  font-style: italic;
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--puck-color-secondary);
+}
+
+/* Hover highlight */
+.layer:not(.isSelected):hover {
+  background: var(--puck-color-grey-2);
+}
+
+.layer:not(.isSelected):hover > .inner > .clickable {
+  background: transparent;
+}
+
+/* Indentation based on depth */
+.layer[data-depth="0"] { --depth: 0; }
+.layer[data-depth="1"] { --depth: 1; }
+.layer[data-depth="2"] { --depth: 2; }
+.layer[data-depth="3"] { --depth: 3; }
+.layer[data-depth="4"] { --depth: 4; }
+.layer[data-depth="5"] { --depth: 5; }

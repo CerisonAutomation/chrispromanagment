@@ -9,28 +9,28 @@
 // - Mapping between Guesty data shapes and our local Property/Booking models
 // =============================================================================
 
-import { db } from "@/lib/db";
+import {db} from "@/lib/db";
 import type {
-  GuestyListing,
-  GuestyListingsResponse,
-  GuestyCalendarResponse,
+  GuestyAcceptQuoteResponse,
+  GuestyAvailabilityQuery,
   GuestyCalendarDay,
+  GuestyCalendarResponse,
+  GuestyCreateQuoteBody,
+  GuestyListing,
+  GuestyListingsQuery,
+  GuestyListingsResponse,
+  GuestyListingsResult,
+  GuestyPaymentGatewaysResponse,
+  GuestyPropertyType,
   GuestyQuote,
   GuestyQuoteCreated,
-  GuestyCreateQuoteBody,
-  GuestyAcceptQuoteResponse,
-  GuestyPaymentGatewaysResponse,
-  GuestyReviewsResponse,
-  GuestyListingsQuery,
-  GuestyAvailabilityQuery,
+  GuestyQuoteResult,
   GuestyReviewsQuery,
-  GuestyPropertyType,
+  GuestyReviewsResponse,
+  MappedAvailability,
   MappedProperty,
   MappedQuote,
-  MappedAvailability,
   MappedReview,
-  GuestyListingsResult,
-  GuestyQuoteResult,
 } from "@/lib/guesty-types";
 
 // ---------------------------------------------------------------------------

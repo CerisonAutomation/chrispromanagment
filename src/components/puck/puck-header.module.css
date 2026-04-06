@@ -1,0 +1,125 @@
+.puckHeader {
+  --puck-header-height: 52px;
+  --puck-color-azure: #3b82f6;
+  --puck-color-azure-soft: rgba(59, 130, 246, 0.1);
+  --puck-color-bg: #ffffff;
+  --puck-color-border: #e5e5e5;
+  --puck-color-default: #1a1a1a;
+  --puck-color-secondary: #666666;
+  --puck-space-2: 8px;
+  --puck-space-4: 16px;
+  --puck-space-3: 12px;
+
+  height: var(--puck-header-height);
+  background: var(--puck-color-bg);
+  border-bottom: 1px solid var(--puck-color-border);
+  flex-shrink: 0;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 var(--puck-space-4);
+  gap: var(--puck-space-4);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-1);
+}
+
+.leftSideBarToggle,
+.rightSideBarToggle {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-2);
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.titleText {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--puck-color-default);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.path {
+  padding: 2px 6px;
+  background: var(--puck-color-grey-2, #f5f5f5);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--puck-color-secondary);
+  white-space: nowrap;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-2);
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-2);
+}
+
+.headerActions {
+  display: contents;
+}
+
+/* Hide elements based on sidebar state */
+.puckHeader:not(.leftSideBarVisible) .leftSideBarToggle,
+.puckHeader:not(.rightSideBarVisible) .rightSideBarToggle {
+  opacity: 0.5;
+}
+
+/* Hide plugins section if needed */
+.puckHeader.hidePlugins .nav {
+  display: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 637px) {
+  .toggle {
+    display: none;
+  }
+
+  .title {
+    justify-content: flex-start;
+  }
+
+  .titleText {
+    font-size: 16px;
+  }
+
+  .menuButton {
+    display: flex;
+  }
+}
+
+/* Compact mode */
+@media (max-width: 480px) {
+  .path {
+    display: none;
+  }
+}

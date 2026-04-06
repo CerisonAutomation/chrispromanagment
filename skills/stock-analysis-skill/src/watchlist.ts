@@ -5,7 +5,7 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { WatchlistItem, WatchlistAlert, Market, Verdict } from "./types";
+import {Market, Verdict, WatchlistAlert, WatchlistItem} from "./types";
 
 const STORAGE_KEY = "watchlist-data";
 

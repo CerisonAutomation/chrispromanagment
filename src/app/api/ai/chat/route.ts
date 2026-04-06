@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
-import { BLOCK_REGISTRY, buildSchemaSummary, BLOCK_TYPE_NAMES } from "@/lib/block-registry";
-import { BUSINESS_CONTEXT, AI_SYSTEM_PROMPT, BLOCK_INSTRUCTIONS } from "@/lib/ai-context";
+import {BLOCK_REGISTRY, buildSchemaSummary} from "@/lib/block-registry";
+import {AI_SYSTEM_PROMPT, BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT} from "@/lib/ai-context";
+import {createApiError, createRequestLogger, ErrorCodes, withLogging} from "@/lib/error";
 
 // ============================================================
 // Shared helpers
@@ -12,11 +13,15 @@ async function callAI(
   timeoutMs: number = 20000,
   retries: number = 1
 ): Promise<string> {
+  const log = createRequestLogger(`chat-${Date.now()}`);
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+      log.info(`AI chat request attempt ${attempt + 1}`);
+
       const zai = await ZAI.create();
       const completion = await zai.chat.completions.create({
         messages,
@@ -25,20 +30,24 @@ async function callAI(
       clearTimeout(timer);
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error("Empty response from AI");
+
       return content;
     } catch (err) {
       clearTimeout(timer);
-      if ((err as Error).name === "AbortError") {
-        console.error("[chat] AI timeout on attempt", attempt + 1);
+      const error = err instanceof Error ? err : new Error(String(err));
+
+      if (error.name === "AbortError") {
+        log.warn(`AI timeout on attempt ${attempt + 1}`);
       } else {
-        console.error("[chat] AI error on attempt", attempt + 1, err);
+        log.error(`AI error on attempt ${attempt + 1}`, error);
       }
+
       if (attempt < retries) {
         await new Promise((r) => setTimeout(r, 500));
       } else {
-        throw new Error(
-          (err as Error).name === "AbortError" ? "AI request timed out" : "AI request failed"
-        );
+        throw error.name === "AbortError"
+            ? new Error("AI request timed out")
+            : error;
       }
     }
   }
@@ -52,7 +61,6 @@ async function callAI(
 function buildChatSystemPrompt(context?: Record<string, unknown>): string {
   const schemaSummary = buildSchemaSummary();
 
-  // Build concise block listing with AI instructions
   const blockList = Object.entries(BLOCK_INSTRUCTIONS)
     .filter(([type]) => BLOCK_REGISTRY[type])
     .map(([type, instruction]) => {
@@ -94,12 +102,23 @@ ${schemaSummary}
 }
 
 // ============================================================
-// POST handler — supports conversation history
+// POST handler
 // ============================================================
 
 export async function POST(req: NextRequest) {
+  const log = createRequestLogger(`chat-${Date.now()}`);
+
   try {
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+          createApiError("Invalid JSON in request body", ErrorCodes.VALIDATION_ERROR),
+          {status: 400}
+      );
+    }
+
     const {
       message,
       context,
@@ -112,57 +131,60 @@ export async function POST(req: NextRequest) {
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
-        { success: false, error: "message is required", code: "INVALID_REQUEST" },
+          createApiError("message is required", ErrorCodes.INVALID_REQUEST),
         { status: 400 }
       );
     }
 
     if (message.length > 3000) {
       return NextResponse.json(
-        { success: false, error: "message must be under 3000 characters", code: "INVALID_REQUEST" },
+          createApiError("message must be under 3000 characters", ErrorCodes.INVALID_REQUEST),
         { status: 400 }
       );
     }
 
-    console.log("[chat] Message:", message.substring(0, 100));
+    log.info("Chat message received", {messageLength: message.length});
 
     const systemPrompt = buildChatSystemPrompt(context as Record<string, unknown> | undefined);
 
-    // Build messages array with conversation history (max 10 previous messages for context)
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       { role: "system", content: systemPrompt },
     ];
 
-    // Add conversation history (limited to last 10 exchanges to stay within token limits)
     if (Array.isArray(history) && history.length > 0) {
       const recentHistory = history.slice(-10);
       for (const entry of recentHistory) {
         if (entry.role === "user" || entry.role === "assistant") {
           messages.push({
             role: entry.role,
-            content: entry.content.substring(0, 1000), // Truncate long messages
+            content: entry.content.substring(0, 1000),
           });
         }
       }
     }
 
-    // Add current message
     messages.push({ role: "user", content: message });
 
-    const response = await callAI(messages, 20000, 1);
+    const response = await withLogging(
+        () => callAI(messages, 20000, 1),
+        "AI chat",
+        log.info
+    );
 
-    console.log("[chat] Response length:", response.length);
+    log.info("Chat response sent", {responseLength: response.length});
 
     return NextResponse.json({ success: true, response });
   } catch (err) {
-    console.error("[chat] Error:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("Chat failed", error);
+
+    const errorMessage = error.message;
     const code = errorMessage.includes("timeout") || errorMessage.includes("timed out")
-      ? "AI_TIMEOUT"
-      : "AI_FAILURE";
+        ? ErrorCodes.AI_TIMEOUT
+        : ErrorCodes.AI_FAILURE;
 
     return NextResponse.json(
-      { success: false, error: errorMessage, code },
+        createApiError(errorMessage, code),
       { status: 500 }
     );
   }

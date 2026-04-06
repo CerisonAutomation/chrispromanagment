@@ -1,5 +1,5 @@
-import { db } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
+import {db} from "@/lib/db";
+import {NextRequest, NextResponse} from "next/server";
 
 const VALID_ACTIONS = ["confirm", "cancel", "complete"] as const;
 const STATUS_MAP: Record<string, string> = {

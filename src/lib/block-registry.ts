@@ -534,9 +534,9 @@ export const BLOCK_REGISTRY: Record<string, BlockSchema> = {
             type: "array",
             label: "Features",
             description: "Array of features for this column",
-            defaultItemProps: { text: "Feature", included: "true" },
+              defaultItemProps: {name: "Feature", included: "true"},
             arrayFields: {
-              text: { type: "text", description: "Feature description text" },
+                name: {type: "text", description: "Feature description text"},
               included: {
                 type: "select",
                 description: "Whether this feature is included",
@@ -558,9 +558,9 @@ export const BLOCK_REGISTRY: Record<string, BlockSchema> = {
           description: "For new property owners looking to get started.",
           highlighted: "false",
           features: [
-            { text: "Basic Listing Setup", included: "true" },
-            { text: "Dynamic Pricing", included: "true" },
-            { text: "24/7 Guest Communication", included: "false" },
+              {name: "Basic Listing Setup", included: "true"},
+              {name: "Dynamic Pricing", included: "true"},
+              {name: "24/7 Guest Communication", included: "false"},
           ],
         },
         {
@@ -568,9 +568,9 @@ export const BLOCK_REGISTRY: Record<string, BlockSchema> = {
           description: "Our most popular plan for serious property investors.",
           highlighted: "true",
           features: [
-            { text: "Full Listing Optimization", included: "true" },
-            { text: "Dynamic Pricing Strategy", included: "true" },
-            { text: "24/7 Guest Communication", included: "true" },
+              {name: "Full Listing Optimization", included: "true"},
+              {name: "Dynamic Pricing Strategy", included: "true"},
+              {name: "24/7 Guest Communication", included: "true"},
           ],
         },
       ],

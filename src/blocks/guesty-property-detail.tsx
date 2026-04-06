@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 function GuestyRenderStars(rating: number) {
   const stars = [];
@@ -34,7 +34,7 @@ export const GuestyPropertyDetail = {
   defaultProps: {
     defaultSlug: "valletta-apartment-1",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { defaultSlug: string };
     type MappedProp = {
       id: string; slug: string; title: string; nickname: string; description: string; summary: string;

@@ -1,4 +1,4 @@
-import { PROP_1, PROP_2, PROP_3, PROP_VALLETTA, PROP_MADLIENA, PROP_GZIRA } from "./helpers";
+import {PROP_1, PROP_2, PROP_3, PROP_GZIRA, PROP_MADLIENA, PROP_VALLETTA} from "./helpers";
 
 export const PropertyShowcase = {
   label: "Property Showcase",

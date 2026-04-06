@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 export const NewsletterSection = {
   label: "Newsletter Section",
@@ -15,7 +15,7 @@ export const NewsletterSection = {
     buttonText: "Subscribe",
     successMessage: "Thank you for subscribing! We'll be in touch soon.",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { heading: string; description: string; buttonText: string; successMessage: string };
     const [email, setEmail] = React.useState("");
     const [subscribed, setSubscribed] = React.useState(false);

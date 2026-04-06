@@ -1,0 +1,121 @@
+.viewportControls {
+  background: var(--puck-color-bg);
+  border: 1px solid var(--puck-color-border);
+  border-radius: 8px;
+  box-shadow: var(--puck-shadow-md);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--puck-color-border);
+  margin: 0 4px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--puck-color-default);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.button:hover {
+  background: var(--puck-color-grey-2);
+}
+
+.iconButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--puck-color-default);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.iconButton:hover {
+  background: var(--puck-color-grey-2);
+}
+
+.iconButton.active {
+  background: var(--puck-color-azure-soft);
+  color: var(--puck-color-azure);
+}
+
+.zoomButton {
+  min-width: 60px;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--puck-color-default);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 100ms ease;
+}
+
+.menuItem:hover {
+  background: var(--puck-color-grey-2);
+}
+
+.menuItem.active {
+  background: var(--puck-color-azure-soft);
+  color: var(--puck-color-azure);
+}
+
+.viewportSize {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--puck-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 768px) {
+  .viewportControls {
+    padding: 2px;
+  }
+
+  .button span:not(:first-child) {
+    display: none;
+  }
+
+  .divider:nth-child(4) {
+    display: none;
+  }
+}

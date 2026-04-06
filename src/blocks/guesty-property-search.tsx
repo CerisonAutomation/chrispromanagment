@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 export const GuestyPropertySearch = {
   label: "Guesty · Property Search",
@@ -13,7 +13,7 @@ export const GuestyPropertySearch = {
     subtitle: "Search our curated collection of luxury properties across Malta",
     buttonText: "Search Properties",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; subtitle: string; buttonText: string };
     const [location, setLocation] = React.useState("");
     const [checkIn, setCheckIn] = React.useState("");

@@ -1,81 +1,69 @@
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState,} from "react";
 import {
-  ArrowLeft,
-  ArrowUp,
-  CalendarCheck,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Copy,
-  Download,
-  Eye,
-  EyeOff,
-  ExternalLink,
-  FilePlus,
-  FileText,
-  GripVertical,
-  ImageIcon,
-  LayoutGrid,
-  LogOut,
-  Menu,
-  MoreVertical,
-  Pencil,
-  RefreshCw,
-  Search,
-  Shield,
-  Trash2,
-  Undo2,
-  Upload,
-  X,
+    ArrowLeft,
+    ArrowUp,
+    CalendarCheck,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Copy,
+    Download,
+    ExternalLink,
+    Eye,
+    EyeOff,
+    FilePlus,
+    FileText,
+    GripVertical,
+    ImageIcon,
+    LayoutGrid,
+    LogOut,
+    Menu,
+    MoreVertical,
+    Pencil,
+    RefreshCw,
+    Search,
+    Shield,
+    Trash2,
+    Undo2,
+    Upload,
+    X,
 } from "lucide-react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
-import { PageRenderer, getBlockTypeList, getBlockDefaults } from "@/lib/block-renderer";
-import { defaultPages } from "@/lib/default-pages";
-import type { BlockData, BlockItem, PageListItem } from "@/lib/block-types";
-import { createEmptyBlockData } from "@/lib/block-types";
+import {getBlockDefaults, getBlockTypeList, PageRenderer} from "@/lib/block-renderer";
+import type {BlockData, BlockItem, PageListItem} from "@/lib/block-types";
+import {createEmptyBlockData} from "@/lib/block-types";
 import MediaLibrary from "@/components/cms/media-library";
 import MaltaSVGLoader from "@/components/malta-svg-loader";
+import {UnifiedAdminDashboard} from "@/components/admin/unified-admin";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
+import {Sheet, SheetContent, SheetHeader, SheetTitle} from "@/components/ui/sheet";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Button} from "@/components/ui/button";
+import {Textarea} from "@/components/ui/textarea";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
-import { LOGO_URL } from "@/lib/images";
-import { SITE_BASE, NAV_LINKS, PAGE_META, ADMIN_AUTH, SITE_NAME } from "@/lib/constants";
+import {LOGO_URL} from "@/lib/images";
+import {ADMIN_AUTH, NAV_LINKS, PAGE_META, SITE_BASE} from "@/lib/constants";
 
 // ============================================================
 // ADMIN AUTH
@@ -617,14 +605,10 @@ function LoginScreen({
 }
 
 // ============================================================
-// TEMPLATE DATA HELPER
+// TEMPLATE DATA HELPER - DATABASE ONLY (no hardcoded templates)
 // ============================================================
 function getTemplateData(template: string): BlockData {
-  if (template === "blank") {
-    return createEmptyBlockData("New Page");
-  }
-  const def = defaultPages[template];
-  if (def) return def.data;
+    // Always create empty block data - templates should come from DB
   return createEmptyBlockData("New Page");
 }
 
@@ -2571,7 +2555,7 @@ export default function HomePage() {
     setAdminAuthed(isAdminAuthenticated());
   }, []);
 
-  // Fetch page data for public pages
+    // Fetch page data for public pages - DATABASE ONLY (no hardcoded fallbacks)
   useEffect(() => {
     if (type !== "page") {
       setPageData(null);
@@ -2588,19 +2572,13 @@ export default function HomePage() {
           if (data.data) {
             setPageData(data.data);
           } else {
-            // Fall back to default pages
-            const def = defaultPages[slug];
-            setPageData(def?.data ?? null);
+              setPageData(null);
           }
         } else {
-          // API failed, fall back to default pages
-          const def = defaultPages[slug];
-          setPageData(def?.data ?? null);
+            setPageData(null);
         }
       } catch {
-        // Network error, fall back to default pages
-        const def = defaultPages[slug];
-        setPageData(def?.data ?? null);
+          setPageData(null);
       } finally {
         setLoading(false);
       }
@@ -2645,10 +2623,10 @@ export default function HomePage() {
 
   // Admin dashboard
   if (type === "admin") {
-    return <AdminDashboard navigate={navigate} />;
+      return <UnifiedAdminDashboard navigate={navigate}/>;
   }
 
-  // Page editor
+    // Page editor - uses official Puck editor
   if (type === "editor") {
     return <PageEditor slug={slug} navigate={navigate} />;
   }

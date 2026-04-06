@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import React, { useCallback, useEffect, useState } from "react";
+import {cn} from "@/lib/utils";
+import {AnimatePresence, motion} from "framer-motion";
+import React, {useCallback, useEffect, useState} from "react";
 
 interface MorphingTextProps {
   texts: string[];

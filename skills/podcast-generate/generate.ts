@@ -13,7 +13,7 @@
 import ZAI from 'z-ai-web-dev-sdk';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);

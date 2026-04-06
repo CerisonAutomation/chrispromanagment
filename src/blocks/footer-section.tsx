@@ -1,7 +1,7 @@
-import { toast } from "sonner";
-import { LOGO_URL } from "@/lib/images";
-import { CONTACT, SOCIAL, COPYRIGHT } from "@/lib/constants";
-import { safeHref } from "./helpers";
+import {toast} from "sonner";
+import {LOGO_URL} from "@/lib/images";
+import {CONTACT, COPYRIGHT, SOCIAL} from "@/lib/constants";
+import {safeHref} from "./helpers";
 
 export const FooterSection = {
   label: "Footer Section",

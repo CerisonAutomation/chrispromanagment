@@ -26,7 +26,7 @@ export const TestimonialSection = {
       { name: "Eric", date: "October 2024", rating: "5", quote: "Exceptional service from start to finish. The property was immaculate, well-equipped, and perfectly located. Felt like staying at a luxury hotel with the comfort of a home." },
     ],
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; testimonials: { name: string; date: string; rating: string; quote: string }[] };
     const [active, setActive] = React.useState(0);
     const [paused, setPaused] = React.useState(false);

@@ -1,41 +1,47 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {toast} from "sonner";
 import {
-  Sparkles,
-  Plus,
-  Loader2,
-  X,
-  Check,
-  Wand2,
   ArrowLeft,
-  Search,
-  Layout,
-  Image,
-  Star,
-  HelpCircle,
-  Phone,
-  DollarSign,
-  CalendarCheck,
-  Building2,
-  Users,
-  Settings,
-  Menu,
-  Megaphone,
   BarChart3,
+  Building2,
+  CalendarCheck,
+  Check,
+  Clock,
+  Columns,
+  CreditCard,
+  DollarSign,
   Footprints,
+  GalleryHorizontal,
+  Grid3X3,
+  HelpCircle,
+  Image,
+  Layout,
+  LayoutGrid,
+  Loader2,
+  Mail,
+  MapPin,
+  Maximize,
+  Megaphone,
+  Menu,
+  Phone,
+  Plus,
+  Search,
+  SearchIcon,
+  Settings,
+  Sparkles,
+  Star,
+  Type,
+  Users,
+  Video,
+  Wand2,
+  X,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import {Dialog, DialogContent, DialogDescription, DialogTitle,} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {Textarea} from "@/components/ui/textarea";
+import {Badge} from "@/components/ui/badge";
 
 // ============================================================
 // TYPES & CONSTANTS
@@ -57,6 +63,7 @@ interface BlockDefinition {
 type ViewMode = "grid" | "detail";
 
 const BLOCK_DEFINITIONS: BlockDefinition[] = [
+  // Hero
   {
     type: "HeroSection",
     label: "Hero Section",
@@ -64,6 +71,7 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: Layout,
     category: "Hero",
   },
+  // Content
   {
     type: "AboutSection",
     label: "About Section",
@@ -86,12 +94,77 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Content",
   },
   {
+    type: "StatsSection",
+    label: "Stats Section",
+    description: "Key metrics and statistics with animated counters",
+    icon: BarChart3,
+    category: "Content",
+  },
+  {
+    type: "TextBlock",
+    label: "Text Block",
+    description: "Flexible text content block for custom content sections",
+    icon: Type,
+    category: "Content",
+  },
+  {
+    type: "FeatureGrid",
+    label: "Feature Grid",
+    description: "Grid of feature cards with icons, titles, and descriptions",
+    icon: Grid3X3,
+    category: "Content",
+  },
+  {
+    type: "Timeline",
+    label: "Timeline",
+    description: "Company history or guest journey timeline with dates",
+    icon: Clock,
+    category: "Content",
+  },
+  {
+    type: "TeamSection",
+    label: "Team Section",
+    description: "Team member cards with photos, names, roles, and bios",
+    icon: Users,
+    category: "Content",
+  },
+  {
+    type: "MaltaMapSection",
+    label: "Malta Map",
+    description: "Animated SVG map of Malta and Gozo islands",
+    icon: MapPin,
+    category: "Content",
+  },
+  {
+    type: "SocialProofStrip",
+    label: "Social Proof Strip",
+    description: "Horizontal strip of key metrics and social proof",
+    icon: BarChart3,
+    category: "Content",
+  },
+  // Properties
+  {
     type: "PropertyShowcase",
     label: "Property Showcase",
     description: "Image gallery grid showcasing your property portfolio",
     icon: Image,
     category: "Properties",
   },
+  {
+    type: "ImageGallery",
+    label: "Image Gallery",
+    description: "Image gallery for property photos or destination photos",
+    icon: GalleryHorizontal,
+    category: "Properties",
+  },
+  {
+    type: "ImageWithText",
+    label: "Image With Text",
+    description: "Image and text side-by-side layout with optional badge",
+    icon: LayoutGrid,
+    category: "Properties",
+  },
+  // Booking
   {
     type: "BookingSection",
     label: "Booking Section",
@@ -100,6 +173,49 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Booking",
   },
   {
+    type: "GuestyPropertySearch",
+    label: "Guesty · Property Search",
+    description: "Property search interface with location, dates, guests",
+    icon: SearchIcon,
+    category: "Booking",
+  },
+  {
+    type: "GuestyPropertyGrid",
+    label: "Guesty · Property Grid",
+    description: "Property listing grid with filters and pagination",
+    icon: Grid3X3,
+    category: "Booking",
+  },
+  {
+    type: "GuestyPropertyDetail",
+    label: "Guesty · Property Detail",
+    description: "Detailed property view with amenities and gallery",
+    icon: Building2,
+    category: "Booking",
+  },
+  {
+    type: "GuestyBookingWidget",
+    label: "Guesty · Booking Widget",
+    description: "Direct booking interface with date selection and pricing",
+    icon: CreditCard,
+    category: "Booking",
+  },
+  {
+    type: "GuestyBookingConfirmation",
+    label: "Guesty · Booking Confirmation",
+    description: "Booking success confirmation with reservation details",
+    icon: Check,
+    category: "Booking",
+  },
+  {
+    type: "GuestyBookingDashboard",
+    label: "Guesty · Booking Dashboard",
+    description: "Booking management overview with status tracking",
+    icon: Layout,
+    category: "Booking",
+  },
+  // Pricing
+  {
     type: "PricingTable",
     label: "Pricing Table",
     description: "Pricing plans with features comparison and highlighted option",
@@ -107,12 +223,21 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Pricing",
   },
   {
+    type: "ComparisonSection",
+    label: "Comparison Section",
+    description: "Multi-column comparison table for plan comparison",
+    icon: Columns,
+    category: "Pricing",
+  },
+  // Testimonials
+  {
     type: "TestimonialSection",
     label: "Testimonials",
     description: "Customer reviews and testimonials with star ratings",
     icon: Megaphone,
     category: "Testimonials",
   },
+  // FAQ
   {
     type: "FaqSection",
     label: "FAQ Section",
@@ -120,6 +245,7 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: HelpCircle,
     category: "FAQ",
   },
+  // Contact
   {
     type: "ContactSection",
     label: "Contact Section",
@@ -127,6 +253,14 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: Phone,
     category: "Contact",
   },
+  {
+    type: "MapSection",
+    label: "Map Section",
+    description: "Embedded Google Map with location coordinates",
+    icon: MapPin,
+    category: "Contact",
+  },
+  // Navigation
   {
     type: "LogoBar",
     label: "Logo Bar",
@@ -142,25 +276,50 @@ const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Navigation",
   },
   {
-    type: "StatsSection",
-    label: "Stats Section",
-    description: "Key metrics and statistics with animated counters",
-    icon: BarChart3,
-    category: "Content",
-  },
-  {
     type: "FooterSection",
     label: "Footer Section",
     description: "Site footer with navigation links and contact details",
     icon: Footprints,
     category: "Navigation",
   },
+  // Layout
   {
     type: "Divider",
     label: "Divider",
     description: "Decorative section divider with optional title",
     icon: Menu,
     category: "Layout",
+  },
+  {
+    type: "Spacer",
+    label: "Spacer",
+    description: "Vertical spacing block for layout control",
+    icon: Maximize,
+    category: "Layout",
+  },
+  // Media
+  {
+    type: "VideoSection",
+    label: "Video Section",
+    description: "Embedded video section (YouTube/Vimeo)",
+    icon: Video,
+    category: "Media",
+  },
+  // Marketing
+  {
+    type: "NewsletterSection",
+    label: "Newsletter Section",
+    description: "Email subscription section with signup form",
+    icon: Mail,
+    category: "Marketing",
+  },
+  // Settings
+  {
+    type: "ThemeSettings",
+    label: "Theme Settings",
+    description: "Theme customization for accent color and background",
+    icon: Settings,
+    category: "Settings",
   },
 ];
 
@@ -176,6 +335,9 @@ const CATEGORIES = [
   "Contact",
   "Navigation",
   "Layout",
+  "Media",
+  "Marketing",
+  "Settings",
 ];
 
 // ============================================================

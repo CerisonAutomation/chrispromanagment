@@ -1,6 +1,6 @@
 // Shared helpers and constants used across blocks
 
-import { LOGO_URL, HERO_BG, ABOUT_IMG, PROP_IMAGES, GALLERY_IMAGES } from "@/lib/images";
+import {GALLERY_IMAGES, PROP_IMAGES} from "@/lib/images";
 
 // ============================================================
 // safeHref — Validates URLs to prevent XSS

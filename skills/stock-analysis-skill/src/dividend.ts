@@ -5,7 +5,7 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { DividendAnalysis, PayoutStatus, IncomeRating } from "./types";
+import {DividendAnalysis, IncomeRating, PayoutStatus} from "./types";
 
 // ── 核心评分逻辑（与原版完全一致）──────────────────────────
 

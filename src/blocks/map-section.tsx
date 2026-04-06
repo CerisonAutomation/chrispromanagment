@@ -1,4 +1,4 @@
-import { CONTACT } from "@/lib/constants";
+import {CONTACT} from "@/lib/constants";
 
 export const MapSection = {
   label: "Map Section",

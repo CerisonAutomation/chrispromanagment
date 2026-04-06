@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
-import { BLOCK_REGISTRY, buildSchemaSummary } from "@/lib/block-registry";
-import { BUSINESS_CONTEXT, BLOCK_EDIT_PROMPT, BLOCK_INSTRUCTIONS } from "@/lib/ai-context";
+import {BLOCK_REGISTRY, type BlockSchema, type FieldSchema} from "@/lib/block-registry";
+import {BLOCK_EDIT_PROMPT, BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT} from "@/lib/ai-context";
 
 // ============================================================
 // Shared helpers
@@ -90,16 +90,20 @@ function extractJSON(text: string): unknown {
 // System prompt builder
 // ============================================================
 
-function buildBlockEditorPrompt(blockType: string, schema: ReturnType<typeof BLOCK_REGISTRY[string]>): string {
+function buildBlockEditorPrompt(blockType: string, schema: BlockSchema): string {
   const fieldsDescription = Object.entries(schema.fields)
     .map(([name, field]) => {
-      if (field.type === "array") {
-        const subFields = Object.entries(field.arrayFields || {})
-          .map(([k, v]) => `    - ${k}: ${v.type}${v.options ? ` (${v.options.map((o) => o.value).join("|")})` : ""}`)
+      const f = field as FieldSchema;
+      if (f.type === "array") {
+        const subFields = Object.entries(f.arrayFields || {})
+            .map(([k, v]) => {
+              const subField = v as FieldSchema;
+              return `    - ${k}: ${subField.type}${subField.options ? ` (${subField.options.map((o) => o.value).join("|")})` : ""}`;
+            })
           .join("\n");
-        return `  - ${name}: array of ${JSON.stringify(field.defaultItemProps)}\n${subFields}`;
+        return `  - ${name}: array of ${JSON.stringify(f.defaultItemProps)}\n${subFields}`;
       }
-      return `  - ${name}: ${field.type}${field.options ? ` (${field.options.map((o) => o.value).join("|")})` : ""} — ${field.description || ""}`;
+      return `  - ${name}: ${f.type}${f.options ? ` (${f.options.map((o) => o.value).join("|")})` : ""} — ${f.description || ""}`;
     })
     .join("\n");
 

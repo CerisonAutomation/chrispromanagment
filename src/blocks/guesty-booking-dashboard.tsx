@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 function GuestyStatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -18,7 +18,7 @@ export const GuestyBookingDashboard = {
   defaultProps: {
     title: "Booking Management",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string };
     type BookingRow = {
       id: string; confirmationCode?: string; guestName: string; guestEmail: string;

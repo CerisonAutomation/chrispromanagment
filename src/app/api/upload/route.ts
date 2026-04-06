@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import {NextRequest, NextResponse} from "next/server";
+import {mkdir, writeFile} from "fs/promises";
+import {join} from "path";
+import {existsSync} from "fs";
 
 
 // Ensure uploads directory exists on first request

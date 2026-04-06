@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import React, { type ReactNode } from "react";
+import {cn} from "@/lib/utils";
+import React, {type ReactNode} from "react";
 
 interface HyperTextProps {
   children: ReactNode;

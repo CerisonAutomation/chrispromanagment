@@ -28,7 +28,7 @@ export const FaqSection = {
       { question: "How do I get started?", answer: "Contact us for a free property assessment. We'll visit, discuss goals, and provide a personalised proposal. Smooth onboarding, we handle all setup." },
     ],
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; items: { question: string; answer: string }[] };
     const [search, setSearch] = React.useState("");
     const [allOpen, setAllOpen] = React.useState(false);

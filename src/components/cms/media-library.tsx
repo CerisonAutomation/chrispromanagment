@@ -1,26 +1,10 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Upload,
-  Video,
-  FileText,
-  X,
-  Trash2,
-  Copy,
-  Search,
-  Loader2,
-  ImageIcon,
-} from "lucide-react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Copy, FileText, ImageIcon, Loader2, Search, Trash2, Upload, Video, X,} from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types

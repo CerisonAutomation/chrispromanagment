@@ -1,5 +1,5 @@
 import React from "react";
-import { CONTACT } from "@/lib/constants";
+import {CONTACT} from "@/lib/constants";
 
 export const GuestyBookingConfirmation = {
   label: "Guesty · Booking Confirmation",
@@ -11,7 +11,7 @@ export const GuestyBookingConfirmation = {
     title: "Booking Confirmed!",
     subtitle: "Your reservation has been successfully placed. Check your email for confirmation details.",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; subtitle: string };
     const [booking, setBooking] = React.useState<Record<string, unknown> | null>(null);
 
@@ -24,7 +24,9 @@ export const GuestyBookingConfirmation = {
       return () => window.removeEventListener("guesty-booking-confirmed", handler);
     }, []);
 
-    if (!booking) return null;
+    if (!booking) return (
+        <div className="hidden" data-testid="booking-confirmation-empty"/>
+    );
 
     const nights = (() => {
       const ci = booking.checkIn as string;

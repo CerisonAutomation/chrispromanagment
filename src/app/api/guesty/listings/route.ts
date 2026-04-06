@@ -1,26 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getGuestyAPI } from "@/lib/guesty-api";
+import {NextRequest, NextResponse} from "next/server";
+import {getGuestyAPI} from "@/lib/guesty-api";
+import {createApiError, createRequestLogger, ErrorCodes} from "@/lib/error";
 
 /**
  * GET /api/guesty/listings
  *
  * List all listings with optional filters. Uses Guesty API when configured,
  * otherwise falls back to the local SQLite Property database.
- *
- * Query params:
- *   location    — city / area search string
- *   minPrice    — minimum nightly price
- *   maxPrice    — maximum nightly price
- *   checkIn     — ISO date string for check-in
- *   checkOut    — ISO date string for check-out
- *   guests      — minimum number of guests
- *   page        — pagination page number (default 1)
- *   limit       — items per page (default 20)
- *   propertyType — apartment | villa | house | room | condo | guest_suite
- *   bedrooms    — minimum number of bedrooms
- *   amenities   — comma-separated list of amenity names
  */
 export async function GET(request: NextRequest) {
+  const log = createRequestLogger(`guesty-listings-${Date.now()}`);
+
   try {
     const { searchParams } = new URL(request.url);
 
@@ -52,28 +42,38 @@ export async function GET(request: NextRequest) {
         : undefined,
     };
 
-    // Basic validation
+    // Validate pagination
     if (query.page < 1) {
       return NextResponse.json(
-        { error: "page must be >= 1" },
+          createApiError("page must be >= 1", ErrorCodes.VALIDATION_ERROR),
         { status: 400 }
       );
     }
     if (query.limit < 1 || query.limit > 100) {
       return NextResponse.json(
-        { error: "limit must be between 1 and 100" },
+          createApiError("limit must be between 1 and 100", ErrorCodes.VALIDATION_ERROR),
         { status: 400 }
       );
     }
 
+    log.info("Fetching listings", {query});
+
     const api = getGuestyAPI();
     const result = await api.getListings(query);
 
+    log.info("Listings fetched", {
+      count: result.listings?.length || 0,
+      total: result.total,
+    });
+
     return NextResponse.json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to fetch listings";
-    console.error("[guesty/listings GET]", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    const err = error instanceof Error ? error : new Error(String(error));
+    log.error("Failed to fetch listings", err);
+
+    return NextResponse.json(
+        createApiError(err.message || "Failed to fetch listings", ErrorCodes.EXTERNAL_SERVICE_ERROR),
+        {status: 500}
+    );
   }
 }

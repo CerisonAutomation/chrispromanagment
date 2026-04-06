@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { BlurFade } from "@/components/effects/blur-fade";
-import { NumberTicker } from "@/components/effects/number-ticker";
+import {BlurFade} from "@/components/effects/blur-fade";
+import {NumberTicker} from "@/components/effects/number-ticker";
 
 export const SocialProofStrip = {
   label: "Social Proof Strip",
@@ -28,7 +28,7 @@ export const SocialProofStrip = {
       { number: "50", label: "Properties", prefix: "", suffix: "+" },
     ],
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as {
       items: { number: string; label: string; prefix: string; suffix: string }[];
     };

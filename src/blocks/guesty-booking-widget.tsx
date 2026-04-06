@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 export const GuestyBookingWidget = {
   label: "Guesty · Booking Widget",
@@ -11,7 +11,7 @@ export const GuestyBookingWidget = {
     defaultSlug: "valletta-apartment-1",
     title: "Complete Your Booking",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { defaultSlug: string; title: string };
     type MappedProp = { id: string; slug: string; title: string; rates: { baseRate: number }; maxGuests: number; images: { url: string }[] };
     type MappedQuote = { id: string; externalId: string; status: string; listingId: string; checkIn: string; checkOut: string; guest: { firstName: string; lastName: string; email: string; phone: string; adults: number }; money: { rentalAmount: number; cleaningFee: number; serviceFee: number; totalAmount: number; currency: string }; sourceSystem: string; notes: string; createdAt: string };

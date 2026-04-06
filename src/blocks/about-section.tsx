@@ -1,4 +1,4 @@
-import { ABOUT_IMG } from "@/lib/images";
+import {ABOUT_IMG} from "@/lib/images";
 
 export const AboutSection = {
   label: "About Section",

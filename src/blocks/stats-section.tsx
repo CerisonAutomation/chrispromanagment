@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { BlurFade } from "@/components/effects/blur-fade";
-import { NumberTicker } from "@/components/effects/number-ticker";
+import {BlurFade} from "@/components/effects/blur-fade";
+import {NumberTicker} from "@/components/effects/number-ticker";
 
 export const StatsSection = {
   label: "Stats Section",
@@ -27,7 +27,7 @@ export const StatsSection = {
       { value: "4.9", label: "Average Rating", icon: "star" },
     ],
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { stats: { value: string; label: string; icon: string }[] };
 
     const iconPaths: Record<string, string> = {

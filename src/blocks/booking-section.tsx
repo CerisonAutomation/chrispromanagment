@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 export const BookingSection = {
   label: "Booking Section",
@@ -11,7 +11,7 @@ export const BookingSection = {
     title: "Check Availability & Book Direct",
     subtitle: "Book directly with us and save. No hidden fees, best price guaranteed, and personal service from our dedicated team.",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; subtitle: string };
     const [step, setStep] = React.useState(1);
     const [submitting, setSubmitting] = React.useState(false);

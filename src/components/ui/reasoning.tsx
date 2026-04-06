@@ -1,15 +1,9 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { ChevronDownIcon } from "lucide-react"
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
-import { Markdown } from "./markdown"
+import {cn} from "@/lib/utils"
+import {ChevronDownIcon} from "lucide-react"
+import React, {createContext, useContext, useEffect, useRef, useState,} from "react"
+import {Markdown} from "./markdown"
 
 type ReasoningContextType = {
   isOpen: boolean

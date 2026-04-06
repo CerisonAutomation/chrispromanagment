@@ -1,5 +1,5 @@
 import React from "react";
-import { IMG_2625, IMG_9593, IMG_9588, IMG_9590, IMG_7136, IMG_6590 } from "./helpers";
+import {IMG_2625, IMG_6590, IMG_7136, IMG_9588, IMG_9590, IMG_9593} from "./helpers";
 
 export const ImageGallery = {
   label: "Image Gallery",
@@ -29,7 +29,7 @@ export const ImageGallery = {
     ],
     columns: "3",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; images: { url: string; caption: string }[]; columns: string };
     const [lightbox, setLightbox] = React.useState<number | null>(null);
     const cols = p.columns === "2" ? "sm:grid-cols-2" : p.columns === "4" ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3";

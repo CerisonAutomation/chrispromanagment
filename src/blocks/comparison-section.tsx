@@ -23,10 +23,10 @@ export const ComparisonSection = {
         features: {
           type: "array" as const,
           label: "Features",
-          defaultItemProps: { text: "Feature", included: "true" },
-          getItemSummary: (item: Record<string, unknown>) => (item as { text?: string }).text || "Feature",
+            defaultItemProps: {name: "Feature", included: "true"},
+            getItemSummary: (item: Record<string, unknown>) => (item as { name?: string }).name || "Feature",
           arrayFields: {
-            text: { type: "text" as const },
+              name: {type: "text" as const},
             included: {
               type: "select" as const,
               options: [
@@ -47,10 +47,10 @@ export const ComparisonSection = {
         description: "For new property owners looking to get started with professional management.",
         highlighted: "false",
         features: [
-          { text: "Basic Listing Setup", included: "true" },
-          { text: "Dynamic Pricing", included: "true" },
-          { text: "24/7 Guest Communication", included: "false" },
-          { text: "Monthly Reports", included: "false" },
+            {name: "Basic Listing Setup", included: "true"},
+            {name: "Dynamic Pricing", included: "true"},
+            {name: "24/7 Guest Communication", included: "false"},
+            {name: "Monthly Reports", included: "false"},
         ],
       },
       {
@@ -58,10 +58,10 @@ export const ComparisonSection = {
         description: "Our most popular plan for serious property investors.",
         highlighted: "true",
         features: [
-          { text: "Full Listing Optimization", included: "true" },
-          { text: "Dynamic Pricing Strategy", included: "true" },
-          { text: "24/7 Guest Communication", included: "true" },
-          { text: "Monthly Performance Reports", included: "true" },
+            {name: "Full Listing Optimization", included: "true"},
+            {name: "Dynamic Pricing Strategy", included: "true"},
+            {name: "24/7 Guest Communication", included: "true"},
+            {name: "Monthly Performance Reports", included: "true"},
         ],
       },
       {
@@ -69,10 +69,10 @@ export const ComparisonSection = {
         description: "The ultimate white-glove property management experience.",
         highlighted: "false",
         features: [
-          { text: "Everything in Professional", included: "true" },
-          { text: "Interior Design Consultation", included: "true" },
-          { text: "Priority Maintenance", included: "true" },
-          { text: "Dedicated Account Manager", included: "true" },
+            {name: "Everything in Professional", included: "true"},
+            {name: "Interior Design Consultation", included: "true"},
+            {name: "Priority Maintenance", included: "true"},
+            {name: "Dedicated Account Manager", included: "true"},
         ],
       },
     ],
@@ -84,7 +84,7 @@ export const ComparisonSection = {
         heading: string;
         description: string;
         highlighted: string;
-        features: { text: string; included: string }[];
+          features: { name: string; included: string }[];
       }[];
     };
     return (
@@ -156,7 +156,8 @@ export const ComparisonSection = {
                                 </svg>
                               </div>
                             )}
-                            <span className={`text-sm ${feat.included === "true" ? "text-cpm-text-primary" : "text-cpm-text-tertiary"}`}>{feat.text}</span>
+                              <span
+                                  className={`text-sm ${feat.included === "true" ? "text-cpm-text-primary" : "text-cpm-text-tertiary"}`}>{feat.name}</span>
                           </div>
                         ))}
                       </div>

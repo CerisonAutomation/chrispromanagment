@@ -142,7 +142,7 @@ export const BLOCK_INSTRUCTIONS: Record<string, string> = {
     "Email subscription section. Encourage sign-ups with value proposition: 'Subscribe for exclusive Malta deals, property listings, and local tips'. Button: 'Subscribe'. Success message after submission.",
 
   ComparisonSection:
-    "2-4 column comparison table. Highlight recommended plan with gold border and badge. Use checkmarks for included features, dashes for excluded. Clear heading and description per column.",
+      "2-4 column comparison table. Highlight recommended plan with gold border and badge. Use checkmarks for included features, dashes for excluded. Each feature has 'name' and 'included' fields with values 'true'/'false'.",
 
   ImageWithText:
     "Image and text side-by-side layout. Support left/right/top image positions. Add optional badge (e.g., 'Featured', 'New'). CTA button optional. 100-300 words for text. Responsive: stacked on mobile.",

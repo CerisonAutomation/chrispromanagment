@@ -1,6 +1,6 @@
 import React from "react";
-import { toast } from "sonner";
-import { CONTACT } from "@/lib/constants";
+import {toast} from "sonner";
+import {CONTACT} from "@/lib/constants";
 
 export const ContactSection = {
   label: "Contact Section",
@@ -22,7 +22,7 @@ export const ContactSection = {
     mapLat: CONTACT.mapCoords.lat,
     mapLng: CONTACT.mapCoords.lng,
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; email: string; phone: string; whatsapp: string; location: string; mapLat: string; mapLng: string };
     const [submitting, setSubmitting] = React.useState(false);
     const [submitted, setSubmitted] = React.useState(false);

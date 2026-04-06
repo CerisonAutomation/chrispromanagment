@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
-import { defaultPages } from "@/lib/default-pages";
-import { NextResponse } from "next/server";
+import {db} from "@/lib/db";
+import {defaultPages} from "@/lib/default-pages";
+import {NextResponse} from "next/server";
 
 const PROPERTY_SEED_DATA = [
   {

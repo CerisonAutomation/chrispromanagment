@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getGuestyAPI } from "@/lib/guesty-api";
+import {NextRequest, NextResponse} from "next/server";
+import {getGuestyAPI} from "@/lib/guesty-api";
 
 /**
  * POST /api/guesty/quotes

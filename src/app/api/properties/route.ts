@@ -1,6 +1,11 @@
-import { db } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import {db} from "@/lib/db";
+import {NextRequest, NextResponse} from "next/server";
+import {Prisma} from "@prisma/client";
+import {createApiError, createRequestLogger, ErrorCodes} from "@/lib/error";
+
+// ============================================================
+// Helper functions
+// ============================================================
 
 function parseJsonField<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
@@ -19,7 +24,15 @@ function formatProperty(property: Record<string, unknown>) {
   };
 }
 
+const VALID_TYPES = ['apartment', 'villa', 'event_space'];
+
+// ============================================================
+// GET handler
+// ============================================================
+
 export async function GET(request: NextRequest) {
+  const log = createRequestLogger(`properties-get-${Date.now()}`);
+
   try {
     const { searchParams } = new URL(request.url);
     const city = searchParams.get("city");
@@ -38,40 +51,49 @@ export async function GET(request: NextRequest) {
     if (city) {
       where.city = { equals: city };
     }
+
     if (minGuests) {
       const parsed = parseInt(minGuests, 10);
       if (!isNaN(parsed)) {
         where.maxGuests = { gte: parsed };
       }
     }
+
     if (minPrice) {
       const parsed = parseFloat(minPrice);
       if (!isNaN(parsed)) {
         where.basePrice = { ...((where.basePrice as Prisma.FloatNullableFilter) || {}), gte: parsed };
       }
     }
+
     if (maxPrice) {
       const parsed = parseFloat(maxPrice);
       if (!isNaN(parsed)) {
         where.basePrice = { ...((where.basePrice as Prisma.FloatNullableFilter) || {}), lte: parsed };
       }
     }
+
     if (type) {
-      const VALID_TYPES = ['apartment', 'villa', 'event_space'];
       if (!VALID_TYPES.includes(type)) {
-        return NextResponse.json({ error: "Invalid property type" }, { status: 400 });
+        return NextResponse.json(
+            createApiError("Invalid property type", ErrorCodes.VALIDATION_ERROR, {validTypes: VALID_TYPES}),
+            {status: 400}
+        );
       }
       where.type = { equals: type };
     }
+
     if (bedrooms) {
       const parsed = parseInt(bedrooms, 10);
       if (!isNaN(parsed)) {
         where.bedrooms = { gte: parsed };
       }
     }
+
     if (featured === "true") {
       where.featured = true;
     }
+
     if (search) {
       where.OR = [
         { name: { contains: search } },
@@ -81,7 +103,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Availability filter: exclude properties with overlapping bookings
+    // Availability filter
     if (checkIn && checkOut) {
       const overlappingBookings = await db.booking.findMany({
         where: {
@@ -105,16 +127,36 @@ export async function GET(request: NextRequest) {
 
     const formatted = properties.map((p) => formatProperty(p as unknown as Record<string, unknown>));
 
+    log.info("Properties fetched", {count: formatted.length});
     return NextResponse.json({ properties: formatted, count: formatted.length });
   } catch (error) {
-    console.error("[properties GET]", error);
-    return NextResponse.json({ error: "Failed to fetch properties" }, { status: 500 });
+    const err = error instanceof Error ? error : new Error(String(error));
+    log.error("Failed to fetch properties", err);
+    return NextResponse.json(
+        createApiError("Failed to fetch properties", ErrorCodes.DATABASE_ERROR),
+        {status: 500}
+    );
   }
 }
 
+// ============================================================
+// POST handler
+// ============================================================
+
 export async function POST(request: NextRequest) {
+  const log = createRequestLogger(`properties-post-${Date.now()}`);
+
   try {
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+          createApiError("Invalid JSON in request body", ErrorCodes.VALIDATION_ERROR),
+          {status: 400}
+      );
+    }
+
     const {
       name,
       slug,
@@ -143,61 +185,84 @@ export async function POST(request: NextRequest) {
       active,
     } = body;
 
-    const VALID_TYPES = ['apartment', 'villa', 'event_space'];
-    if (type && !VALID_TYPES.includes(type)) {
-      return NextResponse.json({ error: "Invalid property type" }, { status: 400 });
+    // Validate type
+    if (type && !VALID_TYPES.includes(type as string)) {
+      return NextResponse.json(
+          createApiError("Invalid property type", ErrorCodes.VALIDATION_ERROR, {validTypes: VALID_TYPES}),
+          {status: 400}
+      );
     }
 
+    // Validate required fields
     if (!name || !slug) {
       return NextResponse.json(
-        { error: "name and slug are required" },
+          createApiError("name and slug are required", ErrorCodes.VALIDATION_ERROR, {missingFields: !name && !slug ? ["name", "slug"] : [!name ? "name" : "", !slug ? "slug" : ""].filter(Boolean)}),
         { status: 400 }
       );
     }
 
-    const existingProperty = await db.property.findUnique({ where: { slug } });
+    // Check for existing slug
+    const existingProperty = await db.property.findUnique({where: {slug: slug as string}});
     if (existingProperty) {
       return NextResponse.json(
-        { error: "A property with this slug already exists" },
+          createApiError("A property with this slug already exists", ErrorCodes.CONFLICT),
         { status: 409 }
       );
     }
 
+    // Parse and validate numeric fields
+    const parseIntOr = (val: unknown, fallback: number) => {
+      if (val === undefined || val === null) return fallback;
+      const parsed = parseInt(String(val), 10);
+      return isNaN(parsed) ? fallback : parsed;
+    };
+
+    const parseFloatOr = (val: unknown, fallback: number) => {
+      if (val === undefined || val === null) return fallback;
+      const parsed = parseFloat(String(val));
+      return isNaN(parsed) ? fallback : parsed;
+    };
+
     const property = await db.property.create({
       data: {
-        name,
-        slug,
-        type: type || "apartment",
-        description: description || "",
-        location: location || "",
-        city: city || "Valletta",
-        address: address || "",
-        latitude: latitude || "35.8992",
-        longitude: longitude || "14.5140",
-        bedrooms: (() => { const v = parseInt(bedrooms, 10); return isNaN(v) ? 2 : v; })(),
-        bathrooms: (() => { const v = parseInt(bathrooms, 10); return isNaN(v) ? 2 : v; })(),
-        maxGuests: (() => { const v = parseInt(maxGuests, 10); return isNaN(v) ? 4 : v; })(),
-        basePrice: (() => { const v = parseFloat(basePrice); return isNaN(v) ? 150 : v; })(),
-        currency: currency || "EUR",
-        cleaningFee: (() => { const v = parseFloat(cleaningFee); return isNaN(v) ? 50 : v; })(),
-        minStay: (() => { const v = parseInt(minStay, 10); return isNaN(v) ? 2 : v; })(),
-        maxStay: (() => { const v = parseInt(maxStay, 10); return isNaN(v) ? 30 : v; })(),
-        checkInTime: checkInTime || "15:00",
-        checkOutTime: checkOutTime || "11:00",
+        name: name as string,
+        slug: slug as string,
+        type: (type as string) || "apartment",
+        description: (description as string) || "",
+        location: (location as string) || "",
+        city: (city as string) || "Valletta",
+        address: (address as string) || "",
+        latitude: (latitude as string) || "35.8992",
+        longitude: (longitude as string) || "14.5140",
+        bedrooms: parseIntOr(bedrooms, 2),
+        bathrooms: parseIntOr(bathrooms, 2),
+        maxGuests: parseIntOr(maxGuests, 4),
+        basePrice: parseFloatOr(basePrice, 150),
+        currency: (currency as string) || "EUR",
+        cleaningFee: parseFloatOr(cleaningFee, 50),
+        minStay: parseIntOr(minStay, 2),
+        maxStay: parseIntOr(maxStay, 30),
+        checkInTime: (checkInTime as string) || "15:00",
+        checkOutTime: (checkOutTime as string) || "11:00",
         amenities: JSON.stringify(amenities || []),
         images: JSON.stringify(images || []),
-        rating: (() => { const v = parseFloat(rating); return isNaN(v) ? 4.9 : v; })(),
-        reviewCount: (() => { const v = parseInt(reviewCount, 10); return isNaN(v) ? 0 : v; })(),
+        rating: parseFloatOr(rating, 4.9),
+        reviewCount: parseIntOr(reviewCount, 0),
         featured: featured === true,
         active: active !== false,
       },
     });
 
-    const formatted = formatProperty(property as unknown as Record<string, unknown>);
+    log.info("Property created", {id: property.id, slug: property.slug});
 
+    const formatted = formatProperty(property as unknown as Record<string, unknown>);
     return NextResponse.json(formatted, { status: 201 });
   } catch (error) {
-    console.error("[properties POST]", error);
-    return NextResponse.json({ error: "Failed to create property" }, { status: 500 });
+    const err = error instanceof Error ? error : new Error(String(error));
+    log.error("Failed to create property", err);
+    return NextResponse.json(
+        createApiError("Failed to create property", ErrorCodes.DATABASE_ERROR),
+        {status: 500}
+    );
   }
 }

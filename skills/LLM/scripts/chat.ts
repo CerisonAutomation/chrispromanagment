@@ -1,4 +1,4 @@
-import ZAI, { ChatMessage } from "z-ai-web-dev-sdk";
+import ZAI, {ChatMessage} from "z-ai-web-dev-sdk";
 
 async function main(prompt: string) {
   try {

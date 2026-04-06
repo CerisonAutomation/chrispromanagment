@@ -1,48 +1,31 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import type { BlockData } from "@/lib/block-types";
-import { toast } from "sonner";
+import React, {memo, useCallback, useEffect, useRef, useState} from "react";
+import type {BlockData} from "@/lib/block-types";
+import {toast} from "sonner";
 import {
-  Sparkles,
-  X,
+  ArrowLeft,
+  Building2,
+  CalendarCheck,
   Check,
   Copy,
-  Eye,
-  ArrowLeft,
-  Wand2,
-  Globe,
-  Building2,
-  Users,
   CreditCard,
+  Eye,
+  Globe,
   Phone,
-  CalendarCheck,
-  Send,
   RotateCcw,
+  Send,
+  Users,
+  Wand2,
+  X,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputActions,
-  PromptInputAction,
-} from "@/components/ui/prompt-input";
-import {
-  PromptSuggestion,
-} from "@/components/ui/prompt-suggestion";
-import {
-  TextShimmerLoader,
-  Loader,
-} from "@/components/ui/loader";
-import { BlurFade } from "@/components/effects/blur-fade";
+import {Dialog, DialogContent, DialogDescription, DialogTitle,} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {PromptInput, PromptInputAction, PromptInputActions, PromptInputTextarea,} from "@/components/ui/prompt-input";
+import {PromptSuggestion,} from "@/components/ui/prompt-suggestion";
+import {Loader, TextShimmerLoader,} from "@/components/ui/loader";
+import {BlurFade} from "@/components/effects/blur-fade";
 
 // ============================================================
 // TYPES & CONSTANTS
@@ -56,54 +39,56 @@ interface AiPageBuilderProps {
 
 type Stage = "input" | "loading" | "preview" | "error";
 
-const PRESET_TEMPLATES = [
+interface PresetTemplate {
+  id: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  prompt: string;
+}
+
+const PRESET_TEMPLATES: PresetTemplate[] = [
   {
     id: "landing",
     label: "Full Landing Page",
     description: "Hero, features, testimonials, CTA",
     icon: Globe,
-    prompt:
-      "Create a complete landing page with a hero section, feature highlights, testimonials, and a call-to-action banner.",
+    prompt: "Create a complete landing page with a hero section, feature highlights, testimonials, and a call-to-action banner."
   },
   {
     id: "property",
     label: "Property Showcase",
     description: "Property gallery, highlights, booking",
     icon: Building2,
-    prompt:
-      "Create a property showcase page with a hero, property gallery, key highlights section, and booking section.",
+    prompt: "Create a property showcase page with a hero, property gallery, key highlights section, and booking section."
   },
   {
     id: "about",
     label: "About Us",
     description: "Company story, team, values",
     icon: Users,
-    prompt:
-      "Create an About Us page with a hero, company story section, why choose us, and a contact CTA.",
+    prompt: "Create an About Us page with a hero, company story section, why choose us, and a contact CTA."
   },
   {
     id: "pricing",
     label: "Pricing Page",
     description: "Pricing tiers, features, FAQ",
     icon: CreditCard,
-    prompt:
-      "Create a pricing page with a hero, pricing table, services overview, FAQ section, and CTA.",
+    prompt: "Create a pricing page with a hero, pricing table, services overview, FAQ section, and CTA."
   },
   {
     id: "contact",
     label: "Contact Page",
     description: "Contact form, info, map",
     icon: Phone,
-    prompt:
-      "Create a contact page with a hero, contact form, company info section, and footer.",
+    prompt: "Create a contact page with a hero, contact form, company info section, and footer."
   },
   {
     id: "booking",
     label: "Booking Page",
     description: "Availability, booking form, properties",
     icon: CalendarCheck,
-    prompt:
-      "Create a booking page with a hero, property showcase, booking form, and testimonials.",
+    prompt: "Create a booking page with a hero, property showcase, booking form, and testimonials."
   },
 ];
 
@@ -115,7 +100,7 @@ const QUICK_SUGGESTIONS = [
   "Contact page with map and form",
   "Pricing tiers for management services",
   "FAQ section for common guest questions",
-];
+] as const;
 
 const STATUS_MESSAGES = [
   "Analyzing your requirements...",
@@ -123,17 +108,66 @@ const STATUS_MESSAGES = [
   "Generating content blocks...",
   "Applying design polish...",
   "Finalizing your page...",
-];
+] as const;
+
+// ============================================================
+// PRESET TEMPLATE CARD - MEMOIZED
+// ============================================================
+const PresetTemplateCard = memo(function PresetTemplateCard({
+                                                              template,
+                                                              isSelected,
+                                                              onClick,
+                                                            }: {
+  template: PresetTemplate;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const Icon = template.icon;
+
+  return (
+      <button
+          key={template.id}
+          onClick={onClick}
+          className={`group flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all duration-300 hover:-translate-y-0.5 ${
+              isSelected
+                  ? "border-cpm-accent/40 bg-cpm-accent/5 ring-1 ring-cpm-accent/20"
+                  : "border-cpm-border bg-cpm-bg-secondary hover:border-cpm-accent/20"
+          }`}
+      >
+        <Icon
+            className={`h-5 w-5 transition-colors duration-300 ${
+                isSelected
+                    ? "text-cpm-accent"
+                    : "text-cpm-text-tertiary group-hover:text-cpm-text-secondary"
+            }`}
+        />
+        <div>
+          <p
+              className={`text-xs font-medium transition-colors duration-300 ${
+                  isSelected
+                      ? "text-cpm-accent"
+                      : "text-cpm-text-primary group-hover:text-cpm-accent"
+              }`}
+          >
+            {template.label}
+          </p>
+          <p className="mt-0.5 text-[10px] leading-tight text-cpm-text-tertiary">
+            {template.description}
+          </p>
+        </div>
+      </button>
+  );
+});
 
 // ============================================================
 // COMPONENT
 // ============================================================
-export default function AiPageBuilder({
+const AiPageBuilderInner = ({
   open,
   onClose,
   onApply,
   currentPage,
-}: AiPageBuilderProps) {
+                            }: AiPageBuilderProps) => {
   const [stage, setStage] = useState<Stage>("input");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [customInstruction, setCustomInstruction] = useState("");
@@ -177,13 +211,10 @@ export default function AiPageBuilder({
     onClose();
   }, [reset, onClose]);
 
-  const handleSelectTemplate = useCallback(
-    (template: (typeof PRESET_TEMPLATES)[0]) => {
-      setSelectedTemplate(template.id);
-      setCustomInstruction(template.prompt);
-    },
-    []
-  );
+  const handleSelectTemplate = useCallback((template: PresetTemplate) => {
+    setSelectedTemplate(template.id);
+    setCustomInstruction(template.prompt);
+  }, []);
 
   const handleSelectSuggestion = useCallback((suggestion: string) => {
     setCustomInstruction(suggestion);
@@ -215,10 +246,8 @@ export default function AiPageBuilder({
       });
 
       if (!res.ok) {
-        const errorBlockData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorBlockData.error || `Request failed with status ${res.status}`
-        );
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${res.status}`);
       }
 
       const result = await res.json();
@@ -232,8 +261,7 @@ export default function AiPageBuilder({
       setPreviewJson(JSON.stringify(data, null, 2));
 
       // Build block summary
-      const content = (data as Record<string, unknown>)
-        .content as Array<{ type: string }> | undefined;
+      const content = (data as Record<string, unknown>).content as Array<{ type: string }> | undefined;
       if (content && Array.isArray(content)) {
         setBlockSummary(content.map((b) => b.type));
       }
@@ -241,8 +269,7 @@ export default function AiPageBuilder({
       setStage("preview");
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
-      const message =
-        err instanceof Error ? err.message : "Failed to generate page";
+      const message = err instanceof Error ? err.message : "Failed to generate page";
       setError(message);
       setStage("error");
       toast.error(message);
@@ -286,7 +313,7 @@ export default function AiPageBuilder({
         <div className="border-b border-cpm-border px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cpm-accent/10 ring-1 ring-cpm-accent/20">
-              <Sparkles className="h-5 w-5 text-cpm-accent" />
+              <span className="h-5 w-5 text-cpm-accent"/>
             </div>
             <div>
               <DialogTitle className="text-base font-semibold text-cpm-text-primary">
@@ -311,47 +338,18 @@ export default function AiPageBuilder({
                   Quick Templates
                 </p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {PRESET_TEMPLATES.map((template) => {
-                    const Icon = template.icon;
-                    const isSelected = selectedTemplate === template.id;
-                    return (
-                      <button
-                        key={template.id}
-                        onClick={() => handleSelectTemplate(template)}
-                        className={`group flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all duration-300 hover:-translate-y-0.5 ${
-                          isSelected
-                            ? "border-cpm-accent/40 bg-cpm-accent/5 ring-1 ring-cpm-accent/20"
-                            : "border-cpm-border bg-cpm-bg-secondary hover:border-cpm-accent/20"
-                        }`}
-                      >
-                        <Icon
-                          className={`h-5 w-5 transition-colors duration-300 ${
-                            isSelected
-                              ? "text-cpm-accent"
-                              : "text-cpm-text-tertiary group-hover:text-cpm-text-secondary"
-                          }`}
-                        />
-                        <div>
-                          <p
-                            className={`text-xs font-medium transition-colors duration-300 ${
-                              isSelected
-                                ? "text-cpm-accent"
-                                : "text-cpm-text-primary group-hover:text-cpm-accent"
-                            }`}
-                          >
-                            {template.label}
-                          </p>
-                          <p className="mt-0.5 text-[10px] leading-tight text-cpm-text-tertiary">
-                            {template.description}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {PRESET_TEMPLATES.map((template) => (
+                      <PresetTemplateCard
+                          key={template.id}
+                          template={template}
+                          isSelected={selectedTemplate === template.id}
+                          onClick={() => handleSelectTemplate(template)}
+                      />
+                  ))}
                 </div>
               </div>
 
-              {/* prompt-kit: Prompt Input with AI styling */}
+              {/* Prompt Input */}
               <div>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
                   Describe Your Page
@@ -364,7 +362,7 @@ export default function AiPageBuilder({
                   className="border-cpm-border bg-cpm-bg-secondary focus-within:ring-1 focus-within:ring-cpm-accent/20"
                 >
                   <PromptInputTextarea
-                    placeholder="Describe the page you want to build... e.g. 'A luxury property listing page with a hero, property gallery, amenities, and booking form'"
+                      placeholder="Describe the page you want to build..."
                     className="placeholder:text-cpm-text-tertiary"
                   />
                   <PromptInputActions className="px-2 pb-1.5">
@@ -381,7 +379,7 @@ export default function AiPageBuilder({
                 </PromptInput>
               </div>
 
-              {/* prompt-kit: Prompt Suggestions */}
+              {/* Suggestions */}
               <div>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
                   Or Try a Suggestion
@@ -408,7 +406,6 @@ export default function AiPageBuilder({
             <div className="flex flex-col items-center justify-center px-6 py-16">
               <BlurFade delay={0.1}>
                 <div className="mb-8 flex flex-col items-center gap-4">
-                  {/* prompt-kit: ShimmerLoader for premium loading text */}
                   <TextShimmerLoader
                     text="Generating your page"
                     size="lg"
@@ -442,7 +439,6 @@ export default function AiPageBuilder({
           {/* === PREVIEW STAGE === */}
           {stage === "preview" && generatedBlockData && (
             <div className="px-6 py-5">
-              {/* Block summary */}
               {blockSummary.length > 0 && (
                 <div className="mb-4">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wider text-cpm-text-tertiary">
@@ -465,7 +461,6 @@ export default function AiPageBuilder({
                 </div>
               )}
 
-              {/* Preview info */}
               <div className="mb-4 flex items-center gap-2 rounded-lg border border-cpm-accent/10 bg-cpm-accent/5 px-4 py-3">
                 <Eye className="h-4 w-4 shrink-0 text-cpm-accent" />
                 <p className="text-xs text-cpm-text-secondary">
@@ -475,18 +470,9 @@ export default function AiPageBuilder({
                 </p>
               </div>
 
-              {/* JSON Preview (collapsible) */}
               <details className="group">
                 <summary className="flex cursor-pointer items-center gap-2 text-xs font-medium text-cpm-text-tertiary transition-colors hover:text-cpm-text-secondary">
-                  <svg
-                    className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span className="h-3.5 w-3.5 transition-transform group-open:rotate-90"/>
                   View JSON BlockData
                 </summary>
                 <div className="mt-2">
@@ -601,4 +587,7 @@ export default function AiPageBuilder({
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+// Wrap with memo for performance
+export default memo(AiPageBuilderInner);

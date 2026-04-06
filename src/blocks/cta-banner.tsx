@@ -1,13 +1,11 @@
 "use client";
 
-import { safeHref } from "./helpers";
-import { BlurFade } from "@/components/effects/blur-fade";
-import { BlurFadeText } from "@/components/effects/blur-fade-text";
-import { ShimmerButton } from "@/components/effects/shimmer-button";
-import { SparklesText } from "@/components/effects/sparkles-text";
-import { RetroGrid } from "@/components/effects/retro-grid";
-import { DotPattern } from "@/components/effects/patterns";
-import { ArrowRight } from "lucide-react";
+import {safeHref} from "./helpers";
+import {BlurFade} from "@/components/effects/blur-fade";
+import {ShimmerButton} from "@/components/effects/shimmer-button";
+import {SparklesText} from "@/components/effects/sparkles-text";
+import {DotPattern} from "@/components/effects/patterns";
+import {ArrowRight} from "lucide-react";
 
 export const CtaBanner = {
   label: "CTA Banner",
@@ -66,15 +64,21 @@ export const CtaBanner = {
                 {/* 21st.dev: BlurFadeText for heading */}
                 <BlurFade delay={0.1}>
                   <h2 className="mb-4 font-[family-name:var(--font-heading)] text-3xl font-light tracking-tight sm:text-4xl">
-                    <SparklesText
+                    <span
                       className="bg-clip-text text-transparent"
                       style={{
                         backgroundImage: "linear-gradient(135deg, var(--cpm-text-primary), var(--cpm-accent))",
                       }}
-                      sparklesCount={6}
                     >
-                      {p.heading}
-                    </SparklesText>
+                      <span>
+                        <SparklesText
+                            className="inline"
+                            sparklesCount={6}
+                        >
+                          {p.heading}
+                        </SparklesText>
+                      </span>
+                    </span>
                   </h2>
                 </BlurFade>
                 <BlurFade delay={0.3} yOffset={8}>

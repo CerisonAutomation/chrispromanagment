@@ -54,7 +54,7 @@ export const MaltaMapSection = {
     backgroundStyle: "transparent",
     paddingY: "normal",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as {
       label?: string;
       drawDuration?: number;
@@ -71,7 +71,7 @@ export const MaltaMapSection = {
       spacious: "py-24 sm:py-32",
     };
 
-    const bgMap: Record<string, React.CSSProperties & { className?: string }> = {
+    const bgMap: Record<string, { className?: string; style?: React.CSSProperties }> = {
       transparent: {},
       dark: { className: "bg-cpm-bg-primary" },
       card: { className: "bg-cpm-bg-secondary mx-auto max-w-4xl rounded-3xl border border-cpm-border shadow-[0_0_60px_rgba(200,169,106,0.04)]" },

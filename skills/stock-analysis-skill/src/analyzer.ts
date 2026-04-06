@@ -4,9 +4,9 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { StockData, AnalysisResult, OutputFormat, Market, Verdict, PositionInfo } from "./types";
-import { validateStockData } from "./dataFetcher";
-import { analyzeDividend, formatDividendMarkdown } from "./dividend";
+import {AnalysisResult, Market, OutputFormat, PositionInfo, StockData, Verdict} from "./types";
+import {validateStockData} from "./dataFetcher";
+import {analyzeDividend, formatDividendMarkdown} from "./dividend";
 
 const MARKET_LABEL: Record<Market, string> = { CN: "A股", HK: "港股", US: "美股" };
 

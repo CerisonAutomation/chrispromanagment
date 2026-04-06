@@ -1,0 +1,46 @@
+.menuBar {
+  position: relative;
+  background: var(--puck-color-bg);
+  border-bottom: 1px solid var(--puck-color-border);
+  transition: height 150ms ease-out;
+  height: 0;
+  overflow: hidden;
+}
+
+.menuBar.menuOpen {
+  height: 48px;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 var(--puck-space-4);
+  gap: var(--puck-space-2);
+}
+
+.history {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-1);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--puck-space-2);
+}
+
+@media (max-width: 637px) {
+  .menuBar {
+    position: fixed;
+    top: var(--puck-header-height);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--puck-color-border);
+    background: var(--puck-color-bg-raised);
+    box-shadow: var(--puck-shadow-sm);
+  }
+}

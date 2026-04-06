@@ -1,5 +1,5 @@
 import React from "react";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 function GuestySkeletonCard() {
   return (
@@ -28,7 +28,7 @@ export const GuestyPropertyGrid = {
     itemsPerPage: "6",
     showFilters: "true",
   },
-  Component: (props: Record<string, unknown>) => {
+  render: (props: Record<string, unknown>) => {
     const p = props as { title: string; itemsPerPage: string; showFilters: string };
     type MappedProp = {
       id: string; slug: string; title: string; propertyType: string;

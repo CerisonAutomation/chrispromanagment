@@ -1,15 +1,15 @@
-import type { Metadata, Viewport } from "next";
+import type {Metadata, Viewport} from "next";
 import {
-  Outfit,
   Cormorant_Garamond,
-  Inter,
-  Playfair_Display,
-  Lato,
-  Libre_Baskerville,
   DM_Sans,
   Fraunces,
+  Inter,
+  Lato,
+  Libre_Baskerville,
+  Outfit,
+  Playfair_Display,
 } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
+import {Toaster} from "@/components/ui/sonner";
 import "./globals.css";
 import "./puck-animations.css";
 

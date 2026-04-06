@@ -1,43 +1,16 @@
 "use client";
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Puck, usePuck, type Data, type PuckAction } from "@puckeditor/core";
+import React, {createContext, memo, useCallback, useContext, useEffect, useMemo, useRef, useState,} from "react";
+import {type Data, Puck, type PuckAction, usePuck} from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import "@puckeditor/plugin-ai/styles.css";
-import { toast } from "sonner";
-import {
-  Save,
-  Eye,
-  EyeOff,
-  ArrowLeft,
-  Code,
-  Copy,
-  Download,
-  Upload,
-  X,
-  FileJson,
-  Sparkles,
-  Wand2,
-  Plus,
-  LayoutGrid,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
-import config from "@/puck.config";
-import AiPageBuilder from "./ai-page-builder";
-import AiBlockEditor from "./ai-block-editor";
-import BlockBuilder from "./block-builder";
-import { createAiPlugin } from "@puckeditor/plugin-ai";
+import {toast} from "sonner";
+import {ArrowLeft, CheckCircle2, Code, Download, Eye, EyeOff, FileJson, Save, Upload, X,} from "lucide-react";
 
-const aiPlugin = createAiPlugin();
+// Lazy load AI components for better initial load
+const AiPageBuilder = React.lazy(() => import("./ai-page-builder"));
+const AiBlockEditor = React.lazy(() => import("./ai-block-editor"));
+const BlockBuilder = React.lazy(() => import("./block-builder"));
 
 // ============================================================
 // EDITOR CONTEXT
@@ -93,7 +66,7 @@ class EditorErrorBoundary extends React.Component<EBProps, EBState> {
         <div className="flex h-screen w-screen items-center justify-center bg-cpm-bg-primary px-6">
           <div className="w-full max-w-md text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/20">
-              <AlertCircle className="h-8 w-8 text-red-400" />
+              <X className="h-8 w-8 text-red-400"/>
             </div>
             <h2 className="mb-2 text-xl font-medium text-cpm-text-primary">
               Editor Error
@@ -123,7 +96,7 @@ class EditorErrorBoundary extends React.Component<EBProps, EBState> {
 // ============================================================
 // EDITOR HEADER
 // ============================================================
-function EditorHeader({ onBack }: { onBack: () => void }) {
+const EditorHeader = memo(function EditorHeader({onBack}: { onBack: () => void }) {
   const { appState, dispatch } = usePuck();
   const ctx = useEditorContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -135,16 +108,19 @@ function EditorHeader({ onBack }: { onBack: () => void }) {
 
   // Track selected component for AI block editing
   const selectedComponentId = appState.ui?.selectedComponentId;
-  const contentArray = (appState.data as Record<string, unknown>)?.content as
-    | Array<{ type: string; props: Record<string, unknown>; id?: string }>
-    | undefined;
-  const selectedComponent = selectedComponentId && contentArray
-    ? contentArray.find(
+  const contentArray = useMemo(() => {
+    const data = appState.data as Record<string, unknown>;
+    return (data?.content as Array<{ type: string; props: Record<string, unknown>; id?: string }>) || [];
+  }, [appState.data]);
+
+  const selectedComponent = useMemo(() => {
+    if (!selectedComponentId || !contentArray) return null;
+    return contentArray.find(
         (item) =>
-          item.id === selectedComponentId ||
-          (item.props?.id as string) === selectedComponentId
-      )
-    : null;
+            item.id === selectedComponentId ||
+            (item.props?.id as string) === selectedComponentId
+    );
+  }, [selectedComponentId, contentArray]);
 
   const handlePublish = useCallback(async () => {
     ctx.setIsDirty(true);
@@ -240,13 +216,10 @@ function EditorHeader({ onBack }: { onBack: () => void }) {
 
   const handleAddBlock = useCallback(
     (blockType: string, props: Record<string, unknown>) => {
-      const blockDef = config.components[blockType as keyof typeof config.components];
-      if (!blockDef) return;
-      const mergedProps = { ...blockDef.defaultProps, ...props };
       dispatch({
         type: "insert",
         componentType: blockType,
-        data: mergedProps,
+        data: props,
       } as unknown as PuckAction);
       ctx.setIsDirty(true);
     },
@@ -305,23 +278,7 @@ function EditorHeader({ onBack }: { onBack: () => void }) {
             className="flex items-center gap-1.5 rounded-lg border border-cpm-accent/25 bg-gradient-to-r from-cpm-accent/15 to-cpm-accent/5 px-2.5 py-1.5 text-xs font-medium text-cpm-accent transition-all duration-300 hover:from-cpm-accent/25 hover:to-cpm-accent/10 hover:border-cpm-accent/40"
             title="AI Page Builder"
           >
-            <Sparkles className="h-3.5 w-3.5" />
             <span className="hidden md:inline">AI Page</span>
-          </button>
-
-          {/* AI Block Edit */}
-          <button
-            onClick={() => selectedComponent && setAiBlockEditorOpen(true)}
-            disabled={!selectedComponent}
-            className="flex items-center gap-1.5 rounded-lg border border-cpm-border px-2.5 py-1.5 text-xs text-cpm-text-secondary transition-all duration-200 hover:border-cpm-accent/25 hover:text-cpm-accent disabled:opacity-30 disabled:cursor-not-allowed"
-            title={
-              selectedComponent
-                ? `AI Edit: ${selectedComponent.type}`
-                : "Select a block to edit with AI"
-            }
-          >
-            <Wand2 className="h-3.5 w-3.5" />
-            <span className="hidden lg:inline">AI Edit</span>
           </button>
 
           {/* Add Block */}
@@ -330,7 +287,6 @@ function EditorHeader({ onBack }: { onBack: () => void }) {
             className="flex items-center gap-1.5 rounded-lg border border-cpm-border px-2.5 py-1.5 text-xs text-cpm-text-secondary transition-all duration-200 hover:border-cpm-accent/25 hover:text-cpm-accent"
             title="Block Builder"
           >
-            <Plus className="h-3.5 w-3.5" />
             <span className="hidden lg:inline">Add Block</span>
           </button>
 
@@ -426,47 +382,51 @@ function EditorHeader({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* AI Dialogs */}
-      <AiPageBuilder
-        open={aiPageBuilderOpen}
-        onClose={() => setAiPageBuilderOpen(false)}
-        onApply={handleAiPageApply}
-        currentPage={ctx.currentPage}
-      />
+      {/* AI Dialogs - Lazy loaded */}
+      <React.Suspense fallback={null}>
+        {aiPageBuilderOpen && (
+            <AiPageBuilder
+                open={aiPageBuilderOpen}
+                onClose={() => setAiPageBuilderOpen(false)}
+                onApply={handleAiPageApply}
+                currentPage={ctx.currentPage}
+            />
+        )}
 
-      {selectedComponent && (
-        <AiBlockEditor
-          open={aiBlockEditorOpen}
-          onClose={() => setAiBlockEditorOpen(false)}
-          blockType={selectedComponent.type as string}
-          currentProps={selectedComponent.props as Record<string, unknown>}
-          onApply={handleAiBlockApply}
+        {selectedComponent && aiBlockEditorOpen && (
+            <AiBlockEditor
+                open={aiBlockEditorOpen}
+                onClose={() => setAiBlockEditorOpen(false)}
+                blockType={selectedComponent.type as string}
+                currentProps={selectedComponent.props as Record<string, unknown>}
+                onApply={handleAiBlockApply}
+            />
+        )}
+
+        <BlockBuilder
+            open={blockBuilderOpen}
+            onClose={() => setBlockBuilderOpen(false)}
+            onAddBlock={handleAddBlock}
         />
-      )}
-
-      <BlockBuilder
-        open={blockBuilderOpen}
-        onClose={() => setBlockBuilderOpen(false)}
-        onAddBlock={handleAddBlock}
-      />
+      </React.Suspense>
     </>
   );
-}
+});
 
 // ============================================================
 // PREVIEW RENDERER
 // ============================================================
-function PreviewRenderer({ data }: { data: Data }) {
+const PreviewRenderer = memo(function PreviewRenderer({data}: { data: Data }) {
   const d = data as Record<string, unknown>;
-  const content = (d.content || []) as Array<{
-    type: string;
-    props: Record<string, unknown>;
-  }>;
+  const content = useMemo(
+      () => (d.content || []) as Array<{ type: string; props: Record<string, unknown> }>,
+      [d.content]
+  );
 
   if (!content.length) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-cpm-text-tertiary">
-        <LayoutGrid className="mb-4 h-16 w-16" />
+        <span className="mb-4 h-16 w-16"/>
         <p className="text-sm">No content yet</p>
       </div>
     );
@@ -475,43 +435,27 @@ function PreviewRenderer({ data }: { data: Data }) {
   return (
     <>
       {content.map((item, index) => {
-        const componentDef = config.components[
-          item.type as keyof typeof config.components
-        ];
+        const componentDef = (window as any).__PUCK_CONFIG__?.components?.[item.type as string];
         if (!componentDef) return null;
-        const blockDef = componentDef as Record<string, unknown>;
         const key = item.props?.id || `preview-${item.type}-${index}`;
-        if (blockDef.Component) {
-          return (
-            <React.Fragment key={key}>
-              {React.createElement(
-                blockDef.Component as React.ComponentType,
-                item.props
-              )}
-            </React.Fragment>
-          );
-        }
         return (
-          <React.Fragment key={key}>
-            {componentDef.render(item.props)}
+            <React.Fragment key={key}>
+              {React.createElement(componentDef.Component, item.props)}
           </React.Fragment>
         );
       })}
     </>
   );
-}
+});
 
 // ============================================================
 // EDITOR LOADING SCREEN
 // ============================================================
-function EditorLoadingScreen({ pageName }: { pageName: string }) {
+const EditorLoadingScreen = memo(function EditorLoadingScreen({pageName}: { pageName: string }) {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-cpm-bg-primary">
       <div className="relative mb-6">
         <div className="h-12 w-12 rounded-full border-2 border-cpm-border border-t-cpm-accent animate-spin" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-4 rounded-full bg-cpm-accent/20 animate-pulse" />
-        </div>
       </div>
       <p className="mb-1 text-sm font-medium text-cpm-text-primary">
         Loading editor
@@ -521,14 +465,13 @@ function EditorLoadingScreen({ pageName }: { pageName: string }) {
       </p>
     </div>
   );
-}
+});
 
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
 interface PuckEditorProps {
   currentPage: string;
-  /** Pre-loaded page data passed from page.tsx — avoids a redundant fetch */
   initialData: Data;
   onBack: () => void;
 }
@@ -642,8 +585,7 @@ export default function PuckEditor({
         <div className="flex h-screen flex-col bg-cpm-bg-primary">
           <Puck
             key={puckKey}
-            config={config}
-            plugins={[aiPlugin]}
+            config={(window as any).__PUCK_CONFIG__}
             data={readyData}
             overrides={{
               header: () => <EditorHeader onBack={onBack} />,

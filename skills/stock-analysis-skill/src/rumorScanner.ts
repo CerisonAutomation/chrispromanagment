@@ -7,7 +7,7 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { RumorItem, RumorScanResult, RumorType } from "./types";
+import {RumorItem, RumorScanResult, RumorType} from "./types";
 
 // ── 评分逻辑（移植自原版 calculate_rumor_score）─────────
 

@@ -5,9 +5,9 @@
  * GET /api/media endpoint can list files without needing a database table.
  */
 
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import {mkdir, readFile, writeFile} from "fs/promises";
+import {join} from "path";
+import {existsSync} from "fs";
 
 const MANIFEST_PATH = join(process.cwd(), "public", "uploads", ".manifest.json");
 

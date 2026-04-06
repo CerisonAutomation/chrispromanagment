@@ -1,15 +1,14 @@
 "use client";
 
-import { HERO_BG } from "@/lib/images";
-import { safeHref } from "./helpers";
-import { BlurFade } from "@/components/effects/blur-fade";
-import { BlurFadeText } from "@/components/effects/blur-fade-text";
-import { MorphingText } from "@/components/effects/morphing-text";
-import { SparklesText } from "@/components/effects/sparkles-text";
-import { ShimmerButton } from "@/components/effects/shimmer-button";
-import { RetroGrid } from "@/components/effects/retro-grid";
-import { Particles } from "@/components/effects/particles";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import {HERO_BG} from "@/lib/images";
+import {safeHref} from "./helpers";
+import {BlurFade} from "@/components/effects/blur-fade";
+import {BlurFadeText} from "@/components/effects/blur-fade-text";
+import {MorphingText} from "@/components/effects/morphing-text";
+import {ShimmerButton} from "@/components/effects/shimmer-button";
+import {RetroGrid} from "@/components/effects/retro-grid";
+import {Particles} from "@/components/effects/particles";
+import {ArrowRight, ChevronDown} from "lucide-react";
 
 export const HeroSection = {
   label: "Hero Section",
@@ -87,16 +86,20 @@ export const HeroSection = {
 
             {/* 21st.dev: BlurFadeText for title with per-word stagger */}
             <h1 className="mb-6 font-[family-name:var(--font-heading)] text-4xl font-light leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              <BlurFadeText
-                text={p.title}
-                byWord
-                characterDelay={0.06}
-                delay={0.3}
-                className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: "linear-gradient(135deg, var(--cpm-accent) 0%, var(--cpm-text-primary) 50%, var(--cpm-accent) 100%)",
-                }}
-              />
+              <span
+                  className="bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage: "linear-gradient(135deg, var(--cpm-accent) 0%, var(--cpm-text-primary) 50%, var(--cpm-accent) 100%)",
+                  }}
+              >
+                <BlurFadeText
+                    text={p.title}
+                    byWord
+                    characterDelay={0.06}
+                    delay={0.3}
+                    className="inline"
+                />
+              </span>
             </h1>
 
             {/* 21st.dev: SparklesText for premium subtitle highlight */}

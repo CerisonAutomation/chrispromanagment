@@ -1,6 +1,6 @@
-import type { BlockData } from "@/lib/block-types";
-import { LOGO_URL, HERO_BG, ABOUT_IMG, PROP_IMAGES } from "@/lib/images";
-import { COPYRIGHT, CONTACT } from "@/lib/constants";
+import type {BlockData} from "@/lib/block-types";
+import {ABOUT_IMG, HERO_BG, LOGO_URL, PROP_IMAGES} from "@/lib/images";
+import {CONTACT, COPYRIGHT} from "@/lib/constants";
 
 // Short aliases for property images (used in page data)
 const PROP_1 = PROP_IMAGES.valletta2;

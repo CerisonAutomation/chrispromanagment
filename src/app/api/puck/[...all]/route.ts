@@ -3,8 +3,8 @@
 // Follows official next-ai recipe: https://github.com/puckeditor/puck/tree/main/recipes/next-ai
 // =============================================================================
 
-import { NextRequest } from "next/server";
-import { puckHandler } from "@puckeditor/cloud-client";
+import {NextRequest} from "next/server";
+import {puckHandler} from "@puckeditor/cloud-client";
 
 const CPM_AI_CONTEXT = `You are the AI assistant for Christiano Property Management (CPM), a premium luxury vacation rental company based in Birkirkara, Malta.
 

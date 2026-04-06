@@ -1,5 +1,4 @@
-import { safeHref } from "./helpers";
-import { IMG_9593 } from "./helpers";
+import {IMG_9593, safeHref} from "./helpers";
 
 export const ImageWithText = {
   label: "Image With Text",

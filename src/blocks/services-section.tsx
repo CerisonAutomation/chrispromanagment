@@ -1,4 +1,4 @@
-import { safeHref } from "./helpers";
+import {safeHref} from "./helpers";
 
 export const ServicesSection = {
   label: "Services Section",

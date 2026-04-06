@@ -1,0 +1,135 @@
+.puckCanvas {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--puck-color-canvas-bg, #f5f5f5);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.puckCanvas.ready {
+  /* Ready state */
+}
+
+.puckCanvas.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: var(--puck-space-2);
+  pointer-events: none;
+}
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: var(--puck-space-2);
+  pointer-events: none;
+}
+
+.toolbar > * {
+  pointer-events: auto;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  transition: transform 150ms ease;
+}
+
+.grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to right, var(--puck-color-grid-line, #e0e0e0) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--puck-color-grid-line, #e0e0e0) 1px, transparent 1px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 100;
+}
+
+/* Responsive canvas */
+@media (max-width: 768px) {
+  .puckCanvas {
+    min-height: 300px;
+  }
+
+  .content {
+    min-height: 300px;
+  }
+}
+
+/* Fullscreen mode */
+.puckCanvas.fullScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+/* Snap guides */
+.snapGuide {
+  position: absolute;
+  background: var(--puck-color-snap-guide, var(--puck-color-azure));
+  z-index: 50;
+  pointer-events: none;
+}
+
+.snapGuide.horizontal {
+  height: 1px;
+  left: 0;
+  right: 0;
+}
+
+.snapGuide.vertical {
+  width: 1px;
+  top: 0;
+  bottom: 0;
+}
+
+/* Drop indicator */
+.dropIndicator {
+  position: absolute;
+  height: 2px;
+  background: var(--puck-color-azure);
+  pointer-events: none;
+  z-index: 50;
+  border-radius: 1px;
+  box-shadow: 0 0 4px var(--puck-color-azure);
+}
+
+.dropIndicator.before {
+  transform: translateY(-50%);
+}
+
+.dropIndicator.after {
+  transform: translateY(-50%);
+}

@@ -3,7 +3,7 @@
  */
 
 import ZAI from "z-ai-web-dev-sdk";
-import { Market, FetchMode, StockData } from "./types";
+import {FetchMode, Market, StockData} from "./types";
 
 export function detectMarket(code: string): Market {
   if (/^\d{6}$/.test(code)) return "CN";
