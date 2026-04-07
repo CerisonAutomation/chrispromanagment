@@ -1,10 +1,18 @@
 /**
- * All Guesty API resource methods.
- * 10 resources covering all operations from Velocity-BPA/n8n-nodes-guesty:
- * listings, reservations, calendar, guests, quotes, tasks, webhooks, conversations, owners, invoices.
+ * All Guesty API resource methods — Open API (admin/management) only.
+ * 9 resources: listings, reservations, calendar, guests, tasks,
+ *              conversations, owners, invoices.
+ *
+ * ⚠️  QUOTES / BOOKING ENGINE → use src/lib/guesty/booking-api.ts
+ *     The Open API has no /quotes endpoint.
+ *     createQuote() and getQuote() live in booking-api.ts only.
  */
 
 import { guestyFetch, guestyFetchAll } from './client';
+import {
+  createQuote as beCreateQuote,
+  getQuote as beGetQuote,
+} from './booking-api';
 import type {
   GuestyListing,
   GuestyListingsResponse,
@@ -24,7 +32,7 @@ import type {
   GuestyInvoicesResponse,
 } from './types';
 
-// ─── Listings ───────────────────────────────────────────────────────────────────────
+// ─── Listings ──────────────────────────────────────────────────────────────────
 
 export async function getListings(opts?: {
   limit?: number;
@@ -56,7 +64,7 @@ export async function getListing(id: string): Promise<GuestyListing> {
   return guestyFetch<GuestyListing>(`/listings/${id}`);
 }
 
-// ─── Reservations ──────────────────────────────────────────────────────────────────
+// ─── Reservations ──────────────────────────────────────────────────────────────
 
 export async function getReservations(opts?: {
   guestEmail?: string;
@@ -85,7 +93,6 @@ export async function getReservations(opts?: {
   if (opts?.sort) params.sort = opts.sort;
   if (opts?.fields) params.fields = opts.fields;
 
-  // Include all financial fields by default (from dferrera-creator/margin-app pattern)
   if (!opts?.fields) {
     params.fields = [
       '_id', 'listingId', 'listing', 'guestName', 'guest',
@@ -125,7 +132,7 @@ export async function getReservation(id: string): Promise<GuestyReservation> {
   return guestyFetch<GuestyReservation>(`/reservations/${id}`);
 }
 
-// ─── Calendar ──────────────────────────────────────────────────────────────────────
+// ─── Calendar ─────────────────────────────────────────────────────────────────
 
 export async function getCalendar(
   listingId: string,
@@ -137,7 +144,7 @@ export async function getCalendar(
   });
 }
 
-// ─── Guests ────────────────────────────────────────────────────────────────────────
+// ─── Guests ─────────────────────────────────────────────────────────────────────
 
 export async function getGuests(opts?: {
   limit?: number;
@@ -156,26 +163,41 @@ export async function getGuest(id: string): Promise<GuestyGuestProfile> {
   return guestyFetch<GuestyGuestProfile>(`/guests/${id}`);
 }
 
-// ─── Quotes (pricing) ───────────────────────────────────────────────────────────────
+// ─── Quotes (Booking Engine API — proxied here for barrel-import compatibility) ────
+//
+// getQuote / createQuote are Booking Engine API operations.
+// The Open API has NO /quotes endpoint — calling it there returns 404.
+// These exports delegate to booking-api.ts via the correct API.
 
+/**
+ * Create a price quote via the Guesty Booking Engine API.
+ * Delegates to src/lib/guesty/booking-api.ts createQuote().
+ * @see https://booking-api-docs.guesty.com
+ */
 export async function getQuote(opts: {
   listingId: string;
   checkIn: string;
   checkOut: string;
   guestsCount?: number;
 }): Promise<GuestyQuote> {
-  return guestyFetch<GuestyQuote>('/quotes', {
-    method: 'POST',
-    body: JSON.stringify({
-      listingId: opts.listingId,
-      checkIn: opts.checkIn,
-      checkOut: opts.checkOut,
-      guestsCount: opts.guestsCount ?? 1,
-    }),
-  });
+  // Booking Engine API uses checkInDateLocalized / checkOutDateLocalized
+  return beCreateQuote({
+    listingId: opts.listingId,
+    checkInDateLocalized: opts.checkIn,
+    checkOutDateLocalized: opts.checkOut,
+    guestsCount: opts.guestsCount ?? 1,
+  }) as Promise<GuestyQuote>;
 }
 
-// ─── Tasks ──────────────────────────────────────────────────────────────────────────
+/**
+ * Retrieve an existing quote by ID via the Guesty Booking Engine API.
+ * Delegates to src/lib/guesty/booking-api.ts getQuote().
+ */
+export async function getQuoteById(quoteId: string): Promise<GuestyQuote> {
+  return beGetQuote(quoteId) as Promise<GuestyQuote>;
+}
+
+// ─── Tasks ───────────────────────────────────────────────────────────────────────
 
 export async function getTasks(opts?: {
   listingId?: string;
@@ -198,7 +220,7 @@ export async function getTask(id: string): Promise<GuestyTask> {
   return guestyFetch<GuestyTask>(`/tasks/${id}`);
 }
 
-// ─── Conversations (messaging) ────────────────────────────────────────────────────────
+// ─── Conversations (messaging) ──────────────────────────────────────────────────
 
 export async function getConversations(opts?: {
   reservationId?: string;
@@ -225,7 +247,7 @@ export async function sendMessage(conversationId: string, body: string): Promise
   });
 }
 
-// ─── Owners ──────────────────────────────────────────────────────────────────────────
+// ─── Owners ────────────────────────────────────────────────────────────────────
 
 export async function getOwners(opts?: { limit?: number; skip?: number }): Promise<GuestyOwnersResponse> {
   return guestyFetch<GuestyOwnersResponse>('/owners', {
@@ -237,7 +259,7 @@ export async function getOwner(id: string): Promise<GuestyOwner> {
   return guestyFetch<GuestyOwner>(`/owners/${id}`);
 }
 
-// ─── Invoices ───────────────────────────────────────────────────────────────────────
+// ─── Invoices ─────────────────────────────────────────────────────────────────
 
 export async function getInvoices(opts?: { reservationId?: string; limit?: number; skip?: number }): Promise<GuestyInvoicesResponse> {
   const params: Record<string, string> = {
