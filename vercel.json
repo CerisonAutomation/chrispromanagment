@@ -67,10 +67,6 @@
     {
       "path": "/api/cron/sync-reservations",
       "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/cron/calendar-refresh",
-      "schedule": "0 */2 * * *"
     }
   ]
 }

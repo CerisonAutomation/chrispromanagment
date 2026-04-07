@@ -22,8 +22,7 @@ import { getQStashReceiver, JobPayloadSchema } from '@/lib/qstash/client';
 import { syncListings, syncReservations } from '@/lib/guesty/sync';
 import { invalidateGuestyToken } from '@/lib/guesty/booking-api';
 import { createClient } from '@supabase/supabase-js';
-import type { GuestySyncJob, GuestyWebhookJob, CalendarRefreshJob } from '@/lib/qstash/client';
-import { getListingCalendar } from '@/lib/guesty/booking-api';
+import type { GuestySyncJob, GuestyWebhookJob } from '@/lib/qstash/client';
 import { Redis } from '@upstash/redis';
 
 export const runtime = 'nodejs'; // QStash verification requires Node crypto
@@ -114,31 +113,6 @@ async function handleGuestyWebhookJob(job: GuestyWebhookJob): Promise<void> {
   }
 }
 
-async function handleCalendarRefreshJob(job: CalendarRefreshJob): Promise<void> {
-  const from = new Date().toISOString().split('T')[0] as string;
-  const toDate = new Date(Date.now() + job.daysAhead * 86_400_000);
-  const to = toDate.toISOString().split('T')[0] as string;
-
-  // Parallel refresh for all listing IDs
-  const results = await Promise.allSettled(
-    job.listingIds.map(async (listingId) => {
-      const calendar = await getListingCalendar(listingId, from, to);
-      // Cache in Redis: 5 min TTL (calendar changes frequently near bookings)
-      await redis.set(
-        `calendar:${listingId}:${from}:${to}`,
-        JSON.stringify(calendar),
-        { ex: 300 },
-      );
-      return listingId;
-    }),
-  );
-
-  const failed = results.filter((r) => r.status === 'rejected');
-  if (failed.length > 0) {
-    throw new Error(`Calendar refresh failed for ${failed.length}/${job.listingIds.length} listings`);
-  }
-}
-
 // ─── Main Handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -178,9 +152,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         break;
       case 'guesty.webhook':
         await handleGuestyWebhookJob(job);
-        break;
-      case 'guesty.calendar.refresh':
-        await handleCalendarRefreshJob(job);
         break;
       case 'guesty.reservation.sync':
         // Single reservation sync: invalidate token cache and re-sync listing

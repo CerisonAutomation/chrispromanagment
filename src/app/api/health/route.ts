@@ -3,7 +3,7 @@
  * Used by Vercel, uptime monitors, and CI smoke tests.
  */
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export const revalidate = 0;
@@ -15,11 +15,8 @@ export async function GET() {
 
   try {
     const t = Date.now();
-    const { error } = await supabaseAdmin
-      .from('cms_pages')
-      .select('id')
-      .limit(1)
-      .single();
+    // Check database connection
+    const { data, error } = await db.from('cms_pages').select('count').limit(1).single();
     dbLatencyMs = Date.now() - t;
     dbOk = !error || error.code === 'PGRST116'; // PGRST116 = no rows, DB is fine
   } catch {

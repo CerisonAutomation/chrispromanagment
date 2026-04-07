@@ -6,7 +6,9 @@
  * DELETE /api/puck/[slug] — delete page
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin, EMPTY_DATA } from '@/lib/supabase';
+import { db } from '@/lib/db';
+
+const EMPTY_DATA = { content: [], root: { props: { title: '', theme: 'malta-gold' } } };
 
 type Ctx = { params: Promise<{ all: string[] }> };
 
@@ -21,7 +23,7 @@ function jsonErr(msg: string, status = 400): NextResponse {
 export async function GET(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await db
       .from('cms_pages').select('data').eq('slug', s).maybeSingle();
     if (error) console.error(`[CMS GET /${s}]`, error.message);
     const d = data?.data;
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest, { params }: Ctx): Promise<NextRespo
     const theme = String(
       ((body?.root as Record<string,unknown>)?.props as Record<string,unknown>)?.theme ?? 'malta-gold'
     );
-    const { error } = await supabaseAdmin.from('cms_pages').upsert(
+    const { error } = await db.from('cms_pages').upsert(
       { slug: s, title, data: body, theme, published: true, updated_at: new Date().toISOString() },
       { onConflict: 'slug' }
     );
@@ -64,7 +66,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
   try {
     const s = slug((await params).all);
     const body = await req.json().catch(() => ({})) as { published?: boolean };
-    const { error } = await supabaseAdmin
+    const { error } = await db
       .from('cms_pages')
       .update({ published: Boolean(body.published), updated_at: new Date().toISOString() })
       .eq('slug', s);
@@ -78,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
 export async function DELETE(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const { error } = await supabaseAdmin.from('cms_pages').delete().eq('slug', s);
+    const { error } = await db.from('cms_pages').delete().eq('slug', s);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true, slug: s });
   } catch (e) {

@@ -10,12 +10,14 @@ export {
   publishJob,
   enqueueGuestySync,
   enqueueWebhookEvent,
-  enqueueCalendarRefresh,
   getQStashReceiver,
+  createSchedule,
+  listSchedules,
+  deleteSchedule,
+  upsertSchedule,
   JobPayloadSchema,
   GuestySyncJobSchema,
   GuestyWebhookJobSchema,
-  CalendarRefreshJobSchema,
   ReservationSyncJobSchema,
 } from './client';
 
@@ -23,7 +25,8 @@ export type {
   JobPayload,
   GuestySyncJob,
   GuestyWebhookJob,
-  CalendarRefreshJob,
   ReservationSyncJob,
   PublishJobOptions,
+  CreateScheduleOptions,
+  Schedule,
 } from './client';

@@ -65,13 +65,6 @@ export const GuestyWebhookJobSchema = z.object({
   receivedAt: z.string(),
 });
 
-export const CalendarRefreshJobSchema = z.object({
-  type: z.literal('guesty.calendar.refresh'),
-  listingIds: z.array(z.string()),
-  /** Number of days ahead to refresh */
-  daysAhead: z.number().default(90),
-});
-
 export const ReservationSyncJobSchema = z.object({
   type: z.literal('guesty.reservation.sync'),
   reservationId: z.string(),
@@ -81,13 +74,11 @@ export const ReservationSyncJobSchema = z.object({
 export const JobPayloadSchema = z.discriminatedUnion('type', [
   GuestySyncJobSchema,
   GuestyWebhookJobSchema,
-  CalendarRefreshJobSchema,
   ReservationSyncJobSchema,
 ]);
 
 export type GuestySyncJob = z.infer<typeof GuestySyncJobSchema>;
 export type GuestyWebhookJob = z.infer<typeof GuestyWebhookJobSchema>;
-export type CalendarRefreshJob = z.infer<typeof CalendarRefreshJobSchema>;
 export type ReservationSyncJob = z.infer<typeof ReservationSyncJobSchema>;
 export type JobPayload = z.infer<typeof JobPayloadSchema>;
 
@@ -96,7 +87,6 @@ export type JobPayload = z.infer<typeof JobPayloadSchema>;
 const JOB_RETRY_CONFIG: Record<JobPayload['type'], number> = {
   'guesty.sync': 3,
   'guesty.webhook': 5,
-  'guesty.calendar.refresh': 2,
   'guesty.reservation.sync': 4,
 };
 
@@ -183,18 +173,101 @@ export async function enqueueWebhookEvent(
   });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCHEDULES API — Recurring jobs via QStash (bypasses Vercel cron limits)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CreateScheduleOptions {
+  /** Cron expression (e.g., "0 */2 * * *" for every 2 hours) */
+  cron: string;
+  /** Optional delay before first run */
+  delaySeconds?: number;
+  /** Override default retry count */
+  retries?: number;
+}
+
+export interface Schedule {
+  scheduleId: string;
+  cron: string;
+  destination: string;
+  nextRunAt: number;
+}
+
 /**
- * Convenience: enqueue a calendar refresh for specific listings.
+ * Create a QStash Schedule for recurring jobs.
+ * This bypasses Vercel's cron job limits by using Upstash's scheduling.
+ * 
+ * Usage: Create schedule once (via CLI or admin UI), it runs forever.
+ * 
+ * @example
+ * await createSchedule(
+ *   'calendar-refresh-bi-hourly',
+ *   { type: 'guesty.calendar.refresh', listingIds: ['all'], daysAhead: 90 },
+ *   { cron: '0 */2 * * *' }
+ * );
  */
-export async function enqueueCalendarRefresh(
-  listingIds: string[],
-  daysAhead = 90,
-): Promise<{ messageId: string }> {
-  return publishJob({
-    type: 'guesty.calendar.refresh',
-    listingIds,
-    daysAhead,
-  }, {
-    deduplicationId: `calendar-refresh-${listingIds.sort().join('-')}`,
+export async function createSchedule(
+  scheduleId: string,
+  payload: JobPayload,
+  options: CreateScheduleOptions,
+): Promise<{ scheduleId: string; nextRunAt: number }> {
+  const client = getQStashClient();
+  const workerUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/qstash/worker`;
+
+  if (!process.env.NEXT_PUBLIC_SITE_URL) {
+    throw new Error('[QStash] Missing NEXT_PUBLIC_SITE_URL — required for worker URL.');
+  }
+
+  const retries = options.retries ?? JOB_RETRY_CONFIG[payload.type];
+
+  const result = await client.schedules.create({
+    scheduleId,
+    destination: workerUrl,
+    cron: options.cron,
+    body: payload,
+    retries,
+    delay: options.delaySeconds,
   });
+
+  return { scheduleId: result.scheduleId, nextRunAt: result.nextRunAt };
+}
+
+/**
+ * List all QStash schedules.
+ */
+export async function listSchedules(): Promise<Schedule[]> {
+  const client = getQStashClient();
+  const schedules = await client.schedules.list();
+  return schedules.map((s): Schedule => ({
+    scheduleId: s.scheduleId,
+    cron: s.cron,
+    destination: s.destination,
+    nextRunAt: s.nextRunAt,
+  }));
+}
+
+/**
+ * Delete a QStash schedule by ID.
+ */
+export async function deleteSchedule(scheduleId: string): Promise<void> {
+  const client = getQStashClient();
+  await client.schedules.delete({ scheduleId });
+}
+
+/**
+ * Create or replace a QStash schedule (idempotent).
+ * Deletes existing schedule with same ID before creating.
+ */
+export async function upsertSchedule(
+  scheduleId: string,
+  payload: JobPayload,
+  options: CreateScheduleOptions,
+): Promise<{ scheduleId: string; nextRunAt: number; created: boolean }> {
+  try {
+    await deleteSchedule(scheduleId);
+  } catch {
+    // Schedule didn't exist, that's fine
+  }
+  const result = await createSchedule(scheduleId, payload, options);
+  return { ...result, created: true };
 }

@@ -1,9 +1,0 @@
-/**
- * Types Index - Re-exports from canonical types location
- * 
- * This file re-exports all types from the canonical types location.
- * Use @/types or @/lib/types for all type imports.
- */
-
-// Re-export everything from canonical types
-export * from "../types/index";

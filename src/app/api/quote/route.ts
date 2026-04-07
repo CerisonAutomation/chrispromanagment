@@ -4,7 +4,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getBookingQuote } from '@/lib/guesty';
-import { supabaseAdmin } from '@/lib/supabase';
+import { db } from '@/lib/db';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -15,8 +15,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     const result = await getBookingQuote(listingId, checkIn, checkOut, guests);
     if (result.error) return NextResponse.json({ error: result.error }, { status: 503 });
-    // Cache quote to Supabase for analytics
-    await supabaseAdmin.from('booking_quotes').insert({
+    // Store quote in database for analytics
+    const { error: dbError } = await db.from('quotes').insert({
       listing_id: listingId, check_in: checkIn, check_out: checkOut,
       guests, quote_data: result.data,
     }).then(() => null).catch(() => null); // fire-and-forget
