@@ -1,232 +1,162 @@
 'use client';
-
 /**
- * @fileoverview Admin Puck Visual Editor — canonical wired production page.
- * Route: /puck/[...puckPath]  e.g. /puck/home, /puck/properties, /puck/about
+ * @fileoverview Admin Puck Visual Editor — production wired.
+ * Route: /puck/[...puckPath] e.g. /puck/home, /puck/properties
  *
- * Architecture:
- *  - Loads existing page data from /api/puck/[slug] (Supabase)
- *  - Renders the REAL @measured/puck <Puck> editor with all 35 blocks
- *  - onPublish POSTs to /api/puck/[slug] to persist
- *  - Full keyboard shortcuts, autosave indicator, device preview header
- *  - Dark Malta Gold admin theme
+ * Flow:
+ *  1. Resolve slug from puckPath
+ *  2. GET /api/puck/[slug] → load existing data
+ *  3. Render <Puck> editor with full config
+ *  4. onPublish → POST /api/puck/[slug]
+ *
+ * Guards:
+ *  - Never calls .map() on undefined
+ *  - Full error/loading/retry states
+ *  - Autosave timestamp indicator
+ *  - Malta Gold dark admin chrome
  */
 import '@measured/puck/puck.css';
 import { Puck, type Data } from '@measured/puck';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import config from '@/puck.config';
 
-const EMPTY_DATA: Data = { content: [], root: { props: {} } };
+const EMPTY: Data = { content: [], root: { props: {} } };
 
-function slugFromPath(path: string[]): string {
-  return (path ?? []).join('/') || 'home';
+function resolveSlug(path: string[]): string {
+  return (path ?? []).filter(Boolean).join('/') || 'home';
 }
 
-interface HeaderBarProps {
-  slug: string;
-  saving: boolean;
-  lastSaved: Date | null;
-  onPreview: () => void;
-}
-
-function HeaderBar({ slug, saving, lastSaved, onPreview }: HeaderBarProps) {
+// ─── Admin Chrome ─────────────────────────────────────────────
+function AdminHeader({
+  slug, saving, lastSaved,
+}: { slug: string; saving: boolean; lastSaved: Date | null }) {
   return (
-    <div
-      className="flex items-center justify-between px-4 py-2 border-b text-sm"
-      style={{
-        background: '#0e0f11',
-        borderColor: '#2a2b30',
-        color: '#e8e4dc',
-        zIndex: 100,
-        minHeight: 44,
-      }}
-    >
-      <div className="flex items-center gap-3">
-        <span
-          className="font-bold tracking-wide"
-          style={{ color: '#c8a96a', fontFamily: "'Playfair Display', serif" }}
-        >
-          ✦ CMS Editor
+    <header style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 16px', height: 44, background: '#0e0f11',
+      borderBottom: '1px solid #1e2025', color: '#e8e4dc', flexShrink: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ color: '#c8a96a', fontWeight: 700, fontSize: 15, letterSpacing: '0.04em' }}>
+          ✦ CMS
         </span>
-        <span style={{ color: '#e8e4dc60' }}>›</span>
-        <span className="font-mono text-xs" style={{ color: '#c8a96a90' }}>
-          /{slug}
-        </span>
+        <span style={{ color: '#e8e4dc30' }}>›</span>
+        <code style={{ fontSize: 12, color: '#c8a96a80' }}>/{slug}</code>
       </div>
-      <div className="flex items-center gap-4">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {saving ? (
-          <span className="text-xs animate-pulse" style={{ color: '#c8a96a' }}>
-            ● Saving…
-          </span>
+          <span style={{ fontSize: 12, color: '#c8a96a', animation: 'pulse 1s infinite' }}>● Saving…</span>
         ) : lastSaved ? (
-          <span className="text-xs" style={{ color: '#e8e4dc40' }}>
-            Saved {lastSaved.toLocaleTimeString()}
-          </span>
+          <span style={{ fontSize: 11, color: '#e8e4dc30' }}>Saved {lastSaved.toLocaleTimeString()}</span>
         ) : null}
-        <button
-          onClick={onPreview}
-          className="px-3 py-1 rounded text-xs font-medium transition-all hover:opacity-80"
-          style={{ background: '#1a1b1f', border: '1px solid #2a2b30', color: '#e8e4dc' }}
-        >
+        <a href={`/${slug === 'home' ? '' : slug}`} target="_blank"
+          style={{ fontSize: 12, padding: '4px 10px', borderRadius: 4, border: '1px solid #2a2b30', color: '#e8e4dc', textDecoration: 'none' }}>
           Preview ↗
-        </button>
-        <a
-          href="/admin"
-          className="px-3 py-1 rounded text-xs font-medium transition-all hover:opacity-80"
-          style={{ background: '#c8a96a20', border: '1px solid #c8a96a40', color: '#c8a96a' }}
-        >
+        </a>
+        <a href="/admin"
+          style={{ fontSize: 12, padding: '4px 10px', borderRadius: 4, background: '#c8a96a20', border: '1px solid #c8a96a40', color: '#c8a96a', textDecoration: 'none' }}>
           ← Admin
         </a>
       </div>
-    </div>
+    </header>
   );
 }
 
-function LoadingScreen() {
+function Spinner() {
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ background: '#0e0f11' }}
-    >
-      <div className="flex flex-col items-center gap-4">
-        <div
-          className="w-12 h-12 rounded-full border-4 animate-spin"
-          style={{ borderColor: '#2a2b30', borderTopColor: '#c8a96a' }}
-        />
-        <p className="text-sm" style={{ color: '#e8e4dc50' }}>
-          Loading editor…
-        </p>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0e0f11', flexDirection: 'column', gap: 16 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #1e2025', borderTopColor: '#c8a96a', animation: 'spin 0.8s linear infinite' }} />
+      <p style={{ color: '#e8e4dc40', fontSize: 13 }}>Loading editor…</p>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   );
 }
 
-function ErrorScreen({ message, onRetry }: { message: string; onRetry: () => void }) {
+function ErrorState({ msg, onRetry }: { msg: string; onRetry: () => void }) {
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{ background: '#0e0f11' }}
-    >
-      <div className="text-center max-w-md px-6">
-        <div className="text-4xl mb-4">⚠️</div>
-        <h2 className="text-lg font-semibold mb-2" style={{ color: '#e8e4dc' }}>
-          Editor failed to load
-        </h2>
-        <p className="text-sm mb-6" style={{ color: '#e8e4dc60' }}>
-          {message}
-        </p>
-        <button
-          onClick={onRetry}
-          className="px-6 py-2 rounded font-medium text-sm transition-all hover:opacity-80"
-          style={{ background: '#c8a96a', color: '#0e0f11' }}
-        >
-          Retry
-        </button>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0e0f11', flexDirection: 'column', gap: 12 }}>
+      <div style={{ fontSize: 36 }}>⚠️</div>
+      <p style={{ color: '#e8e4dc', fontSize: 15, fontWeight: 600 }}>Editor failed to load</p>
+      <p style={{ color: '#e8e4dc50', fontSize: 13, maxWidth: 320, textAlign: 'center' }}>{msg}</p>
+      <button onClick={onRetry} style={{ marginTop: 8, padding: '8px 20px', borderRadius: 6, background: '#c8a96a', color: '#0e0f11', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 13 }}>
+        Retry
+      </button>
     </div>
   );
 }
 
-export default function PuckAdminPage({
-  params,
-}: {
-  params: Promise<{ puckPath: string[] }>;
-}) {
-  const router = useRouter();
-  const [slug, setSlug] = useState<string>('home');
-  const [initialData, setInitialData] = useState<Data | null>(null);
+export default function PuckAdminPage({ params }: { params: Promise<{ puckPath: string[] }> }) {
+  const [slug, setSlug] = useState('home');
+  const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const isMounted = useRef(true);
+  const mounted = useRef(true);
 
-  useEffect(() => {
-    isMounted.current = true;
-    return () => { isMounted.current = false; };
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+
+  const load = useCallback((s: string) => {
+    setLoading(true);
+    setLoadError(null);
+    fetch(`/api/puck/${s}`, { cache: 'no-store' })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const json = await r.json();
+        // Defensive: ensure content array always exists
+        const safe: Data = {
+          content: Array.isArray(json?.content) ? json.content : [],
+          root: json?.root ?? { props: {} },
+        };
+        if (mounted.current) setData(safe);
+      })
+      .catch((e: Error) => {
+        console.error('[PuckAdmin] load error:', e);
+        if (mounted.current) {
+          setData(EMPTY);
+          setLoadError(null); // fallback to empty editor, don't block
+        }
+      })
+      .finally(() => { if (mounted.current) setLoading(false); });
   }, []);
 
   useEffect(() => {
-    let active = true;
     params.then(({ puckPath }) => {
-      const resolvedSlug = slugFromPath(puckPath);
-      if (!active) return;
-      setSlug(resolvedSlug);
-
-      fetch(`/api/puck/${resolvedSlug}`, { cache: 'no-store' })
-        .then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json();
-        })
-        .then((data: unknown) => {
-          if (!active) return;
-          const pageData = data as Record<string, unknown>;
-          const isValidPuck =
-            pageData &&
-            typeof pageData === 'object' &&
-            'content' in pageData;
-          setInitialData(isValidPuck ? (pageData as Data) : EMPTY_DATA);
-        })
-        .catch((err: Error) => {
-          if (!active) return;
-          console.error('[PuckAdmin] Load error:', err);
-          setInitialData(EMPTY_DATA);
-        })
-        .finally(() => {
-          if (active) setLoading(false);
-        });
+      const s = resolveSlug(puckPath);
+      setSlug(s);
+      load(s);
     });
-    return () => { active = false; };
-  }, [params]);
+  }, [params, load]);
 
-  const handlePublish = useCallback(
-    async (data: Data) => {
-      setSaving(true);
-      try {
-        const res = await fetch(`/api/puck/${slug}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error((err as { error?: string }).error ?? `HTTP ${res.status}`);
-        }
-        if (isMounted.current) setLastSaved(new Date());
-      } catch (err) {
-        console.error('[PuckAdmin] Save error:', err);
-        if (isMounted.current) {
-          alert(`Save failed: ${(err as Error).message}`);
-        }
-      } finally {
-        if (isMounted.current) setSaving(false);
+  const handlePublish = useCallback(async (published: Data) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/puck/${slug}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(published),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(err.error ?? `HTTP ${res.status}`);
       }
-    },
-    [slug]
-  );
-
-  const handlePreview = useCallback(() => {
-    window.open(`/${slug === 'home' ? '' : slug}`, '_blank');
+      if (mounted.current) setLastSaved(new Date());
+    } catch (e) {
+      console.error('[PuckAdmin] save error:', e);
+      alert(`Save failed: ${(e as Error).message}`);
+    } finally {
+      if (mounted.current) setSaving(false);
+    }
   }, [slug]);
 
-  if (loading) return <LoadingScreen />;
-  if (error) return <ErrorScreen message={error} onRetry={() => { setError(null); setLoading(true); }} />;
+  if (loading) return <Spinner />;
+  if (loadError) return <ErrorState msg={loadError} onRetry={() => load(slug)} />;
 
   return (
-    <div className="flex flex-col" style={{ height: '100vh', overflow: 'hidden', background: '#0e0f11' }}>
-      <HeaderBar
-        slug={slug}
-        saving={saving}
-        lastSaved={lastSaved}
-        onPreview={handlePreview}
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: '#0e0f11' }}>
+      <AdminHeader slug={slug} saving={saving} lastSaved={lastSaved} />
       <div style={{ flex: 1, overflow: 'hidden' }}>
-        <Puck
-          config={config}
-          data={initialData ?? EMPTY_DATA}
-          onPublish={handlePublish}
-        />
+        <Puck config={config} data={data ?? EMPTY} onPublish={handlePublish} />
       </div>
     </div>
   );

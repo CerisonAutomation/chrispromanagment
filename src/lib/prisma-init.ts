@@ -1,10 +1,8 @@
 /**
- * @deprecated Database initialization now handled by Drizzle
+ * @fileoverview Prisma DISABLED — replaced by Supabase.
+ * This file is kept as a tombstone to prevent import errors from legacy files.
+ * Any file importing prisma should be updated to import from '@/lib/supabase' instead.
+ * @deprecated Use supabaseAdmin from '@/lib/supabase'
  */
-export async function ensurePrismaGenerated(): Promise<boolean> {
-    return true;
-}
-
-export function getPrismaErrorMessage(): string {
-    return `Database is ready.`;
-}
+export const prisma = null;
+export default null;
