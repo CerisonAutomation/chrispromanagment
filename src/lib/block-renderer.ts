@@ -1,4 +1,4 @@
-import type { Data } from "@puckeditor/core";
+import type { Data } from "@measured/puck";
 
 export interface BlockTypeInfo {
   type: string;

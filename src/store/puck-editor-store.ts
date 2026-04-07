@@ -3,7 +3,7 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
 import {v4 as uuidv4} from 'uuid';
-import type {Data} from '@puckeditor/core';
+import type {Data} from '@measured/puck';
 
 // =============================================================================
 // Types
@@ -120,6 +120,7 @@ function createEmptyData(): Data {
   return {
     content: [],
     root: { props: {} },
+    zones: {},
   };
 }
 
@@ -183,7 +184,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
           let finalTitle: string;
           
           if (draft && dbData) {
-            // Both exist - use whichever is newer
             if (draft.lastModified > new Date(dbData.updatedAt).getTime()) {
               finalData = draft.data;
               finalTitle = draft.title;
@@ -213,12 +213,10 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
             lastSavedAt: Date.now(),
           });
           
-          // Start autosave
           get().startAutosave();
           
         } catch (error) {
           console.error('Failed to load page:', error);
-          // Fallback to empty page
           set({
             currentSlug: slug,
             currentData: createEmptyData(),
@@ -255,7 +253,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
               isDirty: false,
               lastSavedAt: Date.now(),
             });
-            // Update draft status
             get().saveDraft();
           }
         } catch (error) {
@@ -267,10 +264,8 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
       },
       
       async publishPage(data: Data) {
-        // First save
         await get().savePage(data);
         
-        // Then publish (if you have a publish endpoint)
         const { currentSlug } = get();
         if (!currentSlug) return;
         
@@ -300,7 +295,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
         const { currentData } = get();
         if (!currentData) return;
         
-        // Push current state to undo stack before updating
         get().pushUndoState(currentData);
         
         set({
@@ -308,7 +302,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
           isDirty: true,
         });
         
-        // Auto-save draft to local storage
         get().saveDraft();
       },
       
@@ -330,34 +323,31 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
       },
       
       // =========================================================================
-      // Undo/Redo (Back/Forward)
+      // Undo/Redo
       // =========================================================================
       
       pushUndoState(data: Data) {
         const { undoStack } = get();
         const newStack = [...undoStack, deepClone(data)];
         
-        // Limit stack size
         if (newStack.length > MAX_UNDO) {
           newStack.shift();
         }
         
         set({
           undoStack: newStack,
-          redoStack: [], // Clear redo on new action
+          redoStack: [],
         });
       },
       
       undo() {
         const { undoStack, currentData, redoStack } = get();
         
-        if (undoStack.length <= 1) return null; // Keep at least initial state
+        if (undoStack.length <= 1) return null;
         
-        // Get previous state
         const newUndoStack = undoStack.slice(0, -1);
         const previousState = newUndoStack[newUndoStack.length - 1];
         
-        // Add current to redo
         const newRedoStack = [...redoStack, deepClone(currentData!)].slice(0, MAX_UNDO);
         
         set({
@@ -377,11 +367,9 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
         
         if (redoStack.length === 0) return null;
         
-        // Get next state
         const nextState = redoStack[redoStack.length - 1];
         const newRedoStack = redoStack.slice(0, -1);
         
-        // Add current to undo
         const newUndoStack = [...undoStack, deepClone(currentData!)].slice(-MAX_UNDO);
         
         set({
@@ -397,13 +385,11 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
       },
       
       canUndo() {
-        const { undoStack } = get();
-        return undoStack.length > 1;
+        return get().undoStack.length > 1;
       },
       
       canRedo() {
-        const { redoStack } = get();
-        return redoStack.length > 0;
+        return get().redoStack.length > 0;
       },
       
       // =========================================================================
@@ -434,7 +420,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
         
         if (!version) return null;
         
-        // Push current to undo before restoring
         if (currentData) {
           get().pushUndoState(currentData);
         }
@@ -451,15 +436,11 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
       },
       
       deleteVersion(versionId: string) {
-        const { versions } = get();
-        set({
-          versions: versions.filter(v => v.id !== versionId),
-        });
+        set({ versions: get().versions.filter(v => v.id !== versionId) });
       },
       
       getVersionsForPage(pageId: string) {
-        const { versions } = get();
-        return versions
+        return get().versions
           .filter(v => v.pageId === pageId)
           .sort((a, b) => b.createdAt - a.createdAt);
       },
@@ -481,9 +462,7 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
           syncStatus: 'pending',
         };
         
-        set({
-          drafts: { ...drafts, [currentSlug]: draft },
-        });
+        set({ drafts: { ...drafts, [currentSlug]: draft } });
       },
       
       loadDraft(slug: string) {
@@ -513,12 +492,9 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
           
           if (!initialized || !autosaveEnabled || !isDirty || !currentSlug || !currentData) return;
           
-          // Save to database
           get().savePage(currentData);
           
-          // Also create a version periodically (every 5 autosaves ≈ 15 seconds)
-          const random = Math.random();
-          if (random < 0.2) { // 20% chance
+          if (Math.random() < 0.2) {
             get().createVersion('Autosave checkpoint');
           }
         }, AUTOSAVE_INTERVAL);
@@ -568,7 +544,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
         try {
           await get().savePage(currentData);
           
-          // Update draft status
           const { drafts } = get();
           const draft = drafts[currentSlug];
           if (draft) {
@@ -594,7 +569,7 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
         
         try {
           await get().savePage(currentData);
-          await get().createVersion('Manual save');
+          get().createVersion('Manual save');
         } finally {
           set({ isSaving: false });
         }
@@ -604,7 +579,6 @@ export const usePuckEditorStore = create<PuckEditorState & PuckEditorActions>()(
       name: LOCAL_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Only persist these fields to localStorage
         drafts: state.drafts,
         versions: state.versions,
         autosaveEnabled: state.autosaveEnabled,

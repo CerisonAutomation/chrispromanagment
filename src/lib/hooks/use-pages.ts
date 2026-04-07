@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Data } from "@puckeditor/core";
+import type { Data } from "@measured/puck";
 
 // =============================================================================
 // QUERY KEYS - Hierarchical cache keys for granular invalidation
@@ -97,11 +97,7 @@ async function savePage({ slug, title, data, isDraft = true }: SavePageData): Pr
   const res = await fetch(`${API_BASE}/${slug}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title,
-      data,
-      saveAsDraft: isDraft,
-    }),
+    body: JSON.stringify({ title, data, saveAsDraft: isDraft }),
   });
   if (!res.ok) throw new Error('Failed to save page');
   return res.json();
@@ -136,7 +132,6 @@ async function revertPage({ slug, versionId }: { slug: string; versionId: string
 // REACT QUERY HOOKS - With Optimistic Updates
 // =============================================================================
 
-// Hook: Get all pages
 export function usePages() {
   return useQuery({
     queryKey: pageKeys.lists(),
@@ -144,67 +139,53 @@ export function usePages() {
   });
 }
 
-// Hook: Get single page (for editing)
 export function usePage(slug: string) {
   return useQuery({
     queryKey: pageKeys.detail(slug),
     queryFn: () => fetchPage(slug),
     enabled: !!slug,
-    // Keep previous data while loading new data
     placeholderData: (prev) => prev,
   });
 }
 
-// Hook: Get published page (for public viewing)
 export function usePublishedPage(slug: string) {
   return useQuery({
     queryKey: pageKeys.preview(slug),
     queryFn: () => fetchPublishedPage(slug),
     enabled: !!slug,
-    // Cache published pages longer since they change less frequently
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 }
 
-// Hook: Save page with optimistic updates
 export function useSavePage() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: savePage,
     
-    // OPTIMISTIC UPDATE: Update UI immediately before server responds
     onMutate: async ({ slug, title, data, isDraft }) => {
-      // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: pageKeys.detail(slug) });
-      
-      // Snapshot previous value for rollback
       const previousPage = queryClient.getQueryData<PageResponse>(pageKeys.detail(slug));
       
-      // Optimistically update to new value
       queryClient.setQueryData<PageResponse>(pageKeys.detail(slug), (old) => {
         if (!old) return old;
         return {
           ...old,
           title,
           draftData: data,
-          // If publishing, also update published data
           ...(isDraft ? {} : { publishedData: data, status: 'PUBLISHED' as const }),
         };
       });
       
-      // Return context for rollback
       return { previousPage, slug };
     },
     
-    // Rollback on error
     onError: (err, variables, context) => {
       if (context?.previousPage) {
         queryClient.setQueryData(pageKeys.detail(context.slug), context.previousPage);
       }
     },
     
-    // Always refetch after error or success to ensure server state
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: pageKeys.detail(variables.slug) });
       queryClient.invalidateQueries({ queryKey: pageKeys.lists() });
@@ -212,7 +193,6 @@ export function useSavePage() {
   });
 }
 
-// Hook: Publish page
 export function usePublishPage() {
   const queryClient = useQueryClient();
   
@@ -223,7 +203,6 @@ export function usePublishPage() {
       await queryClient.cancelQueries({ queryKey: pageKeys.detail(slug) });
       const previousPage = queryClient.getQueryData<PageResponse>(pageKeys.detail(slug));
       
-      // Optimistically mark as published
       queryClient.setQueryData<PageResponse>(pageKeys.detail(slug), (old) => {
         if (!old) return old;
         return {
@@ -251,7 +230,6 @@ export function usePublishPage() {
   });
 }
 
-// Hook: Revert to version
 export function useRevertPage() {
   const queryClient = useQueryClient();
   
@@ -265,7 +243,7 @@ export function useRevertPage() {
 }
 
 // =============================================================================
-// PREFETCH HELPERS - For SSR and navigation optimization
+// PREFETCH HELPERS
 // =============================================================================
 
 export async function prefetchPage(queryClient: ReturnType<typeof useQueryClient>, slug: string) {

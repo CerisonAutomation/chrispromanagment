@@ -7,7 +7,7 @@
 import {create} from 'zustand';
 import {devtools, persist} from 'zustand/middleware';
 import {v4 as uuid} from 'uuid';
-import type {Data} from '@puckeditor/core';
+import type {Data} from '@measured/puck';
 import {canonicalThemes} from '@/lib/canonical';
 
 // =============================================================================
@@ -181,45 +181,28 @@ type AdminStore = AdminState & AdminActions;
 // =============================================================================
 
 const initialState: AdminState = {
-  // Page state
   currentPage: null,
   pages: [],
-  
-  // Editor state
   content: null,
   selectedBlockId: null,
   hoveredBlockId: null,
-  
-  // UI state
   viewMode: 'edit',
   deviceMode: 'desktop',
   sidebarPanel: 'blocks',
   rightPanel: 'none',
-  
-  // Dirty state
   isDirty: false,
   isSaving: false,
   isPublishing: false,
   lastSavedAt: null,
   autosaveEnabled: true,
-  
-  // Theme
   currentTheme: canonicalThemes[0],
   themes: canonicalThemes,
-  
-  // History
   undoStack: [],
   redoStack: [],
   maxHistory: 50,
-  
-  // AI
   aiMessages: [],
   isAiGenerating: false,
-  
-  // Toasts
   toasts: [],
-  
-  // Loading states
   isLoadingPages: false,
   isLoadingPage: false,
 };
@@ -233,10 +216,6 @@ export const useAdminStore = create<AdminStore>()(
     persist(
       (set, get) => ({
         ...initialState,
-
-        // =============================================================================
-        // PAGE ACTIONS
-        // =============================================================================
 
         setCurrentPage: (page) => set({ 
           currentPage: page, 
@@ -289,7 +268,7 @@ export const useAdminStore = create<AdminStore>()(
             body: JSON.stringify({
               slug: data.slug,
               title: data.title,
-              data: data.content || { content: [], root: { props: {} } },
+              data: data.content || { content: [], root: { props: {} }, zones: {} },
               status: 'DRAFT',
               meta: { title: data.title, description: '' },
             }),
@@ -324,7 +303,7 @@ export const useAdminStore = create<AdminStore>()(
             body: JSON.stringify({
               slug: newSlug,
               title: newTitle,
-              data: page.content || { content: [], root: { props: {} } },
+              data: page.content || { content: [], root: { props: {} }, zones: {} },
               status: 'DRAFT',
             }),
           });
@@ -333,10 +312,6 @@ export const useAdminStore = create<AdminStore>()(
           set((state) => ({ pages: [...state.pages, newPage] }));
           get().addToast({ type: 'success', title: `Duplicated "${page.title}"` });
         },
-
-        // =============================================================================
-        // CONTENT ACTIONS
-        // =============================================================================
 
         setContent: (content) => {
           get().pushHistory();
@@ -349,10 +324,6 @@ export const useAdminStore = create<AdminStore>()(
         }),
 
         setHoveredBlockId: (id) => set({ hoveredBlockId: id }),
-
-        // =============================================================================
-        // SAVE/PUBLISH
-        // =============================================================================
 
         savePage: async () => {
           const { currentPage, content, isSaving } = get();
@@ -390,21 +361,17 @@ export const useAdminStore = create<AdminStore>()(
         },
 
         publishPage: async () => {
-          const { currentPage, content, isPublishing } = get();
+          const { currentPage, isPublishing } = get();
           if (!currentPage || isPublishing) return;
           
           set({ isPublishing: true });
           try {
-            // First save
             await get().savePage();
             
-            // Then publish
             const response = await fetch(`/api/pages/${currentPage.slug}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                status: 'PUBLISHED',
-              }),
+              body: JSON.stringify({ status: 'PUBLISHED' }),
             });
             if (!response.ok) throw new Error('Failed to publish');
             
@@ -424,10 +391,6 @@ export const useAdminStore = create<AdminStore>()(
         enableAutosave: () => set({ autosaveEnabled: true }),
         disableAutosave: () => set({ autosaveEnabled: false }),
 
-        // =============================================================================
-        // UI ACTIONS
-        // =============================================================================
-
         setViewMode: (mode) => set({ 
           viewMode: mode,
           selectedBlockId: mode === 'preview' ? null : get().selectedBlockId,
@@ -438,17 +401,8 @@ export const useAdminStore = create<AdminStore>()(
         setSidebarPanel: (panel) => set({ sidebarPanel: panel }),
         setRightPanel: (panel) => set({ rightPanel: panel }),
 
-        // =============================================================================
-        // THEME ACTIONS
-        // =============================================================================
-
         setTheme: (theme) => set({ currentTheme: theme, isDirty: true }),
-
         loadThemes: () => set({ themes: canonicalThemes }),
-
-        // =============================================================================
-        // HISTORY ACTIONS
-        // =============================================================================
 
         pushHistory: () => {
           const { content, selectedBlockId, undoStack, maxHistory } = get();
@@ -458,13 +412,8 @@ export const useAdminStore = create<AdminStore>()(
             timestamp: Date.now(),
           };
           const newStack = [...undoStack, entry];
-          if (newStack.length > maxHistory) {
-            newStack.shift();
-          }
-          set({ 
-            undoStack: newStack, 
-            redoStack: [],
-          });
+          if (newStack.length > maxHistory) newStack.shift();
+          set({ undoStack: newStack, redoStack: [] });
         },
 
         undo: () => {
@@ -511,23 +460,17 @@ export const useAdminStore = create<AdminStore>()(
 
         clearHistory: () => set({ undoStack: [], redoStack: [] }),
 
-        // =============================================================================
-        // AI ACTIONS
-        // =============================================================================
-
         addAiMessage: (message) => set((state) => ({
           aiMessages: [...state.aiMessages, message],
         })),
 
         setAiGenerating: (generating) => set({ isAiGenerating: generating }),
-
         clearAiMessages: () => set({ aiMessages: [] }),
 
         generateWithAI: async (prompt) => {
           const { isAiGenerating } = get();
           if (isAiGenerating) return;
 
-          // Add user message
           const userMsg: AIMessage = {
             id: uuid(),
             role: 'user',
@@ -536,7 +479,6 @@ export const useAdminStore = create<AdminStore>()(
           };
           get().addAiMessage(userMsg);
 
-          // Add loading message
           const loadingMsg: AIMessage = {
             id: uuid(),
             role: 'assistant',
@@ -548,12 +490,10 @@ export const useAdminStore = create<AdminStore>()(
           get().setAiGenerating(true);
 
           try {
-            // Simulate AI response (in production, call actual AI API)
             await new Promise((resolve) => setTimeout(resolve, 2000));
             
             const response = `I've generated content for: "${prompt}"\n\nI've created:\n- A hero section with your branding\n- Feature highlights that showcase your value\n- Social proof with testimonials\n\nWould you like me to generate these blocks for you?`;
 
-            // Remove loading message and add actual response
             set((state) => ({
               aiMessages: state.aiMessages.map((m) =>
                 m.id === loadingMsg.id
@@ -569,16 +509,10 @@ export const useAdminStore = create<AdminStore>()(
           }
         },
 
-        // =============================================================================
-        // TOAST ACTIONS
-        // =============================================================================
-
         addToast: (toast) => {
           const id = uuid();
           const newToast: Toast = { ...toast, id };
           set((state) => ({ toasts: [...state.toasts, newToast] }));
-          
-          // Auto-remove after duration
           const duration = toast.duration || 4000;
           if (duration > 0) {
             setTimeout(() => get().removeToast(id), duration);
@@ -588,10 +522,6 @@ export const useAdminStore = create<AdminStore>()(
         removeToast: (id) => set((state) => ({
           toasts: state.toasts.filter((t) => t.id !== id),
         })),
-
-        // =============================================================================
-        // BLOCK ACTIONS
-        // =============================================================================
 
         duplicateBlock: (blockId) => {
           const { content } = get();
@@ -607,10 +537,7 @@ export const useAdminStore = create<AdminStore>()(
           const block = blocks[blockIndex];
           const newBlock = {
             ...block,
-            props: { 
-              ...block.props, 
-              id: uuid(),
-            },
+            props: { ...block.props, id: uuid() },
           };
           
           blocks.splice(blockIndex + 1, 0, newBlock);
@@ -658,7 +585,6 @@ export const useAdminStore = create<AdminStore>()(
       {
         name: 'admin-store',
         partialize: (state) => ({
-          // Only persist these states
           autosaveEnabled: state.autosaveEnabled,
           deviceMode: state.deviceMode,
           sidebarPanel: state.sidebarPanel,
@@ -693,9 +619,5 @@ export const selectIsPublishing = (state: AdminStore) => state.isPublishing;
 export const selectLastSavedAt = (state: AdminStore) => state.lastSavedAt;
 export const selectPages = (state: AdminStore) => state.pages;
 export const selectIsLoadingPages = (state: AdminStore) => state.isLoadingPages;
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 export default useAdminStore;
