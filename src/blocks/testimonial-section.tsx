@@ -1,3 +1,8 @@
+// =============================================================================
+// CANONICAL PUCK TESTIMONIAL SECTION BLOCK
+// Guest testimonial carousel with ratings
+// =============================================================================
+
 import React from "react";
 
 export const TestimonialSection = {
@@ -8,11 +13,21 @@ export const TestimonialSection = {
       type: "array" as const,
       label: "Testimonials",
       defaultItemProps: { name: "Guest", date: "", rating: "5", quote: "Great stay!" },
-      getItemSummary: (item: Record<string, unknown>) => (item as { name?: string }).name || "Testimonial",
+      getItemSummary: (item: Record<string, unknown>) =>
+        (item as { name?: string }).name || "Testimonial",
       arrayFields: {
         name: { type: "text" as const },
         date: { type: "text" as const },
-        rating: { type: "select" as const, options: [{ label: "1 Star", value: "1" }, { label: "2 Stars", value: "2" }, { label: "3 Stars", value: "3" }, { label: "4 Stars", value: "4" }, { label: "5 Stars", value: "5" }] },
+        rating: {
+          type: "select" as const,
+          options: [
+            { label: "1 Star", value: "1" },
+            { label: "2 Stars", value: "2" },
+            { label: "3 Stars", value: "3" },
+            { label: "4 Stars", value: "4" },
+            { label: "5 Stars", value: "5" },
+          ],
+        },
         quote: { type: "textarea" as const },
       },
     },
@@ -20,14 +35,41 @@ export const TestimonialSection = {
   defaultProps: {
     title: "What Our Guests Say",
     testimonials: [
-      { name: "Katie", date: "October 2024", rating: "5", quote: "Christiano was an amazing host and the apartment was flawless. Every detail was thoughtfully considered, from the welcome hamper to the spotless cleanliness. The location in Valletta was perfect for exploring Malta." },
-      { name: "John", date: "September 2024", rating: "5", quote: "Communication was excellent from the moment I booked. The check-in process was seamless, and the apartment exceeded all expectations. The attention to detail really sets Christiano apart." },
-      { name: "Sarah & Mark", date: "August 2024", rating: "5", quote: "From the beautifully appointed apartment to the comprehensive local guide, everything was perfect. Christiano's responsiveness and genuine care made this a five-star experience." },
-      { name: "Eric", date: "October 2024", rating: "5", quote: "Exceptional service from start to finish. The property was immaculate, well-equipped, and perfectly located. Felt like staying at a luxury hotel with the comfort of a home." },
+      {
+        name: "Katie",
+        date: "October 2024",
+        rating: "5",
+        quote:
+          "Christiano was an amazing host and the apartment was flawless. Every detail was thoughtfully considered, from the welcome hamper to the spotless cleanliness. The location in Valletta was perfect for exploring Malta.",
+      },
+      {
+        name: "John",
+        date: "September 2024",
+        rating: "5",
+        quote:
+          "Communication was excellent from the moment I booked. The check-in process was seamless, and the apartment exceeded all expectations. The attention to detail really sets Christiano apart.",
+      },
+      {
+        name: "Sarah & Mark",
+        date: "August 2024",
+        rating: "5",
+        quote:
+          "From the beautifully appointed apartment to the comprehensive local guide, everything was perfect. Christiano's responsiveness and genuine care made this a five-star experience.",
+      },
+      {
+        name: "Eric",
+        date: "October 2024",
+        rating: "5",
+        quote:
+          "Exceptional service from start to finish. The property was immaculate, well-equipped, and perfectly located. Felt like staying at a luxury hotel with the comfort of a home.",
+      },
     ],
   },
   render: (props: Record<string, unknown>) => {
-    const p = props as { title: string; testimonials: { name: string; date: string; rating: string; quote: string }[] };
+    const p = props as {
+      title: string;
+      testimonials: { name: string; date: string; rating: string; quote: string }[];
+    };
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [active, setActive] = React.useState(0);
     // eslint-disable-next-line react-hooks/rules-of-hooks
