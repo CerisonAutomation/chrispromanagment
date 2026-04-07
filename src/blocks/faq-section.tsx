@@ -1,3 +1,8 @@
+// =============================================================================
+// CANONICAL PUCK FAQ SECTION BLOCK
+// Collapsible FAQ with search functionality
+// =============================================================================
+
 "use client";
 
 import React from "react";
@@ -16,12 +21,25 @@ export const FaqSection = {
   label: "FAQ Section",
   fields: {
     title: { type: "text" as const },
-    items: { type: "array" as const, label: "FAQ Items" },
+    items: {
+      type: "array" as const,
+      label: "FAQ Items",
+      defaultItemProps: { question: "Question", answer: "Answer" },
+      getItemSummary: (item: Record<string, unknown>) =>
+        (item as { question?: string }).question || "Question",
+      arrayFields: {
+        question: { type: "text" as const },
+        answer: { type: "text" as const },
+      },
+    },
   },
   defaultProps: {
     title: "Frequently Asked Questions",
     items: [
-      { question: "What services do you offer?", answer: "We offer luxury property management services." },
+      {
+        question: "What services do you offer?",
+        answer: "We offer luxury property management services.",
+      },
     ],
   },
   render: (props: Record<string, unknown>) => {

@@ -1,7 +1,12 @@
+// =============================================================================
+// CANONICAL PUCK BOOKING SECTION BLOCK
+// Multi-step booking form with validation
+// =============================================================================
+
 "use client";
 
 import React from "react";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 export const BookingSection = {
   label: "Booking Section",
@@ -24,30 +29,53 @@ export interface BookingSectionProps {
   subtitle: string;
 }
 
-const BookingComponent: React.FC<BookingSectionProps> = React.memo(({ title, subtitle }) => {
-  const [step, setStep] = React.useState(1);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [submitted, setSubmitted] = React.useState(false);
-  const [dates, setDates] = React.useState({ checkIn: "", checkOut: "", guests: "2" });
-  const [personal, setPersonal] = React.useState({ name: "", email: "", phone: "", propertyId: "" });
-  const [message, setMessage] = React.useState("");
+const BookingComponent: React.FC<BookingSectionProps> = React.memo(
+  ({ title, subtitle }) => {
+    const [step, setStep] = React.useState(1);
+    const [submitting, setSubmitting] = React.useState(false);
+    const [submitted, setSubmitted] = React.useState(false);
+    const [dates, setDates] = React.useState({
+      checkIn: "",
+      checkOut: "",
+      guests: "2",
+    });
+    const [personal, setPersonal] = React.useState({
+      name: "",
+      email: "",
+      phone: "",
+      propertyId: "",
+    });
+    const [message, setMessage] = React.useState("");
 
-  const nights = dates.checkIn && dates.checkOut ? Math.max(1, Math.round((new Date(dates.checkOut).getTime() - new Date(dates.checkIn).getTime()) / 86400000)) : 0;
+    const nights =
+      dates.checkIn && dates.checkOut
+        ? Math.max(
+            1,
+            Math.round(
+              (new Date(dates.checkOut).getTime() -
+                new Date(dates.checkIn).getTime()) /
+                86400000
+            )
+          )
+        : 0;
 
-  const handleSubmit = async () => {
-    if (step < 3) { setStep(step + 1); return; }
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guestName: personal.name,
-          guestEmail: personal.email,
-          guestPhone: personal.phone,
-          checkIn: dates.checkIn,
-          checkOut: dates.checkOut,
-          guests: parseInt(dates.guests),
+    const handleSubmit = async () => {
+      if (step < 3) {
+        setStep(step + 1);
+        return;
+      }
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            guestName: personal.name,
+            guestEmail: personal.email,
+            guestPhone: personal.phone,
+            checkIn: dates.checkIn,
+            checkOut: dates.checkOut,
+            guests: parseInt(dates.guests),
           propertyId: personal.propertyId || undefined,
           specialRequests: message || undefined,
         }),
