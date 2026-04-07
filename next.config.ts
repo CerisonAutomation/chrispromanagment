@@ -1,5 +1,6 @@
 /**
  * @fileoverview Next.js 15 configuration — production-hardened.
+ * Vercel deployment target: fra1 (Frankfurt)
  * @see https://nextjs.org/docs/app/api-reference/config/next-config-js
  */
 import type { NextConfig } from 'next';
@@ -14,6 +15,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'pictures.guesty.com' },
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.in' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
 
@@ -27,6 +29,18 @@ const nextConfig: NextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self'",
+              "connect-src 'self' https://*.supabase.co https://*.guesty.com https://api.openai.com",
+              "frame-ancestors 'none'",
+            ].join('; '),
+          },
         ],
       },
       {
@@ -42,12 +56,24 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Suppress noisy warnings from heavy editor deps
+  serverExternalPackages: ['@measured/puck'],
+
   experimental: {
     optimizeCss: false,
   },
 
   logging: {
     fetches: { fullUrl: process.env.NODE_ENV === 'development' },
+  },
+
+  // Silence non-breaking peer dep warnings during build
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
+  eslint: {
+    ignoreDuringBuilds: false,
   },
 };
 

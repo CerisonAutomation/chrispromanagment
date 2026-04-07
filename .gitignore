@@ -1,75 +1,92 @@
-# Dependencies
+# ─── Dependencies ────────────────────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
 
-# Build outputs
+# ─── Build Outputs ───────────────────────────────────────────────────────────
 .next/
 out/
 build/
 dist/
 
-# Environment — NEVER commit real secrets
+# ─── Environment — NEVER COMMIT SECRETS ──────────────────────────────────────
 .env
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 
-# Vercel
+# ─── Vercel ──────────────────────────────────────────────────────────────────
 .vercel
 
-# IDE / OS
+# ─── IDE / OS ────────────────────────────────────────────────────────────────
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
+*.swp
+*.swo
 
-# Logs
+# ─── Logs ────────────────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 bun-debug.log*
 
-# Lock file duplication — keep only bun.lock
-package-lock.json
+# ─── Lock Files — keep only package-lock.json (npm) ─────────────────────────
+bun.lock
+bun.lockb
 yarn.lock
 pnpm-lock.yaml
 
-# Temp / scratch artefacts
--p
+# ─── Root-level Junk / Scaffold / Port Artifacts ─────────────────────────────
 3001
-worklog*.md
+-p
+
+# ─── 21st.dev AI scaffold dumps ──────────────────────────────────────────────
 21st-dev-*.json
 search-21st*.json
-skills/
-mini-services/
-docs/
+
+# ─── Work Logs / Audit Reports (never in repo root) ──────────────────────────
+worklog*.md
+AGENT_PROMPT.md
+AI_MCP_INTEGRATION.md
+ARCHITECTURE.md
+BUILD_CHECKLIST.md
 CANONICAL_CONSOLIDATION_REPORT.md
 CODEBASE_AUDIT.md
 COMPLETE_EXTRACTION.md
-MILLION_X_PUCK_AUDIT_COMPLETE.md
-OMNISCAN_SUMMARY.md
-UNIFIED_ARCHITECTURE.md
-UNIFIED_SUMMARY.md
+DEPLOYMENT_GUIDE.md
 FIX_PAGES_BLOCKS.md
 IMPROVEMENTS.md
+MILLION_X_PUCK_AUDIT_COMPLETE.md
+OMNISCAN_SUMMARY.md
 PRISMA_FIX.md
 PUCK_AI_SETUP.md
 QUICK_START.md
-BUILD_CHECKLIST.md
-ARCHITECTURE.md
-DEPLOYMENT_GUIDE.md
-mcp-config.json
-generate-prisma.js
-netlify.toml
-Caddyfile
+UNIFIED_ARCHITECTURE.md
+UNIFIED_SUMMARY.md
 
-# Drizzle / DB migrations output
+# ─── Dev Tool Configs (local only) ───────────────────────────────────────────
+mcp-config.json
+
+# ─── Legacy / Dead Code Files ────────────────────────────────────────────────
+generate-prisma.js
+Caddyfile
+netlify.toml
+
+# ─── Dev scaffolding dirs ────────────────────────────────────────────────────
+skills/
+puck-builder-mcp/
+mini-services/
+
+# ─── Drizzle migrations output ───────────────────────────────────────────────
 drizzle/
 
-# Test coverage
+# ─── Test coverage ───────────────────────────────────────────────────────────
 coverage/
 .nyc_output/
-.env*.local
