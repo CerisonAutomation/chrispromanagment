@@ -1,69 +1,150 @@
-// =============================================================================
-// Puck AI Proxy Route — Routes AI requests from @puckeditor/plugin-ai to Puck Cloud
-// Follows official next-ai recipe: https://github.com/puckeditor/puck/tree/main/recipes/next-ai
-// =============================================================================
+/**
+ * @fileoverview Puck CMS persistence API — Supabase backend.
+ * GET  /api/puck/[slug] → load page data for Puck editor / frontend renderer
+ * POST /api/puck/[slug] → save/upsert page data from Puck onPublish
+ * PATCH /api/puck/[slug] → toggle published flag
+ * DELETE /api/puck/[slug] → delete page
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
-import {NextRequest} from "next/server";
-import {puckHandler} from "@puckeditor/cloud-client";
+type RouteParams = { params: Promise<{ all: string[] }> };
 
-const CPM_AI_CONTEXT = `You are the AI assistant for Christiano Property Management (CPM), a premium luxury vacation rental company based in Birkirkara, Malta.
+const EMPTY_PAGE_DATA = { content: [], root: { props: {} } };
 
-## Brand
-- Christiano Property Management — 9+ years Superhost experience
-- Luxury short-term rentals across Malta and Gozo
-- Target: high-net-worth travelers seeking premium Mediterranean experiences
-- Tone: sophisticated, warm, trustworthy, Mediterranean luxury
+function resolveSlug(all: string[]): string {
+  return (all ?? []).join('/') || 'home';
+}
 
-## Design System (MANDATORY)
-- Dark luxury theme with gold accents
-- Backgrounds: #0e0f11 (primary), #15171b (secondary)
-- Text: #ede9e0 (primary), #9a9690 (secondary), #5a5854 (tertiary)
-- Accent gold: #c8a96a, hover: #d4b87a
-- Borders: #1b1e23, hover: #2a2d33
-- NEVER use indigo, blue, or purple as primary
-- ALWAYS use cpm-* Tailwind theme classes
-- Mobile-first responsive, semantic HTML, 44px touch targets
-
-## Available Block Components (35 total)
-HeroSection, AboutSection, WhyChooseUs, ServicesSection, PropertyShowcase, BookingSection, PricingTable, TestimonialSection, FaqSection, ContactSection, LogoBar, CtaBanner, StatsSection, FooterSection, Divider, GuestyPropertySearch, GuestyPropertyGrid, GuestyPropertyDetail, GuestyBookingWidget, GuestyBookingConfirmation, GuestyBookingDashboard, ImageGallery, Timeline, TextBlock, FeatureGrid, MapSection, Spacer, ThemeSettings, TeamSection, VideoSection, NewsletterSection, ComparisonSection, ImageWithText, MaltaMapSection, SocialProofStrip
-
-## Content Rules
-- British/Commonwealth English (Malta conventions)
-- Property names reference real Malta locations: Valletta, Sliema, St. Julian's, Mdina, Gozo
-- Testimonials must feel authentic with specific details
-- Headlines under 80 chars, benefit-focused
-- CTA buttons 2-4 action words
-- Image CDN: https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/
-
-## Constrained UI
-Generate high-quality, purposeful content — not generic AI slop. Every word must earn its place. Quality over quantity. Prefer fewer impactful sections over many mediocre ones.`;
-
-export async function POST(request: NextRequest) {
+/** GET /api/puck/[...slug] — load page data */
+export async function GET(
+  _req: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
   try {
-    return puckHandler(request, {
-      ai: {
-        context: CPM_AI_CONTEXT,
-      },
+    const { all } = await params;
+    const slug = resolveSlug(all);
+
+    const { data, error } = await supabaseAdmin
+      .from('cms_pages')
+      .select('data, title, theme, published, updated_at')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) {
+      console.error(`[Puck API] GET /${slug} error:`, error.message);
+      return NextResponse.json(EMPTY_PAGE_DATA);
+    }
+
+    return NextResponse.json(data?.data ?? EMPTY_PAGE_DATA, {
+      headers: { 'Cache-Control': 'no-store' },
     });
-  } catch (error) {
-    console.error("[Puck AI Proxy] Error:", error);
-    return new Response(
-      JSON.stringify({ error: "AI proxy request failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+  } catch (err) {
+    console.error('[Puck API] GET unexpected error:', err);
+    return NextResponse.json(EMPTY_PAGE_DATA);
   }
 }
 
-export async function GET() {
-  return new Response(
-    JSON.stringify({
-      status: "ok",
-      service: "puck-ai-proxy",
-      version: "1.0.0",
-      endpoints: {
-        post: "Forward AI requests from @puckeditor/plugin-ai to Puck Cloud",
+/** POST /api/puck/[...slug] — upsert page data from Puck onPublish */
+export async function POST(
+  req: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
+  try {
+    const { all } = await params;
+    const slug = resolveSlug(all);
+    const body = await req.json();
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    }
+
+    const title =
+      body?.root?.props?.title ??
+      body?.root?.title ??
+      slug
+        .split('/')
+        .pop()
+        ?.replace(/-/g, ' ')
+        ?.replace(/\b\w/g, (c: string) => c.toUpperCase()) ??
+      'Untitled';
+
+    const theme = body?.root?.props?.theme ?? 'malta-gold';
+
+    const { error } = await supabaseAdmin.from('cms_pages').upsert(
+      {
+        slug,
+        title,
+        data: body,
+        theme,
+        published: true,
+        updated_at: new Date().toISOString(),
       },
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+      { onConflict: 'slug' }
+    );
+
+    if (error) {
+      console.error(`[Puck API] POST /${slug} error:`, error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, slug, title });
+  } catch (err) {
+    console.error('[Puck API] POST unexpected error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+/** PATCH /api/puck/[...slug] — toggle published status */
+export async function PATCH(
+  req: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
+  try {
+    const { all } = await params;
+    const slug = resolveSlug(all);
+    const { published } = await req.json();
+
+    const { error } = await supabaseAdmin
+      .from('cms_pages')
+      .update({
+        published: Boolean(published),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('slug', slug);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, slug, published });
+  } catch (err) {
+    console.error('[Puck API] PATCH unexpected error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+/** DELETE /api/puck/[...slug] — delete a page */
+export async function DELETE(
+  _req: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
+  try {
+    const { all } = await params;
+    const slug = resolveSlug(all);
+
+    const { error } = await supabaseAdmin
+      .from('cms_pages')
+      .delete()
+      .eq('slug', slug);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, slug });
+  } catch (err) {
+    console.error('[Puck API] DELETE unexpected error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
