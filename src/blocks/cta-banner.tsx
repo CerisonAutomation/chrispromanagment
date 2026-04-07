@@ -1,11 +1,16 @@
+// =============================================================================
+// CANONICAL PUCK CTA BANNER BLOCK
+// Call-to-action banner with shimmer effects
+// =============================================================================
+
 "use client";
 
-import {safeHref} from "./helpers";
-import {BlurFade} from "@/components/effects/blur-fade";
-import {ShimmerButton} from "@/components/effects/shimmer-button";
-import {SparklesText} from "@/components/effects/sparkles-text";
-import {DotPattern} from "@/components/effects/patterns";
-import {ArrowRight} from "lucide-react";
+import { safeHref } from "./helpers";
+import { BlurFade } from "@/components/effects/blur-fade";
+import { ShimmerButton } from "@/components/effects/shimmer-button";
+import { SparklesText } from "@/components/effects/sparkles-text";
+import { DotPattern } from "@/components/effects/patterns";
+import { ArrowRight } from "lucide-react";
 
 export const CtaBanner = {
   label: "CTA Banner",
@@ -17,15 +22,21 @@ export const CtaBanner = {
   },
   defaultProps: {
     heading: "Partner with Confidence",
-    description: "Join the growing number of property owners who trust Christiano Property Management to maximise their rental income while preserving their property's value and character.",
+    description:
+      "Join the growing number of property owners who trust Christiano Property Management to maximise their rental income while preserving their property's value and character.",
     buttonText: "Contact Us Today",
     buttonLink: "#contact",
   },
   render: (props: Record<string, unknown>) => {
-    const p = props as { heading: string; description: string; buttonText: string; buttonLink: string };
+    const p = props as {
+      heading: string;
+      description: string;
+      buttonText: string;
+      buttonLink: string;
+    };
     return (
       <>
-        <section className="relative bg-cpm-bg-primary px-4 py-20 sm:px-8 overflow-hidden">
+        <section className="relative overflow-hidden bg-cpm-bg-primary px-4 py-20 sm:px-8">
           <div className="mx-auto max-w-4xl">
             {/* 21st.dev: Glassmorphism card with premium effects */}
             <div
