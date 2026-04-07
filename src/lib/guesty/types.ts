@@ -1,236 +1,9 @@
 /**
- * Exhaustive Guesty API type definitions.
- * Based on Guesty Open API v1 + patterns from Velocity-BPA/n8n-nodes-guesty (10 resources)
- * and dferrera-creator/margin-app (financial field mapping).
- *
- * If Guesty field names change, update ONLY this file and mapper.ts.
+ * @fileoverview Guesty domain types — shared across lib, API routes, and components.
+ * All types derived from Guesty Open API v1 + Booking Engine API v2.
  */
 
-// ─── Auth ───────────────────────────────────────────────────────────────────────────────
-
-export interface GuestyAuthToken {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-}
-
-// ─── Paginated Response ─────────────────────────────────────────────────────────────────
-
-export interface GuestyPaginatedResponse<T> {
-  results: T[];
-  count: number;
-  limit: number;
-  skip: number;
-}
-
-// ─── Listing ─────────────────────────────────────────────────────────────────────────
-
-export interface GuestyListing {
-  _id: string;
-  title?: string;
-  nickname?: string;
-  active?: boolean;
-  listed?: boolean;
-  address?: {
-    full?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    lat?: number;
-    lng?: number;
-    zipcode?: string;
-  };
-  bedrooms?: number;
-  bathrooms?: number;
-  accommodates?: number;
-  propertyType?: string;
-  roomType?: string;
-  prices?: {
-    basePrice?: number;
-    currency?: string;
-    weeklyPriceFactor?: number;
-    monthlyPriceFactor?: number;
-    cleaningFee?: number;
-    extraPersonFee?: number;
-    securityDepositFee?: number;
-  };
-  pictures?: Array<{
-    thumbnail?: string;
-    large?: string;
-    original?: string;
-    caption?: string;
-    sortOrder?: number;
-  }>;
-  publicDescription?: {
-    summary?: string;
-    space?: string;
-    access?: string;
-    interaction?: string;
-    neighborhood?: string;
-    transit?: string;
-    houseRules?: string;
-    notes?: string;
-  };
-  amenities?: string[];
-  tags?: string[];
-  checkInOutPolicy?: {
-    checkInTime?: string;
-    checkOutTime?: string;
-    earlyCheckIn?: string;
-    lateCheckOut?: string;
-  };
-  occupancyStats?: {
-    occupancyRate?: number;
-  };
-  [key: string]: unknown;
-}
-
-export type GuestyListingsResponse = GuestyPaginatedResponse<GuestyListing>;
-
-// ─── Reservation ───────────────────────────────────────────────────────────────────
-
-export interface GuestyReservationMoney {
-  /** Priority: hostPayout > ownerRevenue > totalPaid > fareAccommodation > netIncome */
-  hostPayout?: number;
-  ownerRevenue?: number;
-  totalPaid?: number;
-  fareAccommodation?: number;
-  netIncome?: number;
-  subTotalPrice?: number;
-  balanceDue?: number;
-  hostServiceFee?: number;
-  totalTaxes?: number;
-  hostPayoutUsd?: number;
-  cleaningFee?: number;
-  currency?: string;
-  invoiceTotal?: number;
-  payments?: Array<{
-    amount?: number;
-    currency?: string;
-    status?: string;
-    paidAt?: string;
-    method?: string;
-    [key: string]: unknown;
-  }>;
-  [key: string]: unknown;
-}
-
-export interface GuestyGuest {
-  _id?: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  picture?: string;
-  [key: string]: unknown;
-}
-
-export interface GuestyReservation {
-  _id: string;
-  status?: 'inquiry' | 'declined' | 'expired' | 'canceled' | 'reserved' | 'confirmed' | 'closed' | 'checked_in' | 'checked_out' | string;
-  listingId?: string;
-  listing?: {
-    _id?: string;
-    title?: string;
-    nickname?: string;
-    address?: { city?: string; country?: string };
-    pictures?: Array<{ thumbnail?: string }>;
-  };
-  guest?: GuestyGuest;
-  guestName?: string;
-  checkIn?: string;
-  checkOut?: string;
-  checkInDateLocalized?: string;
-  checkOutDateLocalized?: string;
-  nightsCount?: number;
-  guestsCount?: number;
-  adultsCount?: number;
-  childrenCount?: number;
-  infantsCount?: number;
-  money?: GuestyReservationMoney;
-  confirmationCode?: string;
-  source?: string;
-  channelId?: string;
-  bookedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  guestNote?: string;
-  hostNote?: string;
-  [key: string]: unknown;
-}
-
-export type GuestyReservationsResponse = GuestyPaginatedResponse<GuestyReservation>;
-
-// ─── Calendar ──────────────────────────────────────────────────────────────────────
-
-export interface GuestyCalendarDay {
-  date: string;
-  status: 'available' | 'unavailable' | 'booked' | string;
-  price?: number;
-  currency?: string;
-  minNights?: number;
-  cta?: boolean; // close to arrival
-  ctd?: boolean; // close to departure
-  reservationId?: string;
-  note?: string;
-  [key: string]: unknown;
-}
-
-export type GuestyCalendarResponse = GuestyCalendarDay[];
-
-// ─── Guest ───────────────────────────────────────────────────────────────────────────
-
-export interface GuestyGuestProfile {
-  _id: string;
-  fullName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  picture?: string;
-  preferredLocale?: string;
-  reservations?: string[];
-  [key: string]: unknown;
-}
-
-export type GuestyGuestsResponse = GuestyPaginatedResponse<GuestyGuestProfile>;
-
-// ─── Quote ───────────────────────────────────────────────────────────────────────────
-
-export interface GuestyQuote {
-  listingId: string;
-  checkIn: string;
-  checkOut: string;
-  guestsCount: number;
-  money?: {
-    fareAccommodation?: number;
-    cleaningFee?: number;
-    totalPrice?: number;
-    tax?: number;
-    currency?: string;
-  };
-  nights?: number;
-  [key: string]: unknown;
-}
-
-// ─── Task ────────────────────────────────────────────────────────────────────────────
-
-export interface GuestyTask {
-  _id: string;
-  title?: string;
-  description?: string;
-  status?: 'todo' | 'in-progress' | 'done' | string;
-  dueDate?: string;
-  assignee?: { _id?: string; fullName?: string };
-  listingId?: string;
-  reservationId?: string;
-  [key: string]: unknown;
-}
-
-export type GuestyTasksResponse = GuestyPaginatedResponse<GuestyTask>;
-
-// ─── Webhook ────────────────────────────────────────────────────────────────────────
+// ─── Webhook ────────────────────────────────────────────────────────────────
 
 export type GuestyWebhookEvent =
   | 'reservation.created'
@@ -238,109 +11,197 @@ export type GuestyWebhookEvent =
   | 'reservation.canceled'
   | 'reservation.checked_in'
   | 'reservation.checked_out'
-  | 'listing.created'
+  | 'reservation.inquiry'
   | 'listing.updated'
-  | 'guest.created'
-  | 'guest.updated'
-  | 'message.created';
+  | 'listing.created'
+  | 'message.created'
+  | 'review.created'
+  | 'task.created'
+  | 'task.updated';
+
+export interface GuestyWebhookReservation {
+  _id: string;
+  listingId: string;
+  status: GuestyReservationStatus;
+  checkIn: string;
+  checkOut: string;
+  guestId?: string;
+  money?: {
+    totalPaid: number;
+    currency: string;
+    hostPayout?: number;
+  };
+}
+
+export interface GuestyWebhookListing {
+  _id: string;
+  title?: string;
+  nickname?: string;
+}
 
 export interface GuestyWebhookPayload {
-  event: GuestyWebhookEvent;
+  event: GuestyWebhookEvent | string;
   data: {
-    reservation?: GuestyReservation;
-    listing?: GuestyListing;
-    guest?: GuestyGuestProfile;
+    reservation?: GuestyWebhookReservation;
+    listing?: GuestyWebhookListing;
+    message?: Record<string, unknown>;
+    review?: Record<string, unknown>;
+    task?: Record<string, unknown>;
     [key: string]: unknown;
   };
   accountId?: string;
   timestamp?: string;
 }
 
-// ─── Conversation ───────────────────────────────────────────────────────────────────
+// ─── Listings ────────────────────────────────────────────────────────────
 
-export interface GuestyMessage {
-  _id?: string;
-  body?: string;
-  type?: 'host_message' | 'guest_message' | 'system' | string;
+export type GuestyListingStatus = 'listed' | 'unlisted' | 'draft' | 'archived';
+
+export interface GuestyListingAddress {
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  lat?: number;
+  lng?: number;
+  full?: string;
+}
+
+export interface GuestyListingPrices {
+  basePrice?: number;
+  currency?: string;
+  weekendPrice?: number;
+  monthlyPriceFactor?: number;
+  weeklyPriceFactor?: number;
+}
+
+export interface GuestyListingRaw {
+  _id: string;
+  title?: string;
+  nickname?: string;
+  propertyType?: string;
+  roomType?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  beds?: number;
+  accommodates?: number;
+  address?: GuestyListingAddress;
+  prices?: GuestyListingPrices;
+  pictures?: Array<{ thumbnail?: string; original?: string; caption?: string }>;
+  publicDescription?: { summary?: string; space?: string; access?: string; notes?: string };
+  amenities?: string[];
+  tags?: string[];
+  active?: boolean;
+  listed?: boolean;
+  status?: GuestyListingStatus;
+  accountId?: string;
   createdAt?: string;
-  attachments?: Array<{ url?: string; type?: string }>;
+  updatedAt?: string;
 }
 
-export interface GuestyConversation {
-  _id: string;
-  guestId?: string;
-  reservationId?: string;
-  listingId?: string;
-  messages?: GuestyMessage[];
-  lastMessage?: GuestyMessage;
-  unreadCount?: number;
-  [key: string]: unknown;
+// ─── Reservations ─────────────────────────────────────────────────────────
+
+export type GuestyReservationStatus =
+  | 'inquiry'
+  | 'declined'
+  | 'expired'
+  | 'canceled'
+  | 'reserved'
+  | 'confirmed'
+  | 'checked_in'
+  | 'checked_out'
+  | 'closed';
+
+export interface GuestyReservationMoney {
+  totalPaid?: number;
+  currency?: string;
+  hostPayout?: number;
+  fareAccommodation?: number;
+  fareCleaning?: number;
+  hostServiceFee?: number;
+  guestServiceFee?: number;
+  taxesPaid?: number;
+  netIncome?: number;
 }
 
-export type GuestyConversationsResponse = GuestyPaginatedResponse<GuestyConversation>;
-
-// ─── Owner ───────────────────────────────────────────────────────────────────────────
-
-export interface GuestyOwner {
-  _id: string;
-  fullName?: string;
+export interface GuestyReservationGuest {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
-  [key: string]: unknown;
+  picture?: string;
 }
 
-export type GuestyOwnersResponse = GuestyPaginatedResponse<GuestyOwner>;
-
-// ─── Invoice ────────────────────────────────────────────────────────────────────────
-
-export interface GuestyInvoice {
+export interface GuestyReservationRaw {
   _id: string;
-  reservationId?: string;
-  status?: 'paid' | 'unpaid' | 'partial' | string;
-  total?: number;
+  listingId: string;
+  status: GuestyReservationStatus;
+  checkIn: string;
+  checkOut: string;
+  guestId?: string;
+  guest?: GuestyReservationGuest;
+  money?: GuestyReservationMoney;
+  source?: string;
+  channel?: string;
+  numberOfGuests?: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
+  pets?: number;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  bookingDate?: string;
+  confirmationCode?: string;
+  nightsCount?: number;
+}
+
+// ─── Calendar ─────────────────────────────────────────────────────────────
+
+export interface GuestyCalendarDay {
+  date: string;
+  status: 'available' | 'unavailable' | 'booked' | 'blocked' | 'owner';
+  price?: number;
   currency?: string;
-  items?: Array<{
-    type?: string;
-    amount?: number;
-    description?: string;
-  }>;
-  [key: string]: unknown;
+  minNights?: number;
+  maxNights?: number;
+  reservation?: { _id: string; status: GuestyReservationStatus };
 }
 
-export type GuestyInvoicesResponse = GuestyPaginatedResponse<GuestyInvoice>;
-
-// ─── Internal mapped models (for Supabase storage) ────────────────────────────────────
-
-export interface MappedListing {
-  guestyListingId: string;
-  nickname: string;
-  title: string | null;
-  active: boolean;
-  city: string | null;
-  country: string | null;
-  bedrooms: number | null;
-  bathrooms: number | null;
-  accommodates: number | null;
-  basePrice: number | null;
-  currency: string | null;
-  thumbnailUrl: string | null;
-  amenities: string[];
+export interface GuestyCalendar {
+  listingId: string;
+  days: GuestyCalendarDay[];
 }
 
-export interface MappedReservation {
-  guestyReservationId: string;
-  guestyListingId: string;
-  guestName: string | null;
-  guestEmail: string | null;
-  checkIn: Date;
-  checkOut: Date;
-  nightsBooked: number;
-  staysBooked: number;
-  bookingDate: Date | null;
-  status: string;
-  payoutAmount: number;
-  ownerPayoutAmount: number | null;
-  source: string | null;
-  confirmationCode: string | null;
-  rawPayload: string;
+// ─── Quotes ───────────────────────────────────────────────────────────────
+
+export interface GuestyQuoteRequest {
+  listingId: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  coupon?: string;
+}
+
+export interface GuestyQuoteBreakdown {
+  total: number;
+  currency: string;
+  fareAccommodation?: number;
+  fareCleaning?: number;
+  guestServiceFee?: number;
+  taxes?: number;
+  nights?: number;
+  avgNightlyRate?: number;
+}
+
+export interface GuestyQuoteRaw {
+  _id?: string;
+  listingId: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  money?: GuestyQuoteBreakdown;
+  status?: string;
 }
