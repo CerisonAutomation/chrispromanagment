@@ -1,10 +1,7 @@
 /**
- * Guesty → Internal model mapper.
- * Decouples Guesty's response shape from our Supabase data model.
+ * @fileoverview Guesty → Internal model mapper.
+ * Decouples Guesty's API shape from our Supabase data model.
  * If Guesty field names change, update ONLY this file.
- *
- * Based on: dferrera-creator/margin-app mapper.ts
- * Enhanced with: full listing mapping + exhaustive payout extraction.
  */
 
 import type { GuestyListing, GuestyReservation, MappedListing, MappedReservation } from './types';
@@ -56,10 +53,12 @@ export function mapReservation(raw: GuestyReservation): MappedReservation {
 /**
  * Extract payout from Guesty money object.
  * Priority: hostPayout > totalPaid > fareAccommodation > netIncome > subTotalPrice > payments sum.
- * Falls back to scanning all numeric keys > 0.
  */
 export function extractPayout(money: Record<string, unknown>): number {
-  const priority = ['hostPayout', 'totalPaid', 'fareAccommodation', 'netIncome', 'subTotalPrice', 'balanceDue', 'invoiceTotal'];
+  const priority = [
+    'hostPayout', 'totalPaid', 'fareAccommodation',
+    'netIncome', 'subTotalPrice', 'balanceDue', 'invoiceTotal',
+  ];
 
   for (const field of priority) {
     const val = money[field];

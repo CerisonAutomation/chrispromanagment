@@ -5,8 +5,7 @@
  * USE FOR : reservations management, tasks, guests, conversations, webhooks, sync
  *
  * ⚠️  FOR BOOKING ENGINE (public-facing listings/quotes/reservations):
- *     Use src/lib/guesty/booking-api.ts instead.
- *     That client uses https://booking.guesty.com with Upstash Redis token cache.
+ *     Use src/lib/guesty/booking-api.ts (https://booking.guesty.com)
  *
  * Token cache: Upstash Redis (serverless-safe).
  * Key: 'guesty:open_api:access_token'
@@ -23,8 +22,6 @@ const redis = new Redis({
 const GUESTY_BASE = process.env.GUESTY_BASE_URL ?? 'https://open-api.guesty.com/v1';
 const TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
 const REDIS_TOKEN_KEY = 'guesty:open_api:access_token';
-
-// ─── Token Management — Upstash Redis ────────────────────────────────────────
 
 async function fetchAndCacheOpenApiToken(): Promise<string> {
   const clientId = process.env.GUESTY_CLIENT_ID;
@@ -50,22 +47,18 @@ async function fetchAndCacheOpenApiToken(): Promise<string> {
     throw new Error(`[guesty/client] Token fetch failed: ${res.status} ${await res.text()}`);
   }
 
-  const data = await res.json() as GuestyAuthToken;
+  const data = (await res.json()) as GuestyAuthToken;
   const ttl = Math.max(data.expires_in - 60, 30);
   await redis.set(REDIS_TOKEN_KEY, data.access_token, { ex: ttl });
   return data.access_token;
 }
 
-/**
- * Returns valid Open API token from Upstash Redis cache or fetches fresh.
- */
+/** Returns valid Open API token from Upstash Redis cache or fetches fresh. */
 export async function getAccessToken(): Promise<string> {
   const cached = await redis.get<string>(REDIS_TOKEN_KEY);
   if (cached) return cached;
   return fetchAndCacheOpenApiToken();
 }
-
-// ─── Core fetch ──────────────────────────────────────────────────────────────
 
 export async function guestyFetch<T>(
   path: string,
@@ -73,12 +66,10 @@ export async function guestyFetch<T>(
   retries = 3,
 ): Promise<T> {
   const token = await getAccessToken();
-
   const url = new URL(`${GUESTY_BASE}${path}`);
+
   if (options.params) {
-    for (const [k, v] of Object.entries(options.params)) {
-      url.searchParams.set(k, v);
-    }
+    for (const [k, v] of Object.entries(options.params)) url.searchParams.set(k, v);
   }
 
   const { params: _params, ...fetchOptions } = options;
@@ -98,29 +89,25 @@ export async function guestyFetch<T>(
 
   if (res.status === 429 && retries > 0) {
     const retryAfter = Number(res.headers.get('Retry-After') ?? '2');
-    await new Promise((r) => setTimeout(r, retryAfter * 1000));
+    await new Promise((r) => setTimeout(r, retryAfter * 1_000));
     return guestyFetch(path, options, retries - 1);
   }
 
-  // 401: clear Redis cache and retry once
   if (res.status === 401 && retries > 0) {
     await redis.del(REDIS_TOKEN_KEY);
     return guestyFetch(path, options, 0);
   }
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`[guesty] ${res.status} ${path}: ${text}`);
+    throw new Error(`[guesty] ${res.status} ${path}: ${await res.text()}`);
   }
 
   return res.json() as Promise<T>;
 }
 
-// ─── Auto-pagination ─────────────────────────────────────────────────────────
-
 /**
  * Fetches ALL pages of a paginated Guesty Open API endpoint.
- * Uses skip/limit pagination (Open API pattern — not cursor-based).
+ * Uses skip/limit pagination pattern.
  */
 export async function guestyFetchAll<T>(
   path: string,
