@@ -1,8 +1,10 @@
 {
   "framework": "nextjs",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
   "regions": ["fra1"],
   "functions": {
-    "src/app/api/qstash/worker/route.ts": { "maxDuration": 300 },
+    "src/app/api/qstash/worker/route.ts": { "maxDuration": 60 },
     "src/app/api/guesty/sync/route.ts": { "maxDuration": 60 },
     "src/app/api/guesty/webhook/route.ts": { "maxDuration": 30 },
     "src/app/api/guesty/listings/route.ts": { "maxDuration": 60 },
@@ -11,8 +13,8 @@
     "src/app/api/guesty/calendar/route.ts": { "maxDuration": 30 },
     "src/app/api/guesty/quote/route.ts": { "maxDuration": 30 },
     "src/app/api/ai/route.ts": { "maxDuration": 60 },
-    "src/app/api/cron/sync-listings/route.ts": { "maxDuration": 300 },
-    "src/app/api/cron/sync-reservations/route.ts": { "maxDuration": 300 }
+    "src/app/api/cron/sync-listings/route.ts": { "maxDuration": 60 },
+    "src/app/api/cron/sync-reservations/route.ts": { "maxDuration": 60 }
   },
   "headers": [
     {
