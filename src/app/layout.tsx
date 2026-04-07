@@ -3,6 +3,7 @@
  */
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { Providers } from '@/providers';
 import './globals.css';
 
 const inter = Inter({
@@ -14,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: { default: 'Christo Property Management', template: '%s | Christo PM' },
   description: 'Premium property management and luxury holiday rentals in Malta.',
-  keywords: ['Malta', 'property management', 'holiday rentals', 'luxury', 'Airbnb'],
+  keywords: ['Malta', 'property management', 'holiday rentals', 'luxury', 'Airbnb', 'Guesty'],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://chrispropmanagment.vercel.app'),
   openGraph: {
     type: 'website',
@@ -33,9 +34,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-background text-foreground antialiased">
-        {children}
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="bg-background text-foreground antialiased min-h-screen">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

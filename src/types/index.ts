@@ -1,6 +1,7 @@
 /**
  * @fileoverview Canonical type definitions — single source of truth.
  * All domain types live here. Import from '@/types' everywhere.
+ * Never define app types in component files.
  */
 
 // ─── CMS ─────────────────────────────────────────────────────────────────────
@@ -87,22 +88,21 @@ export interface BookingInquiry {
 
 // ─── API RESPONSES ────────────────────────────────────────────────────────────
 export type ApiSuccess<T> = { data: T; error: null };
-export type ApiError = { data: null; error: string };
+export type ApiError   = { data: null; error: string };
 export type ApiResult<T> = ApiSuccess<T> | ApiError;
 
+/** Wrap a successful result */
 export function apiOk<T>(data: T): ApiSuccess<T> {
   return { data, error: null };
 }
+/** Wrap an error */
 export function apiErr(error: string): ApiError {
   return { data: null, error };
 }
 
-// ─── ENV ──────────────────────────────────────────────────────────────────────
-export interface EnvConfig {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
-  supabaseServiceKey: string;
-  guestyClientId: string;
-  guestyClientSecret: string;
-  nextPublicSiteUrl: string;
+// ─── NAVIGATION ────────────────────────────────────────────────────────────
+export interface NavLink {
+  href: string;
+  label: string;
+  external?: boolean;
 }
