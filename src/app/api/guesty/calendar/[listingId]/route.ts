@@ -1,7 +1,6 @@
 /**
  * @fileoverview GET /api/guesty/calendar/{listingId}?from=YYYY-MM-DD&to=YYYY-MM-DD
  * Proxies to: GET https://booking.guesty.com/api/listings/{listingId}/calendar
- * Uses Result pattern for error handling.
  *
  * Per-day response shape:
  *   { date, minNights, isBaseMinNights, status, cta, ctd }
@@ -10,14 +9,15 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { getListingCalendarResult } from '@/lib/guesty/booking-api';
+import { getListingCalendar, GuestyAPIError, GuestyRateLimitError } from '@/lib/guesty/booking-api';
 
 export const runtime = 'edge';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { listingId: string } },
+  { params }: { params: Promise<{ listingId: string }> },
 ): Promise<NextResponse> {
+  const { listingId } = await params;
   const from = req.nextUrl.searchParams.get('from');
   const to = req.nextUrl.searchParams.get('to');
 
@@ -36,19 +36,21 @@ export async function GET(
   }
 
   try {
-    const result = await getListingCalendarResult(params.listingId, from, to);
-    
-    if (!result.success) {
-      console.error('[api/guesty/calendar]', result.error.message);
-      return NextResponse.json({ error: result.error.message }, { status: 502 });
-    }
-
-    return NextResponse.json(result.data, {
+    const calendar = await getListingCalendar(listingId, from, to);
+    return NextResponse.json(calendar, {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
     });
   } catch (err) {
+    if (err instanceof GuestyRateLimitError) {
+      return NextResponse.json({ error: 'Rate limited' }, {
+        status: 429,
+        headers: { 'Retry-After': String(err.retryAfter) },
+      });
+    }
+    if (err instanceof GuestyAPIError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error('[api/guesty/calendar]', err);
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

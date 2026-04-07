@@ -1,10 +1,8 @@
 /**
- * Canonical Guesty API client - 15/10 Quality Implementation.
+ * Canonical Guesty API client.
  * All Guesty API routes must import from here — never call Guesty directly from route handlers.
- * Uses Result<T, E> pattern for railway-oriented error handling.
+ * Handles: OAuth2 token refresh, rate-limit (429) retry with exponential backoff, typed responses.
  */
-
-import { ok, err, type Result } from '@/types/consolidated';
 
 const GUESTY_BASE = 'https://open-api.guesty.com/v1';
 const TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
@@ -13,90 +11,73 @@ const TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
 let _accessToken: string | null = null;
 let _tokenExpiry = 0;
 
-/**
- * Get access token with Result pattern for explicit error handling.
- */
-async function getAccessToken(): Promise<Result<string, Error>> {
-  if (_accessToken && Date.now() < _tokenExpiry - 60_000) {
-    return ok(_accessToken);
-  }
+async function getAccessToken(): Promise<string> {
+  if (_accessToken && Date.now() < _tokenExpiry - 60_000) return _accessToken;
 
   const clientId = process.env.GUESTY_CLIENT_ID;
   const clientSecret = process.env.GUESTY_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return err(new Error('[guesty.ts] Missing GUESTY_CLIENT_ID or GUESTY_CLIENT_SECRET env vars.'));
+    throw new Error('[guesty.ts] Missing GUESTY_CLIENT_ID or GUESTY_CLIENT_SECRET env vars.');
   }
 
-  try {
-    const res = await fetch(TOKEN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        scope: 'open-api',
-        client_id: clientId,
-        client_secret: clientSecret,
-      }),
-    });
+  const res = await fetch(TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'client_credentials',
+      scope: 'open-api',
+      client_id: clientId,
+      client_secret: clientSecret,
+    }),
+  });
 
-    if (!res.ok) {
-      const text = await res.text();
-      return err(new Error(`[guesty.ts] Token fetch failed: ${res.status} ${text}`));
-    }
-
-    const json = await res.json() as { access_token: string; expires_in: number };
-    _accessToken = json.access_token;
-    _tokenExpiry = Date.now() + json.expires_in * 1000;
-    return ok(_accessToken);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[guesty.ts] Token fetch failed: ${res.status} ${text}`);
   }
+
+  const json = await res.json() as { access_token: string; expires_in: number };
+  _accessToken = json.access_token;
+  _tokenExpiry = Date.now() + json.expires_in * 1000;
+  return _accessToken;
 }
 
-// ─── Core fetch with retry (Result-based) ────────────────────────────────────────────
+// ─── Core fetch with retry ────────────────────────────────────────────────────────────
 
-/**
- * Guesty fetch wrapper with Result pattern, retry logic, and rate-limit handling.
- */
 async function guestyFetch<T>(
   path: string,
   options: RequestInit = {},
   retries = 3
-): Promise<Result<T, Error>> {
-  const tokenResult = await getAccessToken();
-  if (!tokenResult.success) return err(tokenResult.error);
+): Promise<T> {
+  const token = await getAccessToken();
 
-  try {
-    const res = await fetch(`${GUESTY_BASE}${path}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${tokenResult.data}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...(options.headers ?? {}),
-      },
-      next: { revalidate: 60 },
-    });
+  const res = await fetch(`${GUESTY_BASE}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(options.headers ?? {}),
+    },
+    next: { revalidate: 60 }, // Next.js cache: revalidate every 60s
+  });
 
-    if (res.status === 429 && retries > 0) {
-      const retryAfter = Number(res.headers.get('Retry-After') ?? '2');
-      await new Promise((r) => setTimeout(r, retryAfter * 1000));
-      return guestyFetch(path, options, retries - 1);
-    }
-
-    if (!res.ok) {
-      const text = await res.text();
-      return err(new Error(`[guesty.ts] ${res.status} ${path}: ${text}`));
-    }
-
-    return ok(await res.json() as T);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
+  if (res.status === 429 && retries > 0) {
+    const retryAfter = Number(res.headers.get('Retry-After') ?? '2');
+    await new Promise((r) => setTimeout(r, retryAfter * 1000));
+    return guestyFetch(path, options, retries - 1);
   }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[guesty.ts] ${res.status} ${path}: ${text}`);
+  }
+
+  return res.json() as Promise<T>;
 }
 
-// ─── Typed API methods (Result-based) ─────────────────────────────────────────────────
+// ─── Typed API methods ────────────────────────────────────────────────────────────────────
 
 export interface GuestyListingsResponse {
   results: GuestyListing[];
@@ -154,170 +135,207 @@ export interface GuestyReservationsResponse {
   skip: number;
 }
 
-/** Get all active listings with optional filters - Result pattern */
+/** Get all active listings with optional filters */
 export async function getListings(opts?: {
   limit?: number;
   skip?: number;
   tags?: string;
   fields?: string;
-}): Promise<Result<GuestyListingsResponse, Error>> {
+}): Promise<GuestyListingsResponse> {
   const params = new URLSearchParams();
   params.set('limit', String(opts?.limit ?? 25));
   params.set('skip', String(opts?.skip ?? 0));
   params.set('filters', JSON.stringify([{ field: 'active', operator: '$eq', value: true }]));
   if (opts?.tags) params.set('tags', opts.tags);
   if (opts?.fields) params.set('fields', opts.fields);
-  
   return guestyFetch<GuestyListingsResponse>(`/listings?${params}`);
 }
 
-/** Get single listing by ID - Result pattern */
-export async function getListing(id: string): Promise<Result<GuestyListing, Error>> {
+/** Get single listing by ID */
+export async function getListing(id: string): Promise<GuestyListing> {
   return guestyFetch<GuestyListing>(`/listings/${id}`);
 }
 
-/** Get reservations - Result pattern */
+/** Get reservations (optionally filtered by guest email or listing) */
 export async function getReservations(opts?: {
   guestEmail?: string;
   listingId?: string;
   limit?: number;
   skip?: number;
-}): Promise<Result<GuestyReservationsResponse, Error>> {
+}): Promise<GuestyReservationsResponse> {
   const params = new URLSearchParams();
   params.set('limit', String(opts?.limit ?? 20));
   params.set('skip', String(opts?.skip ?? 0));
   if (opts?.guestEmail) params.set('guestEmail', opts.guestEmail);
   if (opts?.listingId) params.set('listingId', opts.listingId);
-  
   return guestyFetch<GuestyReservationsResponse>(`/reservations?${params}`);
 }
 
-/** Get single reservation by ID - Result pattern */
-export async function getReservation(id: string): Promise<Result<GuestyReservation, Error>> {
+/** Get single reservation by ID */
+export async function getReservation(id: string): Promise<GuestyReservation> {
   return guestyFetch<GuestyReservation>(`/reservations/${id}`);
 }
 
-// ─── Legacy wrappers (backward compatibility) ─────────────────────────────────────
+// ─── Calendar ────────────────────────────────────────────────────────────────────
 
-/** @deprecated Use Result-based version above */
-export async function getListingsLegacy(opts?: {
-  limit?: number;
-  skip?: number;
-  tags?: string;
-  fields?: string;
-}): Promise<GuestyListingsResponse> {
-  const result = await getListings(opts);
-  if (!result.success) throw result.error;
-  return result.data;
+export interface GuestyCalendarDay {
+  date: string;
+  status: string;
+  price?: number;
+  minNights?: number;
+  available?: boolean;
 }
 
-/** @deprecated Use Result-based version above */
-export async function getListingLegacy(id: string): Promise<GuestyListing> {
-  const result = await getListing(id);
-  if (!result.success) throw result.error;
-  return result.data;
+/**
+ * Fetch calendar availability for a listing.
+ * Alias used by /api/guesty/calendar route.
+ */
+export async function getCalendar(
+  listingId: string,
+  from: string,
+  to: string,
+): Promise<GuestyCalendarDay[]> {
+  const qs = new URLSearchParams({ from, to });
+  return guestyFetch<GuestyCalendarDay[]>(
+    `/availability-pricing/api/calendar/listings/${encodeURIComponent(listingId)}?${qs}`,
+  );
 }
 
-/** @deprecated Use Result-based version above */
-export async function getReservationsLegacy(opts?: {
-  guestEmail?: string;
-  listingId?: string;
-  limit?: number;
-  skip?: number;
-}): Promise<GuestyReservationsResponse> {
-  const result = await getReservations(opts);
-  if (!result.success) throw result.error;
-  return result.data;
+/**
+ * Fetch calendar for a listing (detailed).
+ * Used by /api/properties/[id]/calendar.
+ */
+export async function getListingCalendar(
+  listingId: string,
+  from: string,
+  to: string,
+): Promise<{ data?: GuestyCalendarDay[]; error?: string }> {
+  try {
+    const days = await getCalendar(listingId, from, to);
+    return { data: days };
+  } catch (err) {
+    return { error: String(err) };
+  }
 }
 
-/** @deprecated Use Result-based version above */
-export async function getReservationLegacy(id: string): Promise<GuestyReservation> {
-  const result = await getReservation(id);
-  if (!result.success) throw result.error;
-  return result.data;
+// ─── Guests ───────────────────────────────────────────────────────────────────
+
+export interface GuestyGuest {
+  _id: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
 }
 
-// ─── Additional Resources from resources.ts ─────────────────────────────────────
+export interface GuestyGuestsResponse {
+  results: GuestyGuest[];
+  count: number;
+  limit: number;
+  skip: number;
+}
 
-import { 
-  getGuests as getGuestsRaw,
-  getTasks as getTasksRaw,
-  getConversations as getConversationsRaw,
-  getListing as getListingRaw,
-  getListingCalendar as getListingCalendarRaw,
-  getQuote as getQuoteRaw,
-  createQuote as createQuoteRaw,
-  createReservation as createReservationRaw,
-  cancelReservation as cancelReservationRaw,
-  GuestyGuestsResponse,
-  GuestyTasksResponse,
-  GuestyConversationsResponse,
-} from './resources';
-
-/** Get guests - Result pattern */
+/** Fetch guest profiles (admin-only endpoint). */
 export async function getGuests(opts?: {
   limit?: number;
   skip?: number;
   search?: string;
-}): Promise<Result<GuestyGuestsResponse, Error>> {
-  try {
-    const data = await getGuestsRaw(opts);
-    return ok(data);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
-  }
+}): Promise<GuestyGuestsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.search) params.set('q', opts.search);
+  return guestyFetch<GuestyGuestsResponse>(`/guests?${params}`);
 }
 
-/** Get tasks - Result pattern */
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+
+export interface GuestyTask {
+  _id: string;
+  title?: string;
+  status?: string;
+  listingId?: string;
+  reservationId?: string;
+}
+
+export interface GuestyTasksResponse {
+  results: GuestyTask[];
+  count: number;
+  limit: number;
+  skip: number;
+}
+
+/** Fetch tasks (admin-only endpoint). */
 export async function getTasks(opts?: {
   listingId?: string;
   reservationId?: string;
   status?: string;
   limit?: number;
   skip?: number;
-}): Promise<Result<GuestyTasksResponse, Error>> {
-  try {
-    const data = await getTasksRaw(opts);
-    return ok(data);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
-  }
+}): Promise<GuestyTasksResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.listingId) params.set('listingId', opts.listingId);
+  if (opts?.reservationId) params.set('reservationId', opts.reservationId);
+  if (opts?.status) params.set('status', opts.status);
+  return guestyFetch<GuestyTasksResponse>(`/tasks-open-api/tasks?${params}`);
 }
 
-/** Get conversations - Result pattern */
+// ─── Conversations ────────────────────────────────────────────────────────────
+
+export interface GuestyConversation {
+  _id: string;
+  guestName?: string;
+  lastMessage?: string;
+  reservationId?: string;
+}
+
+export interface GuestyConversationsResponse {
+  results: GuestyConversation[];
+  count: number;
+  limit: number;
+  skip: number;
+}
+
+/** Fetch conversations (admin-only). */
 export async function getConversations(opts?: {
   reservationId?: string;
   limit?: number;
   skip?: number;
-}): Promise<Result<GuestyConversationsResponse, Error>> {
-  try {
-    const data = await getConversationsRaw(opts);
-    return ok(data);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
-  }
+}): Promise<GuestyConversationsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.reservationId) params.set('reservationId', opts.reservationId);
+  return guestyFetch<GuestyConversationsResponse>(`/communication/conversations?${params}`);
 }
 
-/** Get listing from open-api - Result pattern */
-export async function getListingOpenApi(id: string): Promise<Result<GuestyListing, Error>> {
-  try {
-    const data = await getListingRaw(id);
-    return ok(data);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
-  }
-}
+// ─── Booking Quote ────────────────────────────────────────────────────────────
 
-/** Get listing calendar from open-api - Result pattern */
-export async function getListingCalendarOpenApi(
+/**
+ * Get a booking quote. Used by /api/quote.
+ * Returns { data, error } pattern for safe route handling.
+ */
+export async function getBookingQuote(
   listingId: string,
-  startDate: string,
-  endDate: string
-): Promise<Result<GuestyCalendarDay[], Error>> {
+  checkIn: string,
+  checkOut: string,
+  guests: number,
+): Promise<{ data?: unknown; error?: string }> {
   try {
-    const data = await getListingCalendarRaw(listingId, startDate, endDate);
-    return ok(data);
-  } catch (e) {
-    return err(e instanceof Error ? e : new Error(String(e)));
+    const result = await guestyFetch<unknown>('/reservations/quotes', {
+      method: 'POST',
+      body: JSON.stringify({
+        listingId,
+        checkIn,
+        checkOut,
+        guestsCount: guests,
+      }),
+    });
+    return { data: result };
+  } catch (err) {
+    return { error: String(err) };
   }
 }

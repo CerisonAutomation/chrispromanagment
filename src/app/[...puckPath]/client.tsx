@@ -14,7 +14,8 @@ interface ClientProps {
 }
 
 export function Client({ data }: ClientProps) {
-  return <Render config={config} data={data} />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge @measured/puck config to @puckeditor/core Render
+  return <Render config={config as any} data={data} />;
 }
 
 export default Client;

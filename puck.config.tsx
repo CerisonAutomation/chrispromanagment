@@ -193,7 +193,7 @@ export function getComponentsInCategory(categoryName: string) {
   const category = config.categories[categoryName as keyof typeof config.categories];
   if (!category?.components) return [];
   return category.components
-    .map((type) => config.components[type as keyof typeof config.components])
+    .map((type: string) => config.components[type as keyof typeof config.components])
     .filter(Boolean);
 }
 

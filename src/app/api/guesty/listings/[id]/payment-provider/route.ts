@@ -20,9 +20,9 @@ export const runtime = 'edge';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const { id: listingId } = params;
+  const { id: listingId } = await params;
 
   if (!listingId || listingId.length < 4) {
     return NextResponse.json({ error: 'listingId is required' }, { status: 400 });

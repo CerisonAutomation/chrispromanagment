@@ -33,3 +33,34 @@ export function getBrowserSupabaseClient() {
 export type CmsPage = Database['public']['Tables']['cms_pages']['Row'];
 export type CmsPageInsert = Database['public']['Tables']['cms_pages']['Insert'];
 export type CmsPageUpdate = Database['public']['Tables']['cms_pages']['Update'];
+
+// ─── Server-side page queries (using anon client with RLS) ───────────────────
+
+/**
+ * Fetch all published CMS pages. Used by sitemap, admin listing, catch-all routes.
+ */
+export async function getAllPages(): Promise<CmsPage[]> {
+  const client = createClient<Database>(url, anonKey);
+  const { data, error } = await client
+    .from('cms_pages')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  if (error) throw new Error(`[supabase] getAllPages: ${error.message}`);
+  return data ?? [];
+}
+
+/**
+ * Fetch a single CMS page by slug.
+ */
+export async function getPageBySlug(slug: string): Promise<CmsPage | null> {
+  const client = createClient<Database>(url, anonKey);
+  const { data, error } = await client
+    .from('cms_pages')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  if (error && error.code !== 'PGRST116') {
+    throw new Error(`[supabase] getPageBySlug(${slug}): ${error.message}`);
+  }
+  return data ?? null;
+}

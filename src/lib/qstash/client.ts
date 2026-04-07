@@ -178,7 +178,7 @@ export async function enqueueWebhookEvent(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export interface CreateScheduleOptions {
-  /** Cron expression (e.g., "0 */2 * * *" for every 2 hours) */
+  /** Cron expression — e.g. every 2 hours: "0 0/2 * * *" */
   cron: string;
   /** Optional delay before first run */
   delaySeconds?: number;
@@ -203,7 +203,7 @@ export interface Schedule {
  * await createSchedule(
  *   'calendar-refresh-bi-hourly',
  *   { type: 'guesty.calendar.refresh', listingIds: ['all'], daysAhead: 90 },
- *   { cron: '0 */2 * * *' }
+ *   { cron: '0 0/2 * * *' }
  * );
  */
 export async function createSchedule(

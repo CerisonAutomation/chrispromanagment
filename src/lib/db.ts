@@ -40,6 +40,65 @@ export const db = createClient<Database>(url, serviceKey, {
 export type CmsPage = Database['public']['Tables']['cms_pages']['Row'];
 export type CmsPageInsert = Database['public']['Tables']['cms_pages']['Insert'];
 export type CmsPageUpdate = Database['public']['Tables']['cms_pages']['Update'];
-export type GuestyListing = Database['public']['Tables']['guesty_listings_cache']['Row'];
-export type GuestyReservation = Database['public']['Tables']['guesty_reservations']['Row'];
-export type GuestyGuest = Database['public']['Tables']['guesty_guests']['Row'];
+
+/**
+ * cmsPage — Prisma-style helper object for CMS pages.
+ * Wraps Supabase queries with familiar findMany/findUnique/upsert/delete API.
+ */
+export const cmsPage = {
+  async findMany() {
+    const { data, error } = await db
+      .from('cms_pages')
+      .select('*')
+      .order('updated_at', { ascending: false });
+    if (error) throw new Error(`[db] cmsPage.findMany: ${error.message}`);
+    return data ?? [];
+  },
+
+  async findUnique({ where }: { where: { slug: string } }) {
+    const { data, error } = await db
+      .from('cms_pages')
+      .select('*')
+      .eq('slug', where.slug)
+      .single();
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`[db] cmsPage.findUnique: ${error.message}`);
+    }
+    return data ?? null;
+  },
+
+  async upsert(page: {
+    slug: string;
+    title: string;
+    data: string;
+    theme?: string;
+    published?: boolean;
+  }) {
+    const { data, error } = await db
+      .from('cms_pages')
+      .upsert(
+        {
+          slug: page.slug,
+          title: page.title,
+          data: page.data,
+          theme: page.theme ?? '{}',
+          published: page.published ?? false,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'slug' },
+      )
+      .select()
+      .single();
+    if (error) throw new Error(`[db] cmsPage.upsert: ${error.message}`);
+    return data;
+  },
+
+  async delete({ where }: { where: { slug: string } }) {
+    const { error } = await db
+      .from('cms_pages')
+      .delete()
+      .eq('slug', where.slug);
+    if (error) throw new Error(`[db] cmsPage.delete: ${error.message}`);
+    return { success: true };
+  },
+};

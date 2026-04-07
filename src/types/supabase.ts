@@ -60,6 +60,87 @@ export interface Database {
           created_by?: string | null;
         };
       };
+      guesty_listings_cache: {
+        Row: {
+          id: string;
+          listing_id: string;
+          data: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          listing_id: string;
+          data: Json;
+          synced_at?: string;
+        };
+        Update: {
+          listing_id?: string;
+          data?: Json;
+          synced_at?: string;
+        };
+      };
+      guesty_reservations: {
+        Row: {
+          id: string;
+          reservation_id: string;
+          listing_id: string;
+          guest_name: string;
+          check_in: string;
+          check_out: string;
+          status: string;
+          data: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          reservation_id: string;
+          listing_id: string;
+          guest_name: string;
+          check_in: string;
+          check_out: string;
+          status: string;
+          data: Json;
+          synced_at?: string;
+        };
+        Update: {
+          reservation_id?: string;
+          listing_id?: string;
+          guest_name?: string;
+          check_in?: string;
+          check_out?: string;
+          status?: string;
+          data?: Json;
+          synced_at?: string;
+        };
+      };
+      guesty_guests: {
+        Row: {
+          id: string;
+          guest_id: string;
+          full_name: string;
+          email: string | null;
+          phone: string | null;
+          data: Json;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          guest_id: string;
+          full_name: string;
+          email?: string | null;
+          phone?: string | null;
+          data: Json;
+          synced_at?: string;
+        };
+        Update: {
+          guest_id?: string;
+          full_name?: string;
+          email?: string | null;
+          phone?: string | null;
+          data?: Json;
+          synced_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
