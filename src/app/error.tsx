@@ -1,31 +1,44 @@
-'use client';
 /**
- * @fileoverview Global error boundary — catches all unhandled client errors.
+ * @fileoverview Root error boundary — catches unhandled errors in the React tree.
+ * Displays a user-friendly recovery UI.
  */
+'use client';
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function GlobalError({
-  error, reset,
-}: { error: Error & { digest?: string }; reset: () => void }) {
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   useEffect(() => {
-    console.error('[GlobalError]', error);
+    // Log to error tracking in production
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[GlobalError]', error.message, error.digest);
+    }
   }, [error]);
 
   return (
-    <html>
-      <body style={{ background: '#0e0f11', color: '#e8e4dc', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', margin: 0, flexDirection: 'column', gap: 16, textAlign: 'center', padding: 24 }}>
-        <div style={{ fontSize: 48 }}>⚠️</div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#c8a96a' }}>Something went wrong</h1>
-        <p style={{ color: '#e8e4dc60', fontSize: 14, maxWidth: 400 }}>
-          {error?.message ?? 'An unexpected error occurred.'}
-          {error?.digest && <><br /><code style={{ fontSize: 12, opacity: 0.5 }}>Digest: {error.digest}</code></>}
-        </p>
-        <button
-          onClick={reset}
-          style={{ padding: '10px 24px', borderRadius: 8, background: '#c8a96a', color: '#0e0f11', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 14 }}
-        >
-          Try again
-        </button>
+    <html lang="en">
+      <body className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background text-foreground p-8">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="text-6xl">⚠️</div>
+          <h1 className="text-2xl font-bold">Something went wrong</h1>
+          <p className="text-muted-foreground text-sm">
+            {process.env.NODE_ENV === 'development'
+              ? error.message
+              : 'An unexpected error occurred. Our team has been notified.'}
+          </p>
+          {error.digest && (
+            <p className="text-xs text-muted-foreground/60">Error ID: {error.digest}</p>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button onClick={reset} variant="default">Try again</Button>
+          <Button onClick={() => window.location.href = '/'} variant="outline">Go home</Button>
+        </div>
       </body>
     </html>
   );

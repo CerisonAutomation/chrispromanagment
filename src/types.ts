@@ -1,15 +1,6 @@
-// =============================================================================
-// TYPES SHIM - Redirect to canonical types
-// =============================================================================
-
-export * from '@/lib/canonical';
-
-export interface AppState {
-  data: any;
-}
-
-export interface ComponentData {
-  id: string;
-  type: string;
-  props: Record<string, unknown>;
-}
+/**
+ * @fileoverview Root-level types.ts shim for zero-diff import compatibility.
+ * All types have migrated to `src/types/` directory.
+ * @deprecated Import from '@/types' directly.
+ */
+export type * from './types/index';

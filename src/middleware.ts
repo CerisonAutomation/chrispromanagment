@@ -1,41 +1,64 @@
 /**
- * @fileoverview Next.js middleware — admin auth guard + security headers.
- * /admin/* routes are protected. All routes get security headers.
+ * @fileoverview Next.js Middleware — Supabase session refresh + /admin route guard.
+ *
+ * Protected routes: /admin/*
+ * Auth provider: Supabase (cookie-based sessions)
  */
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
-const ADMIN_PATHS = ['/admin', '/puck'];
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({ request });
 
-export function middleware(req: NextRequest): NextResponse {
-  const { pathname } = req.nextUrl;
-  const res = NextResponse.next();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
 
-  // ─── Security headers ──────────────────────────────────────────────────
-  res.headers.set('X-Content-Type-Options', 'nosniff');
-  res.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  res.headers.set('X-XSS-Protection', '1; mode=block');
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // Refresh session — required on every request for SSR session access
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // ─── Admin auth guard ─────────────────────────────────────────────────
-  const isAdminPath = ADMIN_PATHS.some((p) => pathname.startsWith(p));
-  if (isAdminPath) {
-    const adminKey = req.cookies.get('admin_key')?.value;
-    const expectedKey = process.env.ADMIN_SECRET_KEY;
-    // Skip auth check if no secret set (dev mode) or key matches
-    if (expectedKey && adminKey !== expectedKey) {
-      const loginUrl = req.nextUrl.clone();
+  const { pathname } = request.nextUrl;
+
+  // Guard /admin routes — redirect to /admin/login if unauthenticated
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+    if (!user) {
+      const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/admin/login';
-      loginUrl.searchParams.set('from', pathname);
+      loginUrl.searchParams.set('redirectTo', pathname);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  return res;
+  // Redirect authenticated users away from login page
+  if (pathname === '/admin/login' && user) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = '/admin';
+    return NextResponse.redirect(dashboardUrl);
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
+    // Match all except static files and _next
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -1,11 +1,7 @@
-// =============================================================================
-// RE-EXPORT FROM CANONICAL LOCATION
-// =============================================================================
-// 
-// This hook is re-exported from src/lib/hooks/ to maintain backward compatibility
-// with imports using @/hooks/use-mobile
-//
-// Canonical source: src/lib/hooks/use-mobile.ts
-// =============================================================================
+'use client';
+import { useMediaQuery } from './useMediaQuery';
 
-export { useIsMobile } from "@/lib/hooks/use-mobile";
+/** Returns `true` when viewport width is ≤ 768px. */
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 768px)');
+}

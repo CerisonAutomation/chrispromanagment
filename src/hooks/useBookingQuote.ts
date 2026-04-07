@@ -1,51 +1,51 @@
-'use client';
 /**
- * @fileoverview useBookingQuote — fetches a price quote for a given stay.
+ * @fileoverview Hook for fetching a Guesty booking price quote.
  */
-import { useCallback, useState } from 'react';
-import type { BookingQuote } from '@/types';
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
+import type { GuestyQuoteResult } from '@/types';
 
-interface QuoteParams {
-  listingId: string;
-  checkIn: string;
-  checkOut: string;
-  guests: number;
+export interface UseBookingQuoteParams {
+  listingId: string | undefined;
+  checkIn: string | undefined;
+  checkOut: string | undefined;
+  guestsCount: number;
 }
 
-interface UseBookingQuoteResult {
-  quote: BookingQuote | null;
-  loading: boolean;
-  error: string | null;
-  fetchQuote: (params: QuoteParams) => Promise<void>;
-  reset: () => void;
-}
+/**
+ * Fetches a booking quote when all required params are present.
+ * Disabled until listingId, checkIn, checkOut are truthy.
+ */
+export function useBookingQuote({
+  listingId,
+  checkIn,
+  checkOut,
+  guestsCount,
+}: UseBookingQuoteParams) {
+  const enabled = !!listingId && !!checkIn && !!checkOut && guestsCount > 0;
 
-export function useBookingQuote(): UseBookingQuoteResult {
-  const [quote, setQuote] = useState<BookingQuote | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchQuote = useCallback(async (params: QuoteParams) => {
-    setLoading(true); setError(null); setQuote(null);
-    try {
-      const r = await fetch('/api/quote', {
+  return useQuery<GuestyQuoteResult, Error>({
+    queryKey: queryKeys.listingQuote(
+      listingId ?? '',
+      checkIn ?? '',
+      checkOut ?? '',
+      guestsCount
+    ),
+    queryFn: async () => {
+      const res = await fetch('/api/booking-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
+        body: JSON.stringify({ listingId, checkIn, checkOut, guestsCount }),
       });
-      const j = await r.json() as BookingQuote & { error?: string };
-      if (j.error) throw new Error(j.error);
-      setQuote(j);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const reset = useCallback(() => {
-    setQuote(null); setError(null); setLoading(false);
-  }, []);
-
-  return { quote, loading, error, fetchQuote, reset };
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: res.statusText })) as { message?: string };
+        throw new Error(err.message ?? `Quote failed: ${res.status}`);
+      }
+      return res.json() as Promise<GuestyQuoteResult>;
+    },
+    staleTime: 2 * 60 * 1000,
+    enabled,
+    retry: 1,
+  });
 }

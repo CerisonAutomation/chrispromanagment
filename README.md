@@ -1,70 +1,102 @@
-# Christo Property Management
+# Christiano Property Management
 
-Premium property management & holiday rental platform — Malta.
+[![Deploy Status](https://img.shields.io/github/deployments/CerisonAutomation/chrispropmanagment/production?label=vercel&logo=vercel)](https://chrispropmanagment.vercel.app)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript)](https://www.typescriptlang.org)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
+
+A production-grade property management & booking platform with an AI-powered Puck CMS editor, Guesty API integration, and Supabase backend.
+
+---
 
 ## Stack
 
-| Layer | Tech |
-|---|---|
-| Framework | Next.js 15 App Router |
-| Database | Supabase (PostgreSQL) |
-| CMS | Puck visual editor |
-| Bookings | Guesty Open API |
-| Styling | Tailwind CSS v4 |
-| Deploy | Vercel |
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 App Router (RSC-first) |
+| CMS Editor | Puck (drag-and-drop, AI-assisted) |
+| Database | Supabase (PostgreSQL + RLS) |
+| Auth | Supabase Auth (OAuth PKCE + email) |
+| Booking API | Guesty Open API v1 (OAuth2 client_credentials) |
+| State | Zustand + Immer (editor) / TanStack Query v5 (server state) |
+| UI | shadcn/ui + Tailwind CSS v4 |
+| Forms | React Hook Form + Zod |
+| Deployment | Vercel (Edge + Node runtimes) |
+
+---
 
 ## Quick Start
 
 ```bash
-cp .env.example .env.local
-# Fill in your Supabase + Guesty keys
 npm install
+cp .env.example .env.local  # fill in required vars
 npm run dev
 ```
 
-## Routes
+## Required Environment Variables
 
-| Route | Description |
-|---|---|
-| `/` | CMS-managed homepage |
-| `/properties` | Guesty property listings |
-| `/admin` | Admin dashboard |
-| `/admin/pages` | Page manager |
-| `/puck/[slug]` | Visual page editor |
-| `/api/puck/[slug]` | CMS REST API |
-| `/api/properties` | Guesty listings proxy |
-| `/api/quote` | Booking quote API |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ (server) | Supabase service role (never expose to client) |
+| `GUESTY_CLIENT_ID` | ✅ | Guesty OAuth2 client ID |
+| `GUESTY_CLIENT_SECRET` | ✅ | Guesty OAuth2 client secret |
+| `NEXT_PUBLIC_SITE_URL` | ⚡ | Production URL (used in sitemap/robots) |
 
-## Key Files
+---
+
+## Project Structure
 
 ```
 src/
-├── types/index.ts          # All domain types
-├── lib/
-│   ├── env.ts              # Type-safe env
-│   ├── supabase.ts         # DB client + helpers
-│   ├── guesty.ts           # Guesty API client
-│   └── utils.ts            # Shared utilities
-├── puck.config.tsx         # Puck block registry
-├── middleware.ts            # Auth + security headers
-└── app/
-    ├── admin/              # Admin shell
-    ├── puck/               # Visual editor
-    ├── api/                # API routes
-    └── [...puckPath]/      # Public CMS pages
+├── app/                    # Next.js App Router
+│   ├── api/                # Route Handlers (server-only)
+│   │   ├── listings/       # Guesty proxy endpoints
+│   │   ├── booking-quote/  # Quote endpoint
+│   │   ├── pages/          # CMS CRUD
+│   │   └── health/         # Liveness probe
+│   ├── admin/              # CMS admin (protected)
+│   ├── puck/               # Puck editor
+│   └── properties/         # Property listing pages
+├── blocks/                 # Puck block components
+├── components/             # Shared UI components
+│   └── ui/                 # shadcn/ui primitives
+├── hooks/                  # React hooks
+├── lib/                    # Server + shared utilities
+│   ├── guesty-api.ts       # Guesty OAuth2 client
+│   ├── supabase.ts         # DB helpers
+│   ├── env.ts              # Validated env vars
+│   ├── query-keys.ts       # TanStack Query keys
+│   └── utils.ts            # Pure utility functions
+├── providers/              # React context providers
+├── store/                  # Zustand stores
+│   └── editor.ts           # Puck editor store
+└── types/                  # Canonical type system
+    ├── index.ts            # Single import gateway
+    ├── puck.ts             # Puck/editor types
+    ├── guesty.ts           # Guesty API types
+    ├── cms.ts              # CMS page/theme types
+    ├── ui.ts               # UI component types
+    └── db.ts               # Supabase table shapes
 ```
 
-## Database (Supabase)
+---
 
-Project: `supabase-citrine-saddle` — `mohpkakmpagvbqsehwhp`
+## API Routes
 
-Tables: `cms_pages`, `media_uploads`, `booking_quotes`
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/listings` | GET | All properties (paginated) |
+| `/api/listings/[id]` | GET | Single property |
+| `/api/listings/[id]/calendar` | GET | Availability calendar |
+| `/api/booking-quote` | POST | Price quote |
+| `/api/pages` | GET, POST | CMS pages list / create |
+| `/api/pages/[slug]` | GET, PATCH, DELETE | CMS page CRUD |
+| `/api/health` | GET | Liveness + DB check |
 
-## Env Vars (Vercel)
+---
 
-Set these in Vercel Dashboard:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`  
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `GUESTY_CLIENT_ID`
-- `GUESTY_CLIENT_SECRET`
+## Architecture Decisions
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for full ADRs.
