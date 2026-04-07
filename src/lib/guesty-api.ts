@@ -1,11 +1,15 @@
 /**
- * @fileoverview Guesty API client — production OAuth2 client_credentials flow.
+ * @fileoverview Guesty Open API client — management/admin use only.
  * Handles token caching, refresh buffer, circuit-breaker, typed results.
  * Uses Result<T, E> pattern for railway-oriented error handling.
  *
+ * ⚠️  THIS IS THE OPEN API CLIENT — NOT FOR BOOKING ENGINE.
+ *     For guest-facing listings, quotes, and reservations:
+ *     → use src/lib/guesty/booking-api.ts (booking-api.guesty.com)
+ *
  * ENV required (server-only):
- *   GUESTY_CLIENT_ID
- *   GUESTY_CLIENT_SECRET
+ *   GUESTY_CLIENT_ID      — Open API app client ID
+ *   GUESTY_CLIENT_SECRET  — Open API app client secret
  *
  * @module guesty-api
  */
@@ -14,13 +18,11 @@ import type {
   GuestyListing,
   GuestyListingsResult,
   GuestyCalendarDay,
-  GuestyBookingQuoteParams,
-  GuestyQuoteResult,
   GuestyTokenCache,
 } from '@/types';
 import { ok, err, type Result } from '@/types/consolidated';
 
-const GUESTY_TOKEN_URL = 'https://auth.guesty.com/oauth2/token';
+const GUESTY_TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
 const GUESTY_API_BASE = 'https://open-api.guesty.com/v1';
 const TOKEN_BUFFER_MS = 60_000;
 
@@ -29,7 +31,7 @@ let _tokenCache: GuestyTokenCache | null = null;
 // ─── Token Management ────────────────────────────────────────────────────────
 
 /**
- * Returns a valid access token, refreshing via client_credentials when stale.
+ * Returns a valid Open API access token, refreshing via client_credentials when stale.
  * Uses Result pattern for explicit error handling.
  */
 async function getAccessToken(): Promise<Result<string, Error>> {
@@ -121,7 +123,8 @@ async function guestyFetch<T>(
 // ─── Public API (Result-based) ───────────────────────────────────────────────
 
 /**
- * Fetch paginated active listings.
+ * Fetch paginated active listings (admin/management view).
+ * For guest-facing listing search use src/lib/guesty/booking-api.ts getListings().
  */
 export async function getListings(
   params: {
@@ -143,7 +146,8 @@ export async function getListings(
 }
 
 /**
- * Fetch a single listing by its Guesty `_id`.
+ * Fetch a single listing by its Guesty `_id` (admin/management view).
+ * For guest-facing listing detail use src/lib/guesty/booking-api.ts getListing().
  */
 export async function getListing(id: string): Promise<Result<GuestyListing, Error>> {
   if (!id) return err(new Error('[Guesty] getListing: id is required'));
@@ -151,7 +155,8 @@ export async function getListing(id: string): Promise<Result<GuestyListing, Erro
 }
 
 /**
- * Fetch daily availability/pricing calendar for a listing.
+ * Fetch daily availability/pricing calendar for a listing (Open API format).
+ * For Booking Engine calendar use src/lib/guesty/booking-api.ts getListingCalendar().
  */
 export async function getListingCalendar(
   listingId: string,
@@ -170,22 +175,6 @@ export async function getListingCalendar(
   const data = result.data;
   if (Array.isArray(data)) return ok(data);
   return ok((data as { days?: GuestyCalendarDay[] }).days ?? []);
-}
-
-/**
- * Obtain a booking quote for a stay.
- */
-export async function getBookingQuote(
-  params: GuestyBookingQuoteParams
-): Promise<Result<GuestyQuoteResult, Error>> {
-  const { listingId, checkIn, checkOut, guestsCount, source = 'direct' } = params;
-  if (!listingId) return err(new Error('[Guesty] getBookingQuote: listingId is required'));
-  
-  return guestyFetch<GuestyQuoteResult>('/quotes', {
-    method: 'POST',
-    body: JSON.stringify({ listingId, checkIn, checkOut, guestsCount, source }),
-    ttl: 0,
-  });
 }
 
 /** @internal Expose for unit-testing token cache invalidation only. */
@@ -219,14 +208,6 @@ export async function getListingCalendarLegacy(
   endDate: string
 ): Promise<GuestyCalendarDay[]> {
   const result = await getListingCalendar(listingId, startDate, endDate);
-  if (!result.success) throw result.error;
-  return result.data;
-}
-
-export async function getBookingQuoteLegacy(
-  params: GuestyBookingQuoteParams
-): Promise<GuestyQuoteResult> {
-  const result = await getBookingQuote(params);
   if (!result.success) throw result.error;
   return result.data;
 }

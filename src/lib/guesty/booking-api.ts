@@ -1,9 +1,11 @@
 /**
  * @fileoverview Guesty Booking Engine API — canonical client.
  *
- * BASE URL  : https://booking.guesty.com  (NOT open-api.guesty.com)
- * AUTH      : OAuth2 client_credentials → Bearer token
- * TOKEN CACHE: Upstash Redis — serverless-safe, shared across cold starts
+ * BASE URL  : https://booking-api.guesty.com  (NOT open-api.guesty.com, NOT booking.guesty.com)
+ * TOKEN URL : https://booking.guesty.com/oauth2/token
+ * AUTH SCOPE: booking_engine:api  (NOT 'open-api', NOT 'booking-engine-api')
+ * AUTH CREDS: GUESTY_BOOKING_CLIENT_ID / GUESTY_BOOKING_CLIENT_SECRET
+ *             (separate Booking Engine API app — NOT the Open API app)
  *
  * Token lifecycle:
  *   1. Check Redis key 'guesty:be_api:access_token'
@@ -25,6 +27,18 @@ const redis = new Redis({
 });
 
 const REDIS_TOKEN_KEY = 'guesty:be_api:access_token';
+
+/**
+ * OAuth2 token endpoint — auth only, not API calls.
+ * @see https://booking-api-docs.guesty.com/docs/quick-start
+ */
+const TOKEN_URL = 'https://booking.guesty.com/oauth2/token';
+
+/**
+ * Booking Engine API base — all /api/* paths go here.
+ * DIFFERENT from the token URL above.
+ */
+const GBE_BASE = 'https://booking-api.guesty.com';
 
 // ─── Zod Schemas — canonical GBE API shapes ───────────────────────────────────
 
@@ -201,29 +215,37 @@ export class GuestyRateLimitError extends GuestyAPIError {
 
 /**
  * Fetches a fresh Guesty BE API token and stores it in Upstash Redis.
+ * Uses GUESTY_BOOKING_CLIENT_ID / GUESTY_BOOKING_CLIENT_SECRET — these are
+ * the Booking Engine API app credentials, separate from the Open API app.
  * TTL = expires_in - 60s (60s safety buffer before real expiry).
- * @internal — use getGuestyToken() instead
+ * @internal — use getGuestyBeToken() instead
  */
 async function fetchAndCacheToken(): Promise<string> {
-  const clientId = process.env.GUESTY_CLIENT_ID;
-  const clientSecret = process.env.GUESTY_CLIENT_SECRET;
+  const clientId = process.env.GUESTY_BOOKING_CLIENT_ID;
+  const clientSecret = process.env.GUESTY_BOOKING_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new GuestyAPIError(
-      '[GuestyBEAPI] Missing GUESTY_CLIENT_ID or GUESTY_CLIENT_SECRET. ' +
-      'These are Booking Engine API credentials — separate from Open API keys.',
+      '[GuestyBEAPI] Missing GUESTY_BOOKING_CLIENT_ID or GUESTY_BOOKING_CLIENT_SECRET. ' +
+      'These are Booking Engine API credentials — create a separate API instance in ' +
+      'Guesty Dashboard → Integrations → Booking Engine → Create API Instance.',
       500,
     );
   }
 
-  const res = await fetch('https://booking.guesty.com/oauth2/token', {
+  const res = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
       client_id: clientId,
       client_secret: clientSecret,
-      scope: 'booking-engine-api',
+      /**
+       * CORRECT scope for Booking Engine API.
+       * Do NOT use 'open-api' (Open API scope) or 'booking-engine-api' (wrong format).
+       * @see https://booking-api-docs.guesty.com/docs/quick-start
+       */
+      scope: 'booking_engine:api',
     }),
     cache: 'no-store',
   });
@@ -259,8 +281,6 @@ export async function invalidateGuestyToken(): Promise<void> {
 }
 
 // ─── Authenticated Fetch ──────────────────────────────────────────────────────
-
-const GBE_BASE = 'https://booking.guesty.com';
 
 interface GBEFetchOptions extends Omit<RequestInit, 'headers'> {
   /** Next.js ISR revalidation TTL in seconds. 0 = no-store. Default: 60 */
