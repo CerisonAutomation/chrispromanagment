@@ -1,27 +1,32 @@
 /**
- * Guesty HTTP client.
- * Handles: OAuth2 token caching, rate-limit retry, full auto-pagination.
+ * @fileoverview Guesty Open API client — management/admin operations only.
  *
- * Based on:
- * - dferrera-creator/margin-app → token caching, fetchAll pagination pattern
- * - Velocity-BPA/n8n-nodes-guesty → transport layer architecture
+ * BASE URL: https://open-api.guesty.com/v1
+ * USE FOR : reservations management, tasks, guests, conversations, webhooks, sync
+ *
+ * ⚠️  FOR BOOKING ENGINE (public-facing listings/quotes/reservations):
+ *     Use src/lib/guesty/booking-api.ts instead.
+ *     That client uses https://booking.guesty.com with Upstash Redis token cache.
+ *
+ * Token cache: Upstash Redis (serverless-safe).
+ * Key: 'guesty:open_api:access_token'
  */
 
+import { Redis } from '@upstash/redis';
 import type { GuestyAuthToken, GuestyPaginatedResponse } from './types';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 const GUESTY_BASE = process.env.GUESTY_BASE_URL ?? 'https://open-api.guesty.com/v1';
 const TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
+const REDIS_TOKEN_KEY = 'guesty:open_api:access_token';
 
-// ─── Token cache ────────────────────────────────────────────────────────────────────────
+// ─── Token Management — Upstash Redis ────────────────────────────────────────
 
-let _cachedToken: { token: string; expiresAt: number } | null = null;
-
-export async function getAccessToken(): Promise<string> {
-  // Expire 5 min early to avoid edge race conditions (matches margin-app pattern)
-  if (_cachedToken && Date.now() < _cachedToken.expiresAt - 300_000) {
-    return _cachedToken.token;
-  }
-
+async function fetchAndCacheOpenApiToken(): Promise<string> {
   const clientId = process.env.GUESTY_CLIENT_ID;
   const clientSecret = process.env.GUESTY_CLIENT_SECRET;
 
@@ -38,6 +43,7 @@ export async function getAccessToken(): Promise<string> {
       client_id: clientId,
       client_secret: clientSecret,
     }),
+    cache: 'no-store',
   });
 
   if (!res.ok) {
@@ -45,19 +51,26 @@ export async function getAccessToken(): Promise<string> {
   }
 
   const data = await res.json() as GuestyAuthToken;
-  _cachedToken = {
-    token: data.access_token,
-    expiresAt: Date.now() + data.expires_in * 1000,
-  };
-  return _cachedToken.token;
+  const ttl = Math.max(data.expires_in - 60, 30);
+  await redis.set(REDIS_TOKEN_KEY, data.access_token, { ex: ttl });
+  return data.access_token;
 }
 
-// ─── Core fetch ──────────────────────────────────────────────────────────────────────────
+/**
+ * Returns valid Open API token from Upstash Redis cache or fetches fresh.
+ */
+export async function getAccessToken(): Promise<string> {
+  const cached = await redis.get<string>(REDIS_TOKEN_KEY);
+  if (cached) return cached;
+  return fetchAndCacheOpenApiToken();
+}
+
+// ─── Core fetch ──────────────────────────────────────────────────────────────
 
 export async function guestyFetch<T>(
   path: string,
   options: RequestInit & { params?: Record<string, string> } = {},
-  retries = 3
+  retries = 3,
 ): Promise<T> {
   const token = await getAccessToken();
 
@@ -78,7 +91,6 @@ export async function guestyFetch<T>(
       Accept: 'application/json',
       ...(fetchOptions.headers ?? {}),
     },
-    // Next.js ISR caching: revalidate every 60s for GET requests
     next: fetchOptions.method && fetchOptions.method !== 'GET'
       ? undefined
       : { revalidate: 60 },
@@ -90,6 +102,12 @@ export async function guestyFetch<T>(
     return guestyFetch(path, options, retries - 1);
   }
 
+  // 401: clear Redis cache and retry once
+  if (res.status === 401 && retries > 0) {
+    await redis.del(REDIS_TOKEN_KEY);
+    return guestyFetch(path, options, 0);
+  }
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`[guesty] ${res.status} ${path}: ${text}`);
@@ -98,16 +116,16 @@ export async function guestyFetch<T>(
   return res.json() as Promise<T>;
 }
 
-// ─── Auto-pagination (from dferrera-creator/margin-app pattern) ──────────────────────
+// ─── Auto-pagination ─────────────────────────────────────────────────────────
 
 /**
- * Fetches ALL pages of a paginated Guesty endpoint.
- * Stops when results.length >= count or results.length < limit.
+ * Fetches ALL pages of a paginated Guesty Open API endpoint.
+ * Uses skip/limit pagination (Open API pattern — not cursor-based).
  */
 export async function guestyFetchAll<T>(
   path: string,
   params: Record<string, string> = {},
-  limit = 100
+  limit = 100,
 ): Promise<T[]> {
   const all: T[] = [];
   let skip = 0;
