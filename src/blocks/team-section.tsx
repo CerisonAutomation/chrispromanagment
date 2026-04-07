@@ -1,4 +1,7 @@
-
+// =============================================================================
+// CANONICAL PUCK TEAM SECTION BLOCK
+// Team member profiles with photos
+// =============================================================================
 
 export const TeamSection = {
   label: "Team Section",
@@ -9,7 +12,8 @@ export const TeamSection = {
       type: "array" as const,
       label: "Team Members",
       defaultItemProps: { name: "Team Member", role: "Role", bio: "Short bio.", imageUrl: "" },
-      getItemSummary: (item: Record<string, unknown>) => (item as { name?: string }).name || "Team Member",
+      getItemSummary: (item: Record<string, unknown>) =>
+        (item as { name?: string }).name || "Team Member",
       arrayFields: {
         name: { type: "text" as const },
         role: { type: "text" as const },
@@ -22,9 +26,24 @@ export const TeamSection = {
     title: "Meet the Team",
     subtitle: "The dedicated professionals behind our success.",
     members: [
-      { name: "Christiano", role: "Founder & CEO", bio: "With over 9 years of Superhost experience and a background in international luxury hotel management.", imageUrl: "" },
-      { name: "Sarah", role: "Guest Relations Manager", bio: "Ensuring every guest receives a five-star experience from booking to checkout.", imageUrl: "" },
-      { name: "James", role: "Operations Lead", bio: "Coordinating cleaning, maintenance, and property preparation to the highest standards.", imageUrl: "" },
+      {
+        name: "Christiano",
+        role: "Founder & CEO",
+        bio: "With over 9 years of Superhost experience and a background in international luxury hotel management.",
+        imageUrl: "",
+      },
+      {
+        name: "Sarah",
+        role: "Guest Relations Manager",
+        bio: "Ensuring every guest receives a five-star experience from booking to checkout.",
+        imageUrl: "",
+      },
+      {
+        name: "James",
+        role: "Operations Lead",
+        bio: "Coordinating cleaning, maintenance, and property preparation to the highest standards.",
+        imageUrl: "",
+      },
     ],
   },
   render: (props: Record<string, unknown>) => {
