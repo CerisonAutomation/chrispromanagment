@@ -1,88 +1,88 @@
 /**
- * POST /api/guesty/webhook
- * Receives Guesty webhook events and dispatches to Supabase.
+ * @fileoverview POST /api/guesty/webhook
+ * Receives Guesty webhook events. Returns 200 immediately.
+ * Processing is offloaded to QStash via enqueueWebhookEvent().
  *
- * Events handled:
- * - reservation.created / updated / canceled / checked_in / checked_out
- * - listing.updated
- * - message.created
+ * BEFORE: Processed webhook inline (blocking, timeout risk, no retry)
+ * AFTER:
+ *   1. HMAC-SHA256 signature verification (crypto-grade, not plaintext compare)
+ *   2. Return 200 immediately (Guesty requires fast response)
+ *   3. Enqueue to QStash for durable async processing with retries
  *
- * Webhook URL to register in Guesty: https://your-domain.com/api/guesty/webhook
- * Security: Guesty sends a secret header — validate with GUESTY_WEBHOOK_SECRET env var.
+ * Register this URL in Guesty: https://{SITE_URL}/api/guesty/webhook
+ * Set GUESTY_WEBHOOK_SECRET in env vars — configure in Guesty dashboard.
  */
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { GuestyWebhookPayload } from '@/lib/guesty';
 
+import { type NextRequest, NextResponse } from 'next/server';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { enqueueWebhookEvent } from '@/lib/qstash/client';
+import type { GuestyWebhookPayload } from '@/lib/guesty/types';
+
+export const runtime = 'nodejs'; // crypto requires Node runtime
 export const dynamic = 'force-dynamic';
 
-function getAdminSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+/**
+ * Verifies Guesty webhook signature using HMAC-SHA256.
+ * Uses timing-safe comparison to prevent timing attacks.
+ * @see https://support.guesty.com/hc/en-us/articles/webhook-signatures
+ */
+function verifyGuestyWebhookSignature(
+  rawBody: string,
+  incomingSignature: string,
+  secret: string,
+): boolean {
+  try {
+    const expected = createHmac('sha256', secret)
+      .update(rawBody, 'utf8')
+      .digest('hex');
+    const expectedBuf = Buffer.from(expected, 'hex');
+    const incomingBuf = Buffer.from(incomingSignature.replace(/^sha256=/, ''), 'hex');
+    if (expectedBuf.length !== incomingBuf.length) return false;
+    return timingSafeEqual(expectedBuf, incomingBuf);
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  try {
-    // Validate Guesty webhook secret if configured
-    const webhookSecret = process.env.GUESTY_WEBHOOK_SECRET;
-    if (webhookSecret) {
-      const incomingSecret = req.headers.get('x-guesty-signature') ?? req.headers.get('authorization');
-      if (incomingSecret !== webhookSecret) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
+  const rawBody = await req.text();
+
+  // HMAC-SHA256 signature verification
+  const webhookSecret = process.env.GUESTY_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const signature =
+      req.headers.get('x-guesty-signature') ??
+      req.headers.get('x-hub-signature-256') ??
+      req.headers.get('authorization') ??
+      '';
+
+    if (!verifyGuestyWebhookSignature(rawBody, signature, webhookSecret)) {
+      console.warn('[webhook] Signature mismatch — rejected');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
-
-    const payload = await req.json() as GuestyWebhookPayload;
-    const { event, data } = payload;
-
-    console.log(`[webhook] Received: ${event}`);
-
-    const supabase = getAdminSupabase();
-
-    switch (event) {
-      case 'reservation.created':
-      case 'reservation.updated':
-      case 'reservation.canceled':
-      case 'reservation.checked_in':
-      case 'reservation.checked_out': {
-        const res = data.reservation;
-        if (res?._id) {
-          await supabase
-            .from('guesty_webhook_events')
-            .insert({
-              event,
-              reservation_id: res._id,
-              listing_id: res.listingId,
-              status: res.status,
-              payload: JSON.stringify(payload),
-              received_at: new Date().toISOString(),
-            });
-        }
-        break;
-      }
-      case 'listing.updated': {
-        const listing = data.listing;
-        if (listing?._id) {
-          await supabase
-            .from('guesty_webhook_events')
-            .insert({
-              event,
-              listing_id: listing._id,
-              payload: JSON.stringify(payload),
-              received_at: new Date().toISOString(),
-            });
-        }
-        break;
-      }
-      default:
-        console.log(`[webhook] Unhandled event: ${event}`);
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('[/api/guesty/webhook]', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
+
+  let payload: GuestyWebhookPayload;
+  try {
+    payload = JSON.parse(rawBody) as GuestyWebhookPayload;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const { event } = payload;
+  if (!event) {
+    return NextResponse.json({ error: 'Missing event field' }, { status: 400 });
+  }
+
+  // Enqueue to QStash for durable async processing — fire and forget
+  try {
+    const { messageId } = await enqueueWebhookEvent(event, payload as unknown as Record<string, unknown>);
+    console.log(`[webhook] Enqueued event=${event} messageId=${messageId}`);
+  } catch (err) {
+    // Log but still return 200 to prevent Guesty from retrying
+    console.error('[webhook] Failed to enqueue to QStash:', err);
+  }
+
+  // Always return 200 immediately — Guesty requires fast webhook response
+  return NextResponse.json({ received: true });
 }
