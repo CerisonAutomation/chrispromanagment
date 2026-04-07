@@ -1,12 +1,14 @@
 /**
  * @fileoverview GET /api/guesty/listings/[id]
- * Returns a single Guesty Booking Engine listing by ID.
- * Proxies to: GET https://booking.guesty.com/api/listings/{listingId}
+ * Returns a single Guesty listing by ID.
+ * Runtime: nodejs (Upstash Redis)
  */
-import { NextRequest, NextResponse } from 'next/server';
-import { getListingResult } from '@/lib/guesty/booking-api-result';
 
-export const dynamic = 'force-dynamic';
+import { NextResponse, type NextRequest } from 'next/server';
+import { getListingResult, getListingOpenApi } from '@/lib/guesty/booking-api-result';
+
+export { getListingOpenApi };
+export const runtime = 'nodejs';
 
 export async function GET(
   _req: NextRequest,
@@ -18,20 +20,15 @@ export async function GET(
     return NextResponse.json({ error: 'Missing listing id' }, { status: 400 });
   }
 
-  try {
-    const result = await getListingResult(id);
+  const result = await getListingResult(id);
 
-    if (!result.success) {
-      console.error('[api/guesty/listings/[id]]', result.error.message);
-      return NextResponse.json({ error: result.error.message }, { status: 502 });
-    }
-
-    return NextResponse.json(result.data, {
-      headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
-    });
-  } catch (err) {
-    console.error('[api/guesty/listings/[id]]', err);
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+  if (!result.success) {
+    console.error('[api/guesty/listings/[id]]', result.error.message);
+    const status = (result.error as { status?: number }).status ?? 502;
+    return NextResponse.json({ error: result.error.message }, { status });
   }
+
+  return NextResponse.json(result.data, {
+    headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
+  });
 }
