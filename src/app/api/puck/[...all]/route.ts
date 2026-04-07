@@ -1,98 +1,87 @@
 /**
  * @fileoverview Puck CMS REST API — Supabase backend.
- * GET    /api/puck/[slug] — load page data for editor / renderer
- * POST   /api/puck/[slug] — save & publish page from Puck onPublish
- * PATCH  /api/puck/[slug] — toggle published flag
+ * GET    /api/puck/[slug] — load page data
+ * POST   /api/puck/[slug] — save & publish
+ * PATCH  /api/puck/[slug] — toggle published
  * DELETE /api/puck/[slug] — delete page
- *
- * All handlers are defensively coded:
- *  - Never throws — always returns JSON
- *  - Supabase errors → logged + HTTP 500
- *  - Missing table / null data → returns EMPTY_DATA (never undefined)
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin, EMPTY_DATA } from '@/lib/supabase';
 
-type RouteParams = { params: Promise<{ all: string[] }> };
-
-const EMPTY_DATA = { content: [], root: { props: {} } };
+type Ctx = { params: Promise<{ all: string[] }> };
 
 function slug(all: string[]): string {
   return (all ?? []).filter(Boolean).join('/') || 'home';
 }
 
-export async function GET(_req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+function jsonErr(msg: string, status = 400): NextResponse {
+  return NextResponse.json({ error: msg }, { status });
+}
+
+export async function GET(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
     const { data, error } = await supabaseAdmin
-      .from('cms_pages')
-      .select('data, title, theme, published, updated_at')
-      .eq('slug', s)
-      .maybeSingle();
-    if (error) console.error(`[Puck GET /${s}]`, error.message);
-    const pageData = data?.data;
-    const safe =
-      pageData && typeof pageData === 'object' && 'content' in pageData
-        ? pageData
-        : EMPTY_DATA;
+      .from('cms_pages').select('data').eq('slug', s).maybeSingle();
+    if (error) console.error(`[CMS GET /${s}]`, error.message);
+    const d = data?.data;
+    const safe = d && typeof d === 'object' && Array.isArray((d as Record<string,unknown>).content)
+      ? d : EMPTY_DATA;
     return NextResponse.json(safe, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
-    console.error('[Puck GET] unexpected:', e);
+    console.error('[CMS GET]', e);
     return NextResponse.json(EMPTY_DATA);
   }
 }
 
-export async function POST(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function POST(req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const body = await req.json().catch(() => null);
-    if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
-    }
-    const title =
-      (body as Record<string, unknown>)?.root?.props?.title ??
-      s.split('/').pop()?.replace(/-/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) ??
-      'Untitled';
-    const theme = (body as Record<string, unknown>)?.root?.props?.theme ?? 'malta-gold';
+    const body = await req.json().catch(() => null) as Record<string, unknown> | null;
+    if (!body || typeof body !== 'object') return jsonErr('Invalid body');
+    const title = String(
+      (body?.root as Record<string,unknown>)?.props &&
+      (body.root as Record<string,unknown>)?.props
+        ? ((body.root as Record<string,unknown>).props as Record<string,unknown>).title ?? s
+        : s
+    );
+    const theme = String(
+      ((body?.root as Record<string,unknown>)?.props as Record<string,unknown>)?.theme ?? 'malta-gold'
+    );
     const { error } = await supabaseAdmin.from('cms_pages').upsert(
       { slug: s, title, data: body, theme, published: true, updated_at: new Date().toISOString() },
       { onConflict: 'slug' }
     );
-    if (error) {
-      console.error(`[Puck POST /${s}]`, error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true, slug: s, title });
   } catch (e) {
-    console.error('[Puck POST] unexpected:', e);
+    console.error('[CMS POST]', e);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const { published } = await req.json().catch(() => ({ published: false }));
+    const body = await req.json().catch(() => ({})) as { published?: boolean };
     const { error } = await supabaseAdmin
       .from('cms_pages')
-      .update({ published: Boolean(published), updated_at: new Date().toISOString() })
+      .update({ published: Boolean(body.published), updated_at: new Date().toISOString() })
       .eq('slug', s);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, slug: s, published });
+    return NextResponse.json({ success: true, slug: s, published: body.published });
   } catch (e) {
-    console.error('[Puck PATCH] unexpected:', e);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: RouteParams): Promise<NextResponse> {
+export async function DELETE(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
     const { error } = await supabaseAdmin.from('cms_pages').delete().eq('slug', s);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true, slug: s });
   } catch (e) {
-    console.error('[Puck DELETE] unexpected:', e);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

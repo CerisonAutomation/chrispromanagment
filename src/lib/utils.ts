@@ -1,97 +1,57 @@
-// =============================================================================
-// CANONICAL PUCK UTILS
-// Utility functions for class merging and common operations
-// =============================================================================
+/**
+ * @fileoverview Shared utilities — canonical, tree-shakeable.
+ */
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-"use client";
-
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
+/** shadcn/ui canonical class merger */
+export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-export function debounce<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
-
-  return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
+/** Slugify a string to URL-safe format */
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
-export function throttle<T extends (...args: unknown[]) => unknown>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle = false;
-
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
+/** Format currency */
+export function formatCurrency(amount: number, currency = 'EUR'): string {
+  return new Intl.NumberFormat('en-MT', { style: 'currency', currency }).format(amount);
 }
 
-// =============================================================================
-// CANONICAL PUCK ID GENERATOR
-// Generate unique IDs for components and history entries
-// =============================================================================
-
-let counter = 0;
-
-const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-/**
- * Generate a unique ID
- */
-export function generateId(prefix?: string): string {
-  const timestamp = Date.now().toString(36);
-  const randomPart = Array.from({ length: 8 })
-    .map(() => chars[Math.floor(Math.random() * chars.length)])
-    .join("");
-  const counterPart = (++counter).toString(36);
-
-  return prefix
-    ? `${prefix}_${timestamp}${randomPart}${counterPart}`
-    : `${timestamp}${randomPart}${counterPart}`;
+/** Format date range for display */
+export function formatDateRange(from: string, to: string): string {
+  const f = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${f.format(new Date(from))} – ${f.format(new Date(to))}`;
 }
 
-/**
- * Generate a short ID (for display purposes)
- */
-export function generateShortId(): string {
-  return Array.from({ length: 6 })
-    .map(() => chars[Math.floor(Math.random() * chars.length)])
-    .join("");
+/** Safe JSON parse — returns fallback on error */
+export function safeJson<T>(raw: string, fallback: T): T {
+  try { return JSON.parse(raw) as T; } catch { return fallback; }
 }
 
-export function pick<T extends object, K extends keyof T>(
-  obj: T,
-  keys: K[]
-): Pick<T, K> {
-  const result = {} as Pick<T, K>;
-  keys.forEach((key) => {
-    if (key in obj) {
-      result[key] = obj[key];
-    }
-  });
-  return result;
+/** Ensure data is always an array — prevents .map() crashes */
+export function toArray<T>(val: T | T[] | null | undefined): T[] {
+  if (Array.isArray(val)) return val;
+  if (val == null) return [];
+  return [val];
 }
 
-export function omit<T extends object, K extends keyof T>(
-  obj: T,
-  keys: K[]
-): Omit<T, K> {
-  const result = { ...obj };
-  keys.forEach((key) => {
-    delete result[key];
-  });
-  return result;
+/** Clamp a number between min and max */
+export function clamp(n: number, min: number, max: number): number {
+  return Math.min(Math.max(n, min), max);
+}
+
+/** Debounce a function */
+export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number): T {
+  let timer: ReturnType<typeof setTimeout>;
+  return ((...args: unknown[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  }) as T;
 }

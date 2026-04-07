@@ -1,6 +1,13 @@
 /**
- * @fileoverview DB layer — Supabase only. SQLite/Prisma REMOVED.
- * Import from here for all DB operations to keep a single canonical entry point.
+ * @fileoverview Canonical DB entry point. Import from here always.
+ * Prisma/SQLite/Drizzle are REMOVED. Supabase is the only DB layer.
  */
-export { supabase, supabaseAdmin, getAllPages, getPageBySlug, upsertPage } from './supabase';
-export type { CmsPage } from './supabase';
+export {
+  supabase,
+  supabaseAdmin,
+  getAllPages,
+  getPageBySlug,
+  upsertPage,
+  deletePage,
+  EMPTY_DATA,
+} from './supabase';

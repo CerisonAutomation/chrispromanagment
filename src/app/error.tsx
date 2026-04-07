@@ -1,67 +1,32 @@
 'use client';
+/**
+ * @fileoverview Global error boundary — catches all unhandled client errors.
+ */
+import { useEffect } from 'react';
 
-import {useEffect} from 'react';
-import {AlertTriangle, Home, RefreshCw} from 'lucide-react';
-import {logger} from '@/lib/error/logger';
-
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({
+  error, reset,
+}: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    // Log the error for monitoring
-    logger.error('Global error boundary triggered', error, {
-      digest: error.digest,
-      message: error.message,
-    });
+    console.error('[GlobalError]', error);
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-secondary">
-      <div className="w-full max-w-md">
-        <div className="text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-6">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
-          </div>
-          
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">
-            Oops! Something went wrong
-          </h1>
-          
-          <p className="text-muted-foreground mb-8">
-            We encountered an unexpected error. Our team has been notified and is looking into it.
-          </p>
-
-          <div className="space-y-3">
-            <button
-              onClick={reset}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Try Again
-            </button>
-            
-            <a
-              href="/"
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 border border-input bg-background rounded-lg font-semibold hover:bg-accent transition-colors"
-            >
-              <Home className="h-4 w-4" />
-              Go Home
-            </a>
-          </div>
-
-          {process.env.NODE_ENV === 'development' && error.message && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
-              <p className="text-sm font-mono text-red-800 break-words">
-                {error.message}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <html>
+      <body style={{ background: '#0e0f11', color: '#e8e4dc', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', margin: 0, flexDirection: 'column', gap: 16, textAlign: 'center', padding: 24 }}>
+        <div style={{ fontSize: 48 }}>⚠️</div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#c8a96a' }}>Something went wrong</h1>
+        <p style={{ color: '#e8e4dc60', fontSize: 14, maxWidth: 400 }}>
+          {error?.message ?? 'An unexpected error occurred.'}
+          {error?.digest && <><br /><code style={{ fontSize: 12, opacity: 0.5 }}>Digest: {error.digest}</code></>}
+        </p>
+        <button
+          onClick={reset}
+          style={{ padding: '10px 24px', borderRadius: 8, background: '#c8a96a', color: '#0e0f11', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 14 }}
+        >
+          Try again
+        </button>
+      </body>
+    </html>
   );
 }
