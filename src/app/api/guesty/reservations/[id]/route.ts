@@ -1,6 +1,5 @@
 /**
  * GET /api/guesty/reservations/:id
- * Returns a single reservation for status polling (booking confirmation page).
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getReservation } from '@/lib/guesty';
@@ -17,7 +16,6 @@ export async function GET(
     const reservation = await getReservation(id);
     return NextResponse.json(reservation);
   } catch (error) {
-    console.error('[/api/guesty/reservations/[id]]', error);
     const is404 = String(error).includes('404');
     return NextResponse.json(
       { error: is404 ? 'Reservation not found' : 'Failed to fetch reservation', details: String(error) },
