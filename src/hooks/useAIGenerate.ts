@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useCompletion } from 'ai/react';
+import { useCompletion } from '@ai-sdk/react';
 import { useState, useCallback } from 'react';
 
 // ─── Page Generation ─────────────────────────────────────────────────────────

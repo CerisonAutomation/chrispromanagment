@@ -37,7 +37,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     model: openai('gpt-4o-mini'),
     system: systemWithContext,
     messages,
-    maxTokens: 2048,
+    maxOutputTokens: 2048,
     tools: {
       generatePropertyDescription: tool({
         description: 'Generate a compelling property description for listings',

@@ -4,10 +4,9 @@
  */
 import { notFound } from 'next/navigation';
 import { getAllPages, getPageBySlug } from '@/lib/supabase';
-import { puckConfig } from '@/puck.config';
+import config from '@/puck.config';
 import { Render } from '@measured/puck';
 import type { Metadata } from 'next';
-import type { PuckData } from '@/types';
 
 export const revalidate = 60;
 
@@ -27,8 +26,8 @@ export async function generateMetadata({
   const slug = puckPath.join('/');
   const page = await getPageBySlug(slug);
   return {
-    title: page?.meta_title ?? page?.title ?? slug,
-    description: page?.meta_description ?? undefined,
+    title: page?.title ?? slug,
+    description: undefined,
   };
 }
 
@@ -43,9 +42,12 @@ export default async function CmsPage({
 
   if (!page || !page.published) notFound();
 
+  const puckData = typeof page.data === 'string' ? JSON.parse(page.data) : page.data;
+
   return (
     <main>
-      <Render config={puckConfig} data={page.content as PuckData} />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge puck config types */}
+      <Render config={config as any} data={puckData} />
     </main>
   );
 }

@@ -70,7 +70,7 @@ function extractJSON(text: string): unknown {
     const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     if (fenceMatch) {
       try {
-        return JSON.parse(fenceMatch[1].trim());
+        return JSON.parse(fenceMatch[1]!.trim());
       } catch {
         // fall through to balanced brace extraction
       }

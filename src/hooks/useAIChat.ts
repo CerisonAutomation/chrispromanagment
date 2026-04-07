@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useChat, type Message } from 'ai/react';
+import { useChat, type Message } from '@ai-sdk/react';
 import { useCallback, useMemo } from 'react';
 
 export interface PropertyContext {

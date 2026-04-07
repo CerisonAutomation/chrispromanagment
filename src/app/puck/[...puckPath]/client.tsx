@@ -29,7 +29,7 @@ export function Client({ path, data }: ClientProps) {
   return (
     <Puck
       plugins={[aiPlugin]}
-      config={config}
+      config={config as any}
       data={data}
       onPublish={async (data: Data) => {
         await fetch("/api/pages", {

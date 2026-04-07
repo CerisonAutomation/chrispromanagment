@@ -175,3 +175,167 @@ export async function getReservations(opts?: {
 export async function getReservation(id: string): Promise<GuestyReservation> {
   return guestyFetch<GuestyReservation>(`/reservations/${id}`);
 }
+
+// ─── Calendar ────────────────────────────────────────────────────────────────────
+
+export interface GuestyCalendarDay {
+  date: string;
+  status: string;
+  price?: number;
+  minNights?: number;
+  available?: boolean;
+}
+
+/**
+ * Fetch calendar availability for a listing.
+ * Alias used by /api/guesty/calendar route.
+ */
+export async function getCalendar(
+  listingId: string,
+  from: string,
+  to: string,
+): Promise<GuestyCalendarDay[]> {
+  const qs = new URLSearchParams({ from, to });
+  return guestyFetch<GuestyCalendarDay[]>(
+    `/availability-pricing/api/calendar/listings/${encodeURIComponent(listingId)}?${qs}`,
+  );
+}
+
+/**
+ * Fetch calendar for a listing (detailed).
+ * Used by /api/properties/[id]/calendar.
+ */
+export async function getListingCalendar(
+  listingId: string,
+  from: string,
+  to: string,
+): Promise<{ data?: GuestyCalendarDay[]; error?: string }> {
+  try {
+    const days = await getCalendar(listingId, from, to);
+    return { data: days };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}
+
+// ─── Guests ───────────────────────────────────────────────────────────────────
+
+export interface GuestyGuest {
+  _id: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface GuestyGuestsResponse {
+  results: GuestyGuest[];
+  count: number;
+  limit: number;
+  skip: number;
+}
+
+/** Fetch guest profiles (admin-only endpoint). */
+export async function getGuests(opts?: {
+  limit?: number;
+  skip?: number;
+  search?: string;
+}): Promise<GuestyGuestsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.search) params.set('q', opts.search);
+  return guestyFetch<GuestyGuestsResponse>(`/guests?${params}`);
+}
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+
+export interface GuestyTask {
+  _id: string;
+  title?: string;
+  status?: string;
+  listingId?: string;
+  reservationId?: string;
+}
+
+export interface GuestyTasksResponse {
+  results: GuestyTask[];
+  count: number;
+  limit: number;
+  skip: number;
+}
+
+/** Fetch tasks (admin-only endpoint). */
+export async function getTasks(opts?: {
+  listingId?: string;
+  reservationId?: string;
+  status?: string;
+  limit?: number;
+  skip?: number;
+}): Promise<GuestyTasksResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.listingId) params.set('listingId', opts.listingId);
+  if (opts?.reservationId) params.set('reservationId', opts.reservationId);
+  if (opts?.status) params.set('status', opts.status);
+  return guestyFetch<GuestyTasksResponse>(`/tasks-open-api/tasks?${params}`);
+}
+
+// ─── Conversations ────────────────────────────────────────────────────────────
+
+export interface GuestyConversation {
+  _id: string;
+  guestName?: string;
+  lastMessage?: string;
+  reservationId?: string;
+}
+
+export interface GuestyConversationsResponse {
+  results: GuestyConversation[];
+  count: number;
+  limit: number;
+  skip: number;
+}
+
+/** Fetch conversations (admin-only). */
+export async function getConversations(opts?: {
+  reservationId?: string;
+  limit?: number;
+  skip?: number;
+}): Promise<GuestyConversationsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.reservationId) params.set('reservationId', opts.reservationId);
+  return guestyFetch<GuestyConversationsResponse>(`/communication/conversations?${params}`);
+}
+
+// ─── Booking Quote ────────────────────────────────────────────────────────────
+
+/**
+ * Get a booking quote. Used by /api/quote.
+ * Returns { data, error } pattern for safe route handling.
+ */
+export async function getBookingQuote(
+  listingId: string,
+  checkIn: string,
+  checkOut: string,
+  guests: number,
+): Promise<{ data?: unknown; error?: string }> {
+  try {
+    const result = await guestyFetch<unknown>('/reservations/quotes', {
+      method: 'POST',
+      body: JSON.stringify({
+        listingId,
+        checkIn,
+        checkOut,
+        guestsCount: guests,
+      }),
+    });
+    return { data: result };
+  } catch (err) {
+    return { error: String(err) };
+  }
+}

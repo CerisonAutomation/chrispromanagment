@@ -52,7 +52,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     system: `You are a world-class property copywriter. ${styleGuide} Write in ${language}. Maximum ${maxLength} words. No placeholder text.`,
     prompt: `Write a compelling property description for:\n- Type: ${propertyType}\n- Bedrooms: ${bedrooms} | Bathrooms: ${bathrooms}\n- Location: ${location}\n- Amenities: ${amenities.join(', ')}${pricePerNight ? `\n- Price: €${pricePerNight}/night` : ''}\n\nOutput only the description, no headers or labels.`,
     temperature: 0.7,
-    maxTokens: 500,
+    maxOutputTokens: 500,
   });
 
   return result.toTextStreamResponse();

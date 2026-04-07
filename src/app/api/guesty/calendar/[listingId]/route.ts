@@ -15,8 +15,9 @@ export const runtime = 'edge';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { listingId: string } },
+  { params }: { params: Promise<{ listingId: string }> },
 ): Promise<NextResponse> {
+  const { listingId } = await params;
   const from = req.nextUrl.searchParams.get('from');
   const to = req.nextUrl.searchParams.get('to');
 
@@ -35,7 +36,7 @@ export async function GET(
   }
 
   try {
-    const calendar = await getListingCalendar(params.listingId, from, to);
+    const calendar = await getListingCalendar(listingId, from, to);
     return NextResponse.json(calendar, {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
     });

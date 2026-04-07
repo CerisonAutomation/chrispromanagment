@@ -311,6 +311,21 @@ async function gbeFetch<T>(
   return schema.parse(data);
 }
 
+// ─── Legacy guestyBookingFetch wrapper ────────────────────────────────────────
+// Some routes import this directly — it's a convenience wrapper around gbeFetch
+// that skips Zod validation (returns raw JSON).
+
+/**
+ * Authenticated fetch against the Guesty Booking Engine API.
+ * Returns raw JSON (no Zod validation). Use typed methods below when possible.
+ */
+export async function guestyBookingFetch<T = unknown>(
+  path: string,
+  options: GBEFetchOptions = {},
+): Promise<T> {
+  return gbeFetch(path, z.any() as z.ZodType<T>, options);
+}
+
 // ─── Public API Methods ───────────────────────────────────────────────────────
 
 /** All supported query params for GET /api/listings */
