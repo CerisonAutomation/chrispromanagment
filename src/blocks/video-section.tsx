@@ -1,4 +1,7 @@
-
+// =============================================================================
+// CANONICAL PUCK VIDEO SECTION BLOCK
+// YouTube/Vimeo video embed with thumbnail
+// =============================================================================
 
 export const VideoSection = {
   label: "Video Section",

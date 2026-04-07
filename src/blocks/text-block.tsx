@@ -1,4 +1,7 @@
-
+// =============================================================================
+// CANONICAL PUCK TEXT BLOCK
+// Flexible text content with styling options
+// =============================================================================
 
 export const TextBlock = {
   label: "Text Block",
