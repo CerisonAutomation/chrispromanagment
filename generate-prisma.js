@@ -1,19 +1,3 @@
-#!/usr/bin/env node
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-require-imports */
-
-const { execSync } = require('child_process');
-const path = require('path');
-
-try {
-  console.log('[Prisma] Generating Prisma Client...');
-  execSync('bun prisma generate', {
-    cwd: path.join(__dirname),
-    stdio: 'inherit',
-  });
-  console.log('[Prisma] ✓ Successfully generated Prisma Client');
-  process.exit(0);
-} catch (error) {
-  console.error('[Prisma] ✗ Failed to generate:', error.message);
-  process.exit(1);
-}
+// DELETED — Prisma removed, Drizzle+Supabase is the ORM layer.
+// This file is intentionally blank and will be removed.
+// Run: git rm generate-prisma.js

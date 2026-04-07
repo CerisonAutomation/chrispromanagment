@@ -1,11 +1,3 @@
 {
-  "mcpServers": {
-    "puck-cms": {
-      "command": "node",
-      "args": ["/Users/cb/Documents/Cline/MCP/puck-mcp-server/build/puck-mcp-server/index.js"],
-      "env": {
-        "PUCK_PROJECT_PATH": "/Users/cb/Downloads/CHRIS/workspace-c3a9a77d-31f8-4809-a141-23b43ba31f85"
-      }
-    }
-  }
+  "_comment": "LOCAL DEV ONLY — do not commit real MCP configs. Add mcp-config.json to .gitignore."
 }
