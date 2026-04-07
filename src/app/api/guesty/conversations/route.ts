@@ -1,7 +1,7 @@
 /**
- * GET  /api/guesty/conversations?reservationId=xxx
- * POST /api/guesty/conversations/:id/messages  → send host message
- * Admin-only.
+ * GET /api/guesty/conversations?reservationId=xxx
+ * POST /api/guesty/conversations/:id/messages → send host message
+ * Admin-only. Uses Result pattern for error handling.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getConversations } from '@/lib/guesty';
@@ -16,14 +16,21 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   try {
     const { searchParams } = req.nextUrl;
-    const data = await getConversations({
+    const result = await getConversations({
       reservationId: searchParams.get('reservationId') ?? undefined,
       limit: Math.min(Number(searchParams.get('limit') ?? '20'), 100),
       skip: Number(searchParams.get('skip') ?? '0'),
     });
-    return NextResponse.json(data);
+    
+    if (!result.success) {
+      console.error('[/api/guesty/conversations]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data);
   } catch (error) {
     console.error('[/api/guesty/conversations]', error);
-    return NextResponse.json({ error: String(error) }, { status: 502 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

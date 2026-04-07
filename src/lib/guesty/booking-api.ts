@@ -16,6 +16,7 @@
 
 import { Redis } from '@upstash/redis';
 import { z } from 'zod';
+import { ok, err, type Result } from '@/types/consolidated';
 
 // ─── Upstash Redis singleton ──────────────────────────────────────────────────
 
@@ -311,6 +312,56 @@ async function gbeFetch<T>(
   return schema.parse(data);
 }
 
+
+// ─── Result-based Fetch Wrapper ───────────────────────────────────────────────
+
+/**
+ * Result-based version of gbeFetch for explicit error handling.
+ */
+async function gbeFetchResult<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  options: GBEFetchOptions = {},
+  _isRetry = false,
+): Promise<Result<T, Error>> {
+  try {
+    const token = await getGuestyBeToken();
+    const { revalidate = 60, ...rest } = options;
+
+    const res = await fetch(`${GBE_BASE}${path}`, {
+      ...rest,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      ...(revalidate > 0
+        ? { next: { revalidate } }
+        : { cache: 'no-store' as const }),
+    });
+
+    if (res.status === 429) {
+      const retryAfter = Number(res.headers.get('Retry-After') ?? '30');
+      return err(new Error(`Rate limited on ${path}. Retry after ${retryAfter}s`));
+    }
+
+    if (res.status === 401 && !_isRetry) {
+      await invalidateGuestyToken();
+      return gbeFetchResult(path, schema, options, true);
+    }
+
+    if (!res.ok) {
+      const body = await res.text();
+      return err(new Error(`[GuestyBEAPI] ${res.status} ${path}: ${body}`));
+    }
+
+    const data: unknown = await res.json();
+    return ok(schema.parse(data));
+  } catch (e) {
+    return err(e instanceof Error ? e : new Error(String(e)));
+  }
+}
+
 // ─── Public API Methods ───────────────────────────────────────────────────────
 
 /** All supported query params for GET /api/listings */
@@ -538,6 +589,102 @@ export async function getReviews(
   listingId: string,
 ): Promise<unknown[]> {
   return gbeFetch(
+    `/api/reviews?listingId=${encodeURIComponent(listingId)}`,
+    z.array(z.unknown()),
+    { revalidate: 1800 },
+  );
+}
+
+// ─── Result-based API Methods ─────────────────────────────────────────────────
+
+/** Get all listings - Result pattern */
+export async function getListingsResult(
+  params: ListingsParams = {},
+): Promise<Result<GuestyListingsResponse, Error>> {
+  const qs = new URLSearchParams();
+  (Object.entries(params) as [string, unknown][]).forEach(([k, v]) => {
+    if (v === undefined || v === null) return;
+    if (Array.isArray(v)) {
+      v.forEach((item) => qs.append(k, String(item)));
+    } else {
+      qs.set(k, String(v));
+    }
+  });
+  if (!qs.has('limit')) qs.set('limit', '20');
+  return gbeFetchResult(`/api/listings?${qs.toString()}`, GuestyListingsResponseSchema, { revalidate: 300 });
+}
+
+/** Get single listing - Result pattern */
+export async function getListingResult(listingId: string): Promise<Result<GuestyListing, Error>> {
+  return gbeFetchResult(
+    `/api/listings/${encodeURIComponent(listingId)}`,
+    GuestyListingSchema,
+    { revalidate: 300 },
+  );
+}
+
+/** Get listing calendar - Result pattern */
+export async function getListingCalendarResult(
+  listingId: string,
+  from: string,
+  to: string,
+): Promise<Result<GuestyCalendarDay[], Error>> {
+  return gbeFetchResult(
+    `/api/listings/${encodeURIComponent(listingId)}/calendar?from=${from}&to=${to}`,
+    z.array(GuestyCalendarDaySchema),
+    { revalidate: 300 },
+  );
+}
+
+/** Get payment provider - Result pattern */
+export async function getPaymentProviderResult(listingId: string): Promise<Result<GuestyPaymentProvider, Error>> {
+  return gbeFetchResult(
+    `/api/listings/${encodeURIComponent(listingId)}/payment-provider`,
+    GuestyPaymentProviderSchema,
+    { revalidate: 300 },
+  );
+}
+
+/** Create quote - Result pattern */
+export async function createQuoteResult(params: CreateQuoteParams): Promise<Result<GuestyQuote, Error>> {
+  return gbeFetchResult('/api/quotes', GuestyQuoteSchema, {
+    method: 'POST',
+    body: JSON.stringify(params),
+    revalidate: 0,
+  });
+}
+
+/** Get quote - Result pattern */
+export async function getQuoteResult(quoteId: string): Promise<Result<GuestyQuote, Error>> {
+  return gbeFetchResult(`/api/quotes/${quoteId}`, GuestyQuoteSchema, { revalidate: 0 });
+}
+
+/** Create instant reservation - Result pattern */
+export async function createInstantReservationResult(params: InstantReservationParams): Promise<Result<GuestyReservation, Error>> {
+  return gbeFetchResult('/api/reservations/instant', GuestyReservationSchema, {
+    method: 'POST',
+    body: JSON.stringify(params),
+    revalidate: 0,
+  });
+}
+
+/** Create inquiry - Result pattern */
+export async function createInquiryResult(params: InquiryParams): Promise<Result<GuestyReservation, Error>> {
+  return gbeFetchResult('/api/reservations/inquiry', GuestyReservationSchema, {
+    method: 'POST',
+    body: JSON.stringify(params),
+    revalidate: 0,
+  });
+}
+
+/** Get cities - Result pattern */
+export async function getCitiesResult(): Promise<Result<string[], Error>> {
+  return gbeFetchResult('/api/cities', z.array(z.string()), { revalidate: 3600 });
+}
+
+/** Get reviews - Result pattern */
+export async function getReviewsResult(listingId: string): Promise<Result<unknown[], Error>> {
+  return gbeFetchResult(
     `/api/reviews?listingId=${encodeURIComponent(listingId)}`,
     z.array(z.unknown()),
     { revalidate: 1800 },

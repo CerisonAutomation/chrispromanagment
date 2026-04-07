@@ -1,6 +1,7 @@
 /**
- * GET /api/guesty/reservations
- * Returns reservations for the authenticated guest.
+ * GET /api/guesty/reservations?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * Returns reservations from Guesty. Admin-only.
+ * Uses Result pattern for error handling.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getReservations } from '@/lib/guesty';
@@ -8,32 +9,30 @@ import { getReservations } from '@/lib/guesty';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  const adminKey = req.headers.get('x-admin-key');
+  if (adminKey !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = req.nextUrl;
-    const limit = Math.min(Number(searchParams.get('limit') ?? '20'), 100);
-    const skip = Number(searchParams.get('skip') ?? '0');
-    const listingId = searchParams.get('listingId') ?? undefined;
-    const status = searchParams.get('status') ?? undefined;
     const from = searchParams.get('from') ?? undefined;
     const to = searchParams.get('to') ?? undefined;
+    const listingId = searchParams.get('listingId') ?? undefined;
+    const limit = Math.min(Number(searchParams.get('limit') ?? '20'), 100);
+    const skip = Number(searchParams.get('skip') ?? '0');
 
-    let guestEmail: string | undefined;
-    const authHeader = req.headers.get('authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      try {
-        const token = authHeader.slice(7);
-        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-        guestEmail = payload.email as string | undefined;
-      } catch { /* non-JWT token, ignore */ }
+    const result = await getReservations({ from, to, listingId, limit, skip });
+    
+    if (!result.success) {
+      console.error('[/api/guesty/reservations]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
     }
 
-    const data = await getReservations({ guestEmail, listingId, limit, skip, status, from, to });
-    return NextResponse.json(data);
+    return NextResponse.json(result.data);
   } catch (error) {
     console.error('[/api/guesty/reservations]', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch reservations', details: String(error) },
-      { status: 502 }
-    );
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

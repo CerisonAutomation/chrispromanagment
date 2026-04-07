@@ -1,6 +1,7 @@
 /**
  * GET /api/guesty/guests?search=name&limit=20&skip=0
  * Returns guest profiles. Requires admin auth (service role only — not exposed to public).
+ * Uses Result pattern for error handling.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getGuests } from '@/lib/guesty';
@@ -20,10 +21,17 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const skip = Number(searchParams.get('skip') ?? '0');
     const search = searchParams.get('search') ?? undefined;
 
-    const data = await getGuests({ limit, skip, search });
-    return NextResponse.json(data);
+    const result = await getGuests({ limit, skip, search });
+    
+    if (!result.success) {
+      console.error('[/api/guesty/guests]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data);
   } catch (error) {
     console.error('[/api/guesty/guests]', error);
-    return NextResponse.json({ error: 'Failed to fetch guests', details: String(error) }, { status: 502 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: 'Failed to fetch guests', details: message }, { status: 502 });
   }
 }

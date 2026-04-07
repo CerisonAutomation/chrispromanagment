@@ -1,6 +1,7 @@
 /**
  * @fileoverview Guesty API client — production OAuth2 client_credentials flow.
  * Handles token caching, refresh buffer, circuit-breaker, typed results.
+ * Uses Result<T, E> pattern for railway-oriented error handling.
  *
  * ENV required (server-only):
  *   GUESTY_CLIENT_ID
@@ -17,10 +18,10 @@ import type {
   GuestyQuoteResult,
   GuestyTokenCache,
 } from '@/types';
+import { ok, err, type Result } from '@/types/consolidated';
 
 const GUESTY_TOKEN_URL = 'https://auth.guesty.com/oauth2/token';
 const GUESTY_API_BASE = 'https://open-api.guesty.com/v1';
-/** Refresh token 60 s before actual expiry to avoid 401 mid-request. */
 const TOKEN_BUFFER_MS = 60_000;
 
 let _tokenCache: GuestyTokenCache | null = null;
@@ -29,91 +30,98 @@ let _tokenCache: GuestyTokenCache | null = null;
 
 /**
  * Returns a valid access token, refreshing via client_credentials when stale.
- * Throws `Error` if env vars are absent — fail fast, never silently degrade.
+ * Uses Result pattern for explicit error handling.
  */
-async function getAccessToken(): Promise<string> {
+async function getAccessToken(): Promise<Result<string, Error>> {
   const now = Date.now();
   if (_tokenCache && _tokenCache.expires_at - TOKEN_BUFFER_MS > now) {
-    return _tokenCache.access_token;
+    return ok(_tokenCache.access_token);
   }
 
   const clientId = process.env.GUESTY_CLIENT_ID;
   const clientSecret = process.env.GUESTY_CLIENT_SECRET;
 
   if (!clientId || clientId.trim() === '') {
-    throw new Error('[Guesty] Missing env var: GUESTY_CLIENT_ID');
+    return err(new Error('[Guesty] Missing env var: GUESTY_CLIENT_ID'));
   }
   if (!clientSecret || clientSecret.trim() === '') {
-    throw new Error('[Guesty] Missing env var: GUESTY_CLIENT_SECRET');
+    return err(new Error('[Guesty] Missing env var: GUESTY_CLIENT_SECRET'));
   }
 
-  const res = await fetch(GUESTY_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      scope: 'open-api',
-      client_id: clientId,
-      client_secret: clientSecret,
-    }),
-    cache: 'no-store',
-  });
+  try {
+    const res = await fetch(GUESTY_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        scope: 'open-api',
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+      cache: 'no-store',
+    });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`[Guesty] Token request failed ${res.status}: ${body}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return err(new Error(`[Guesty] Token request failed ${res.status}: ${body}`));
+    }
+
+    const json = (await res.json()) as { access_token: string; expires_in: number };
+    _tokenCache = {
+      access_token: json.access_token,
+      expires_at: now + json.expires_in * 1_000,
+    };
+
+    return ok(_tokenCache.access_token);
+  } catch (e) {
+    return err(e instanceof Error ? e : new Error(String(e)));
   }
-
-  const json = (await res.json()) as { access_token: string; expires_in: number };
-  _tokenCache = {
-    access_token: json.access_token,
-    expires_at: now + json.expires_in * 1_000,
-  };
-
-  return _tokenCache.access_token;
 }
 
 // ─── Core Fetch Wrapper ───────────────────────────────────────────────────────
 
 /**
  * Authenticated fetch against the Guesty Open API.
- * Attaches Bearer token, enforces JSON content-type, surfaces typed errors.
+ * Uses Result pattern for error handling.
  */
 async function guestyFetch<T>(
   path: string,
   options: RequestInit & { ttl?: number } = {}
-): Promise<T> {
-  const token = await getAccessToken();
-  const { ttl, ...fetchOptions } = options;
-
-  const res = await fetch(`${GUESTY_API_BASE}${path}`, {
-    ...fetchOptions,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...(fetchOptions.headers ?? {}),
-    },
-    next: ttl !== undefined ? { revalidate: ttl } : { revalidate: 60 },
-  });
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`[Guesty] ${path} → ${res.status}: ${body}`);
+): Promise<Result<T, Error>> {
+  const tokenResult = await getAccessToken();
+  if (!tokenResult.success) {
+    return err(tokenResult.error);
   }
 
-  return res.json() as Promise<T>;
+  const { ttl, ...fetchOptions } = options;
+
+  try {
+    const res = await fetch(`${GUESTY_API_BASE}${path}`, {
+      ...fetchOptions,
+      headers: {
+        Authorization: `Bearer ${tokenResult.data}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(fetchOptions.headers ?? {}),
+      },
+      next: ttl !== undefined ? { revalidate: ttl } : { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return err(new Error(`[Guesty] ${path} → ${res.status}: ${body}`));
+    }
+
+    return ok(await res.json() as T);
+  } catch (e) {
+    return err(e instanceof Error ? e : new Error(String(e)));
+  }
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// ─── Public API (Result-based) ───────────────────────────────────────────────
 
 /**
  * Fetch paginated active listings.
- *
- * @param params.limit  Max results per page (default 20, max 100)
- * @param params.skip   Offset for pagination
- * @param params.tags   Optional tag filter
- * @param params.fields Comma-separated field projection
  */
 export async function getListings(
   params: {
@@ -122,7 +130,7 @@ export async function getListings(
     tags?: string[];
     fields?: string;
   } = {}
-): Promise<GuestyListingsResult> {
+): Promise<Result<GuestyListingsResult, Error>> {
   const { limit = 20, skip = 0, tags, fields } = params;
   const qs = new URLSearchParams({
     limit: String(Math.min(limit, 100)),
@@ -130,48 +138,49 @@ export async function getListings(
     ...(tags?.length ? { tags: tags.join(',') } : {}),
     ...(fields ? { fields } : {}),
   });
+  
   return guestyFetch<GuestyListingsResult>(`/listings?${qs}`);
 }
 
 /**
  * Fetch a single listing by its Guesty `_id`.
  */
-export async function getListing(id: string): Promise<GuestyListing> {
-  if (!id) throw new Error('[Guesty] getListing: id is required');
+export async function getListing(id: string): Promise<Result<GuestyListing, Error>> {
+  if (!id) return err(new Error('[Guesty] getListing: id is required'));
   return guestyFetch<GuestyListing>(`/listings/${encodeURIComponent(id)}`);
 }
 
 /**
  * Fetch daily availability/pricing calendar for a listing.
- *
- * @param listingId  Guesty listing `_id`
- * @param startDate  ISO date string `YYYY-MM-DD`
- * @param endDate    ISO date string `YYYY-MM-DD`
  */
 export async function getListingCalendar(
   listingId: string,
   startDate: string,
   endDate: string
-): Promise<GuestyCalendarDay[]> {
-  if (!listingId) throw new Error('[Guesty] getListingCalendar: listingId is required');
+): Promise<Result<GuestyCalendarDay[], Error>> {
+  if (!listingId) return err(new Error('[Guesty] getListingCalendar: listingId is required'));
   const qs = new URLSearchParams({ startDate, endDate });
+  
   const result = await guestyFetch<{ days?: GuestyCalendarDay[] } | GuestyCalendarDay[]>(
     `/availability-pricing/api/v3/listings/${encodeURIComponent(listingId)}?${qs}`
   );
-  // Guesty v3 wraps in { days: [...] } — normalise both shapes
-  if (Array.isArray(result)) return result;
-  return (result as { days?: GuestyCalendarDay[] }).days ?? [];
+  
+  if (!result.success) return err(result.error);
+  
+  const data = result.data;
+  if (Array.isArray(data)) return ok(data);
+  return ok((data as { days?: GuestyCalendarDay[] }).days ?? []);
 }
 
 /**
  * Obtain a booking quote for a stay.
- * Used for price preview before reservation creation.
  */
 export async function getBookingQuote(
   params: GuestyBookingQuoteParams
-): Promise<GuestyQuoteResult> {
+): Promise<Result<GuestyQuoteResult, Error>> {
   const { listingId, checkIn, checkOut, guestsCount, source = 'direct' } = params;
-  if (!listingId) throw new Error('[Guesty] getBookingQuote: listingId is required');
+  if (!listingId) return err(new Error('[Guesty] getBookingQuote: listingId is required'));
+  
   return guestyFetch<GuestyQuoteResult>('/quotes', {
     method: 'POST',
     body: JSON.stringify({ listingId, checkIn, checkOut, guestsCount, source }),
@@ -182,4 +191,42 @@ export async function getBookingQuote(
 /** @internal Expose for unit-testing token cache invalidation only. */
 export function _clearTokenCache(): void {
   _tokenCache = null;
+}
+
+// ─── Legacy compatibility (wrappers that throw) ─────────────────────────────
+// These maintain backward compatibility while the codebase migrates to Result pattern
+
+export async function getListingsLegacy(params: {
+  limit?: number;
+  skip?: number;
+  tags?: string[];
+  fields?: string;
+} = {}): Promise<GuestyListingsResult> {
+  const result = await getListings(params);
+  if (!result.success) throw result.error;
+  return result.data;
+}
+
+export async function getListingLegacy(id: string): Promise<GuestyListing> {
+  const result = await getListing(id);
+  if (!result.success) throw result.error;
+  return result.data;
+}
+
+export async function getListingCalendarLegacy(
+  listingId: string,
+  startDate: string,
+  endDate: string
+): Promise<GuestyCalendarDay[]> {
+  const result = await getListingCalendar(listingId, startDate, endDate);
+  if (!result.success) throw result.error;
+  return result.data;
+}
+
+export async function getBookingQuoteLegacy(
+  params: GuestyBookingQuoteParams
+): Promise<GuestyQuoteResult> {
+  const result = await getBookingQuote(params);
+  if (!result.success) throw result.error;
+  return result.data;
 }

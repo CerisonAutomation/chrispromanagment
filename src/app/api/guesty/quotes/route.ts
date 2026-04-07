@@ -2,6 +2,7 @@
  * @fileoverview POST /api/guesty/quotes
  * Creates a Guesty Booking Engine price quote.
  * Proxies to: POST https://booking.guesty.com/api/reservations/quotes
+ * Uses Result pattern for error handling.
  *
  * PRICE DISPLAY RULE:
  *   Use response.rates.ratePlans[0].money.farePaid for the guest-facing price.
@@ -9,7 +10,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { createQuote, GuestyAPIError, GuestyRateLimitError } from '@/lib/guesty/booking-api';
+import { createQuoteResult } from '@/lib/guesty/booking-api';
 import { z } from 'zod';
 
 export const runtime = 'edge';
@@ -39,19 +40,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const quote = await createQuote(parsed.data);
-    return NextResponse.json(quote);
+    const result = await createQuoteResult(parsed.data);
+    
+    if (!result.success) {
+      console.error('[api/guesty/quotes]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data);
   } catch (err) {
-    if (err instanceof GuestyRateLimitError) {
-      return NextResponse.json({ error: 'Rate limited' }, {
-        status: 429,
-        headers: { 'Retry-After': String(err.retryAfter) },
-      });
-    }
-    if (err instanceof GuestyAPIError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
     console.error('[api/guesty/quotes]', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

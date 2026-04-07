@@ -1,11 +1,11 @@
 /**
  * @fileoverview GET /api/guesty/listings
  * Proxies to Guesty Booking Engine API: GET https://booking.guesty.com/api/listings
- * Uses canonical booking-api.ts client with Upstash Redis token cache.
+ * Uses Result pattern for error handling.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { getListings, GuestyAPIError, GuestyRateLimitError } from '@/lib/guesty/booking-api';
+import { getListingsResult } from '@/lib/guesty/booking-api';
 
 export const runtime = 'edge';
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const sp = req.nextUrl.searchParams;
 
   try {
-    const data = await getListings({
+    const result = await getListingsResult({
       limit: sp.has('limit') ? Number(sp.get('limit')) : 20,
       cursor: sp.get('cursor') ?? undefined,
       checkIn: sp.get('checkIn') ?? undefined,
@@ -33,20 +33,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       includeAmenities: sp.get('includeAmenities') ?? undefined,
       fields: sp.get('fields') ?? undefined,
     });
-    return NextResponse.json(data, {
+
+    if (!result.success) {
+      console.error('[api/guesty/listings]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data, {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
     });
   } catch (err) {
-    if (err instanceof GuestyRateLimitError) {
-      return NextResponse.json({ error: 'Rate limited' }, {
-        status: 429,
-        headers: { 'Retry-After': String(err.retryAfter) },
-      });
-    }
-    if (err instanceof GuestyAPIError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
     console.error('[api/guesty/listings]', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

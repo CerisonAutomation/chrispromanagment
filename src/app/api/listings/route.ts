@@ -1,6 +1,7 @@
 /**
  * @fileoverview GET /api/listings — proxies Guesty listings to the client.
  * Server-side only. Credentials never reach the browser.
+ * Uses Result<T, E> pattern for explicit error handling.
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { getListings } from '@/lib/guesty-api';
@@ -15,8 +16,14 @@ export async function GET(request: NextRequest) {
     const skip = Math.max(parseInt(searchParams.get('skip') ?? '0', 10), 0);
     const tags = searchParams.get('tags')?.split(',').filter(Boolean);
 
-    const data = await getListings({ limit, skip, tags });
-    return NextResponse.json(data);
+    const result = await getListings({ limit, skip, tags });
+    
+    if (!result.success) {
+      console.error('[API] /api/listings:', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(result.data);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[API] /api/listings:', message);

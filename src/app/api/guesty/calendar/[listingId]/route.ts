@@ -1,6 +1,7 @@
 /**
  * @fileoverview GET /api/guesty/calendar/{listingId}?from=YYYY-MM-DD&to=YYYY-MM-DD
  * Proxies to: GET https://booking.guesty.com/api/listings/{listingId}/calendar
+ * Uses Result pattern for error handling.
  *
  * Per-day response shape:
  *   { date, minNights, isBaseMinNights, status, cta, ctd }
@@ -9,7 +10,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { getListingCalendar, GuestyAPIError, GuestyRateLimitError } from '@/lib/guesty/booking-api';
+import { getListingCalendarResult } from '@/lib/guesty/booking-api';
 
 export const runtime = 'edge';
 
@@ -35,21 +36,19 @@ export async function GET(
   }
 
   try {
-    const calendar = await getListingCalendar(params.listingId, from, to);
-    return NextResponse.json(calendar, {
+    const result = await getListingCalendarResult(params.listingId, from, to);
+    
+    if (!result.success) {
+      console.error('[api/guesty/calendar]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data, {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
     });
   } catch (err) {
-    if (err instanceof GuestyRateLimitError) {
-      return NextResponse.json({ error: 'Rate limited' }, {
-        status: 429,
-        headers: { 'Retry-After': String(err.retryAfter) },
-      });
-    }
-    if (err instanceof GuestyAPIError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
     console.error('[api/guesty/calendar]', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

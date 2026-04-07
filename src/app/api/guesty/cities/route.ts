@@ -2,38 +2,32 @@
  * @fileoverview GET /api/guesty/cities
  * Returns all cities that have active Guesty Booking Engine listings.
  * Use this to populate city search dropdowns in GuestyPropertySearch block.
- *
- * GBE Endpoint: GET https://booking.guesty.com/api/cities
- *
- * Response: string[] (array of city names)
+ * Uses Result pattern for error handling.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { guestyBookingFetch, GuestyAPIError, GuestyRateLimitError } from '@/lib/guesty/booking-api';
+import { getCitiesResult } from '@/lib/guesty/booking-api';
 
 export const runtime = 'edge';
 
 export async function GET(_req: NextRequest): Promise<NextResponse> {
   try {
-    const data = await guestyBookingFetch('/api/cities');
-    return NextResponse.json(data, {
+    const result = await getCitiesResult();
+    
+    if (!result.success) {
+      console.error('[api/guesty/cities]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
+    }
+
+    return NextResponse.json(result.data, {
       status: 200,
       headers: {
-        // Cities change rarely — cache aggressively
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
       },
     });
   } catch (err) {
-    if (err instanceof GuestyRateLimitError) {
-      return NextResponse.json({ error: 'Rate limited' }, {
-        status: 429,
-        headers: { 'Retry-After': String(err.retryAfter) },
-      });
-    }
-    if (err instanceof GuestyAPIError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
     console.error('[api/guesty/cities]', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
