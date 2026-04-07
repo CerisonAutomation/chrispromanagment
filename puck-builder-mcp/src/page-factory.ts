@@ -1,17 +1,12 @@
 /**
- * @fileoverview Generates full valid Puck UserData pages from high-level presets.
- * Presets: landing | pricing | about | property | malta | blank
+ * @fileoverview Page factory — 6 production presets for chrispropmanagment pages.
+ * Presets: landing | property | malta | pricing | about | blank
  */
-
 import type { PuckPageData, PuckBlockType } from "./puck-schema.js";
 import { PuckPageDataSchema } from "./puck-schema.js";
 import { buildBlocks } from "./block-factory.js";
-import { generatePuckId } from "./id.js";
 
-const PAGE_PRESETS: Record<
-  string,
-  Array<{ type: PuckBlockType; props?: Record<string, unknown> }>
-> = {
+export const PAGE_PRESETS: Record<string, Array<{ type: PuckBlockType; props?: Record<string, unknown> }>> = {
   landing: [
     { type: "HeroSection", props: { heading: "Welcome", subheading: "Your best stay awaits.", align: "center", minHeight: "80vh" } },
     { type: "Spacer", props: { height: "64px" } },
@@ -23,11 +18,7 @@ const PAGE_PRESETS: Record<
       { icon: "star", title: "5-Star Service", description: "Dedicated support 24/7." },
     ]}},
     { type: "Spacer", props: { height: "80px" } },
-    { type: "StatsSection", props: { stats: [
-      { value: "500+", label: "Properties" },
-      { value: "10K+", label: "Happy Guests" },
-      { value: "4.9", label: "Average Rating", suffix: "★" },
-    ]}},
+    { type: "StatsSection", props: { stats: [{ value: "500+", label: "Properties" }, { value: "10K+", label: "Happy Guests" }, { value: "4.9", label: "Avg Rating", suffix: "★" }] } },
     { type: "Spacer", props: { height: "80px" } },
     { type: "TestimonialSection", props: {} },
     { type: "Spacer", props: { height: "80px" } },
@@ -83,20 +74,8 @@ export function buildPage(
   overrides: Array<{ index: number; props: Record<string, unknown> }> = []
 ): PuckPageData {
   const specs = [...(PAGE_PRESETS[preset] ?? [])];
-
   for (const { index, props } of overrides) {
-    if (specs[index]) {
-      specs[index] = { ...specs[index], props: { ...(specs[index].props ?? {}), ...props } };
-    }
+    if (specs[index]) specs[index] = { ...specs[index], props: { ...(specs[index].props ?? {}), ...props } };
   }
-
-  const content = buildBlocks(specs);
-
-  return PuckPageDataSchema.parse({
-    content,
-    root: { props: { title } },
-    zones: {},
-  });
+  return PuckPageDataSchema.parse({ content: buildBlocks(specs), root: { props: { title } }, zones: {} });
 }
-
-export { PAGE_PRESETS };

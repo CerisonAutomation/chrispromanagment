@@ -1,10 +1,18 @@
-# 🧱 Puck Builder MCP v2
+# Ω⁷ Puck Builder MCP v7.0
 
-Production MCP server for building, generating, and validating Puck pages.
+> AI-universal MCP server for generating, building, and validating Puck pages.  
+> Works with **Claude Desktop, Cursor, GPT-4, Gemini, Ollama, and any MCP client**.
 
-**40 unified blocks** across 7 categories:
-- **12** puck demo blocks (Button, Card, Flex, Grid, Heading, Hero, Logos, RichText, Space, Stats, Template, Text)
-- **28** chrispropmanagment canonical blocks (HeroSection, BookingSection, GuestyPropertyGrid, PricingTable, TestimonialSection, etc.)
+---
+
+## 🧱 40 Unified Blocks
+
+| Source | Count | Examples |
+|--------|-------|----------|
+| [puck demo](https://github.com/measuredco/puck) | 12 | Button, Card, Flex, Grid, Heading, Hero, Logos, RichText, Space, Stats, Template, Text |
+| [chrispropmanagment](https://github.com/CerisonAutomation/chrispropmanagment) | 28 | HeroSection, BookingSection, GuestyPropertyGrid, PricingTable, TestimonialSection, MaltaMapSection, FooterSection, WhyChooseUs, Timeline, VideoSection… |
+
+---
 
 ## 🚀 Quick Start
 
@@ -14,7 +22,7 @@ npm install
 npm run build
 ```
 
-## 🔌 Connect
+### Connect to Claude Desktop / Cursor
 
 ```json
 {
@@ -27,7 +35,8 @@ npm run build
 }
 ```
 
-Dev mode (no build needed):
+### Dev mode (no build required)
+
 ```json
 {
   "mcpServers": {
@@ -39,42 +48,108 @@ Dev mode (no build needed):
 }
 ```
 
-## 🛠 Tools
+---
+
+## 🛠️ Tools
 
 | Tool | Description |
 |------|-------------|
-| `list_puck_components` | List all 40 blocks, categories, fields (optional category filter) |
-| `generate_block` | Generate one validated block with defaults |
-| `generate_page` | Full UserData from preset: `landing \| property \| malta \| pricing \| about \| blank` |
-| `add_block_to_page` | Insert block at any index into a stored page |
-| `validate_page_data` | Deep Zod validation of any page JSON |
-| `get_page` | Retrieve session-stored page by slug |
-| `list_presets` | Show all presets with block sequences |
+| `list_puck_components` | All 40 blocks + Zod field schemas. Optional `category` filter. |
+| `generate_block` | One validated block with full defaults |
+| `generate_page` | Full `UserData` from preset |
+| `add_block_to_page` | Insert/append block to stored page |
+| `validate_page_data` | Deep Zod validation with field-level error paths |
+| `get_page` | Retrieve session page by slug |
+| `list_presets` | Show all preset block sequences |
 
-## 📦 Block Categories
+---
 
-| Category | Blocks |
-|----------|--------|
-| `layout` | Grid, Flex, Space, Layout, Spacer, Divider |
-| `typography` | Heading, Text, RichText, TextBlock, Content |
-| `interactive` | Button, CtaBanner, NewsletterSection |
-| `hero` | Hero, HeroSection |
-| `guesty` | BookingSection, GuestyBookingWidget, GuestyPropertyGrid, GuestyPropertySearch, GuestyPropertyDetail, GuestyBookingDashboard, GuestyBookingConfirmation, PropertyShowcase |
-| `media` | ImageGallery, ImageWithText, VideoSection, LogoBar, Logos |
-| `other` | Card, AboutSection, FaqSection, FeatureGrid, PricingTable, TestimonialSection, StatsSection, TeamSection, ServicesSection, WhyChooseUs, ComparisonSection, MaltaMapSection, MapSection, Timeline, FooterSection, SocialProofStrip, ThemeSettings, ... |
+## 📚 Resources (readable by any MCP client)
 
-## ⚡ Example
+| URI | Content |
+|-----|---------|
+| `puck://schema/blocks` | Full JSON schema for all 40 blocks |
+| `puck://schema/categories` | All 7 categories with member blocks |
+| `puck://schema/page-data` | Puck UserData shape + example |
+| `puck://docs/quickstart` | Step-by-step usage guide |
+| `puck://docs/guesty-integration` | Guesty block wiring guide |
+
+---
+
+## 💬 Prompts (callable from any AI client)
+
+| Prompt | Purpose |
+|--------|---------|
+| `generate_page_from_brief` | Convert plain-language brief → page |
+| `audit_page` | Audit page for issues + improvements |
+| `build_property_listing_page` | Full Guesty property page |
+| `seo_optimize_page` | Generate Next.js metadata + JSON-LD |
+
+---
+
+## 📦 Page Presets
+
+| Preset | Blocks | Use Case |
+|--------|--------|----------|
+| `landing` | 10 | Homepage with Hero, Features, Stats, Testimonials, CTA |
+| `property` | 6 | Property listings with Search, Grid, Map |
+| `malta` | 10 | Malta destination page with About, Map, Reviews, Newsletter |
+| `pricing` | 6 | Pricing page with Plans, FAQ |
+| `about` | 10 | About page with Story, Team, Stats, CTA |
+| `blank` | 0 | Empty canvas |
+
+---
+
+## 📡 Categories
 
 ```
-generate_page slug="/" preset="landing" title="Chris Property Management"
-→ Full Puck UserData with HeroSection, FeatureGrid, StatsSection, TestimonialSection, CtaBanner
-
-add_block_to_page slug="/" type="GuestyPropertyGrid" index=2
-→ Inserts property grid after hero
-
-validate_page_data data={...}
-→ { valid: true, blockCount: 12 }
-
-get_page slug="/"
-→ Full page JSON ready for <Render config={conf} data={data} />
+layout      → Grid, Flex, Space, Layout, Spacer, Divider
+typography  → Heading, Text, RichText, TextBlock, Content
+interactive → Button, CtaBanner, NewsletterSection
+hero        → Hero, HeroSection
+guesty      → BookingSection, GuestyBookingWidget, GuestyPropertyGrid, GuestyPropertySearch,
+              GuestyPropertyDetail, GuestyBookingDashboard, GuestyBookingConfirmation, PropertyShowcase
+media       → ImageGallery, ImageWithText, VideoSection, LogoBar, Logos
+other       → Card, AboutSection, FaqSection, FeatureGrid, PricingTable, TestimonialSection,
+              StatsSection, TeamSection, ServicesSection, WhyChooseUs, ComparisonSection,
+              MaltaMapSection, MapSection, Timeline, FooterSection, SocialProofStrip, ThemeSettings, …
 ```
+
+---
+
+## ⚡ Example Session
+
+```
+→ list_presets
+← { presets: ["landing", "property", "malta", "pricing", "about", "blank"] }
+
+→ generate_page slug="/" preset="landing" title="Chris Property Management"
+← { blockCount: 10, data: { content: [...], root: {...} } }
+
+→ add_block_to_page slug="/" type="NewsletterSection" index=8
+← { insertedAt: 8, totalBlocks: 11 }
+
+→ validate_page_data data={...}
+← { valid: true, blockCount: 11 }
+
+→ get_page slug="/"
+← Full UserData ready for <Render config={conf} data={data} />
+```
+
+---
+
+## 🤖 AI Compatibility
+
+This MCP server is designed to work with any AI that supports the MCP protocol:
+
+- ✅ **Claude Desktop** — Tools + Resources + Prompts
+- ✅ **Cursor** — Tools via `mcp.json`
+- ✅ **Windsurf** — Tools via MCP config
+- ✅ **GPT-4 / o3** — Via any MCP bridge
+- ✅ **Gemini** — Via MCP adapter
+- ✅ **Ollama** — Via local MCP proxy
+- ✅ **Continue.dev** — Tools + Resources
+
+---
+
+*Built with [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) · [Puck](https://github.com/measuredco/puck) · [Zod](https://zod.dev)*
