@@ -3,20 +3,6 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "regions": ["iad1"],
-  "functions": {
-    "app/api/qstash/worker/route.ts": { "maxDuration": 60 },
-    "app/api/guesty/sync/route.ts": { "maxDuration": 60 },
-    "app/api/guesty/webhook/route.ts": { "maxDuration": 30 },
-    "app/api/guesty/listings/route.ts": { "maxDuration": 60 },
-    "app/api/guesty/reservations/route.ts": { "maxDuration": 60 },
-    "app/api/guesty/guests/route.ts": { "maxDuration": 30 },
-    "app/api/guesty/calendar/route.ts": { "maxDuration": 30 },
-    "app/api/guesty/quote/route.ts": { "maxDuration": 30 },
-    "app/api/ai/route.ts": { "maxDuration": 60 },
-    "app/api/cron/sync-listings/route.ts": { "maxDuration": 60 },
-    "app/api/cron/sync-reservations/route.ts": { "maxDuration": 60 }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
