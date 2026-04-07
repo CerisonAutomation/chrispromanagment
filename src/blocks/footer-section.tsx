@@ -1,7 +1,12 @@
-import {toast} from "sonner";
-import {LOGO_URL} from "@/lib/images";
-import {CONTACT, COPYRIGHT, SOCIAL} from "@/lib/constants";
-import {safeHref} from "./helpers";
+// =============================================================================
+// CANONICAL PUCK FOOTER SECTION BLOCK
+// Site footer with links, social, and contact info
+// =============================================================================
+
+import { toast } from "sonner";
+import { LOGO_URL } from "@/lib/images";
+import { CONTACT, COPYRIGHT, SOCIAL } from "@/lib/constants";
+import { safeHref } from "./helpers";
 
 export const FooterSection = {
   label: "Footer Section",
@@ -20,13 +25,23 @@ export const FooterSection = {
     copyright: COPYRIGHT,
     email: CONTACT.email,
     phone: CONTACT.phone,
-    description: "Luxury short-term rental management across Malta. Transparent fees, no hidden markups, full-service operations.",
+    description:
+      "Luxury short-term rental management across Malta. Transparent fees, no hidden markups, full-service operations.",
     facebookUrl: SOCIAL.facebook,
     instagramUrl: SOCIAL.instagram,
     linkedinUrl: SOCIAL.linkedin,
   },
   render: (props: Record<string, unknown>) => {
-    const p = props as { logoUrl: string; copyright: string; email: string; phone: string; description: string; facebookUrl: string; instagramUrl: string; linkedinUrl: string };
+    const p = props as {
+      logoUrl: string;
+      copyright: string;
+      email: string;
+      phone: string;
+      description: string;
+      facebookUrl: string;
+      instagramUrl: string;
+      linkedinUrl: string;
+    };
     const links = [
       { label: "Home", href: "#home" },
       { label: "About", href: "#about" },
