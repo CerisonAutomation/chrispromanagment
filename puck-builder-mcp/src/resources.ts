@@ -1,6 +1,6 @@
 /**
- * @fileoverview MCP Resource definitions — static knowledge exposed as resources.
- * AI clients can read these to understand the block system without tool calls.
+ * @fileoverview MCP Resources — static knowledge endpoints readable by any AI client.
+ * Exposes schema, category map, page data shape, quickstart guide, Guesty guide.
  */
 
 import { BLOCK_TYPES, CATEGORIES, BLOCK_SCHEMAS } from "./puck-schema.js";
@@ -18,7 +18,7 @@ export const RESOURCES: McpResource[] = [
   {
     uri: "puck://schema/blocks",
     name: "All Block Schemas",
-    description: "Complete JSON schema for all 40 Puck blocks with field types and defaults",
+    description: "JSON schema for all 40 Puck blocks — field names, Zod types, optional flags",
     mimeType: "application/json",
     content: () => {
       const schemas = BLOCK_TYPES.reduce<Record<string, unknown>>((acc, type) => {
@@ -36,20 +36,20 @@ export const RESOURCES: McpResource[] = [
         }
         return acc;
       }, {});
-      return JSON.stringify({ version: "7.0.0", totalBlocks: BLOCK_TYPES.length, schemas }, null, 2);
+      return JSON.stringify({ version: "7.1.0", totalBlocks: BLOCK_TYPES.length, schemas }, null, 2);
     },
   },
   {
     uri: "puck://schema/categories",
     name: "Block Categories",
-    description: "All 7 block categories with their member blocks",
+    description: "All 7 block categories with member lists",
     mimeType: "application/json",
     content: () => JSON.stringify({ categories: CATEGORIES, totalBlocks: BLOCK_TYPES.length }, null, 2),
   },
   {
     uri: "puck://schema/page-data",
     name: "Puck Page Data Shape",
-    description: "The exact UserData shape expected by <Render config={conf} data={...} />",
+    description: "The UserData shape expected by <Render config={conf} data={...} />",
     mimeType: "application/json",
     content: () => JSON.stringify({
       description: "Puck UserData — feed directly to <Render config={conf} data={pageData} />",
@@ -59,52 +59,62 @@ export const RESOURCES: McpResource[] = [
         zones: "Record<string, Array<{ type: PuckBlockType, props: { id: string, ...blockProps } }>>",
       },
       example: {
-        content: [{ type: "HeroSection", props: { id: "HeroSection-123", heading: "Welcome" } }],
+        content: [{ type: "HeroSection", props: { id: "HeroSection-1714000000000-ab1cd", heading: "Welcome to Malta" } }],
         root: { props: { title: "Home" } },
         zones: {},
       },
+      toolWorkflow: [
+        "1. list_presets → pick a preset",
+        "2. generate_page slug='/' preset='landing' title='Home'",
+        "3. add_block_to_page slug='/' type='NewsletterSection'",
+        "4. validate_page_data data={...}",
+        "5. get_page slug='/'",
+      ],
     }, null, 2),
   },
   {
     uri: "puck://docs/quickstart",
     name: "MCP Quickstart Guide",
-    description: "How to use the Puck Builder MCP tools to generate pages step by step",
+    description: "Complete usage guide for all 14 tools",
     mimeType: "text/markdown",
-    content: () => `# Puck Builder MCP v7 — Quickstart
+    content: () => `# Puck Builder MCP v7.1 — Quickstart
 
-## Available Tools
+## Tools Reference
 | Tool | Purpose |
 |------|---------|
-| list_puck_components | List all 40 blocks + field schemas. Filter by category. |
-| generate_block | Build one block with prop overrides |
-| generate_page | Full page from preset (landing/property/malta/pricing/about/blank) |
-| add_block_to_page | Insert block at index into stored page |
-| validate_page_data | Zod-validate any page JSON |
-| get_page | Retrieve stored page by slug |
-| list_presets | Show all preset block sequences |
+| list_puck_components | 40 blocks + Zod schemas. Filter by category. |
+| generate_block | Single validated block |
+| generate_page | Full page from preset, stored by slug |
+| add_block_to_page | Insert/append block at index |
+| validate_page_data | Deep Zod validation with field paths |
+| get_page | Retrieve page by slug |
+| list_presets | All 6 preset block sequences |
+| list_pages | All stored pages with metadata |
+| delete_page | Remove page by slug |
+| clone_page | Deep-clone to new slug with fresh IDs |
+| patch_block | Merge props into specific block (by id or index) |
+| reorder_blocks | Move block from→to index |
+| export_all_pages | Full store dump as JSON |
+| health_check | Uptime, stats, telemetry, audit log |
 
 ## Typical Workflow
 \`\`\`
-1. generate_page slug="/" preset="landing" title="My Site"
-2. add_block_to_page slug="/" type="NewsletterSection" index=8
-3. validate_page_data data={...}
-4. get_page slug="/"
+generate_page slug="/" preset="landing" title="My Site"
+add_block_to_page slug="/" type="NewsletterSection"
+patch_block slug="/" index=0 props={heading: "Better Heading"}
+validate_page_data data={...}
+health_check
 \`\`\`
 
-## Categories
-- **layout**: Grid, Flex, Space, Layout, Spacer, Divider
-- **typography**: Heading, Text, RichText, TextBlock, Content
-- **interactive**: Button, CtaBanner, NewsletterSection
-- **hero**: Hero, HeroSection
-- **guesty**: BookingSection, GuestyBookingWidget, GuestyPropertyGrid, PropertyShowcase, ...
-- **media**: ImageGallery, ImageWithText, VideoSection, LogoBar, Logos
-- **other**: Card, FaqSection, PricingTable, TestimonialSection, WhyChooseUs, ...
+## Persistence
+Set \`PUCK_STORE_PATH=/data/pages.json\` env var to persist pages across restarts.
+The file is written atomically (write to .tmp, then rename).
 `,
   },
   {
     uri: "puck://docs/guesty-integration",
     name: "Guesty Integration Guide",
-    description: "How to wire up Guesty blocks with listingId and API context",
+    description: "How to wire up Guesty blocks",
     mimeType: "text/markdown",
     content: () => `# Guesty Integration
 
@@ -120,9 +130,9 @@ export const RESOURCES: McpResource[] = [
 | BookingSection | Full booking section | guestyListingId, showAvailabilityCalendar |
 | PropertyShowcase | Featured listings | layout, columns, maxItems |
 
-## Example: Property Detail Page
+## Example
 \`\`\`json
-{ "type": "GuestyPropertyDetail", "props": { "id": "GuestyPropertyDetail-1", "listingId": "abc123", "showAmenities": true, "showReviews": true, "showMap": true, "showGallery": true } }
+{ "type": "GuestyPropertyDetail", "props": { "id": "GuestyPropertyDetail-1", "listingId": "abc123", "showAmenities": true } }
 \`\`\`
 `,
   },

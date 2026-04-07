@@ -1,7 +1,7 @@
 {
   "name": "puck-builder-mcp",
-  "version": "7.0.0",
-  "description": "Ω⁷ Puck Builder MCP — AI-universal page generation server. 40 blocks, 7 tools, 6 presets, multi-model AI adapters (OpenAI, Anthropic, Ollama), streaming, telemetry.",
+  "version": "7.1.0",
+  "description": "Ω⁷ Puck Builder MCP v7.1 — 40 blocks, 14 tools, 5 resources, 4 prompts. AI-universal, persistent, crash-safe.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -12,7 +12,8 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts"
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
