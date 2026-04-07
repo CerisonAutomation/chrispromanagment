@@ -1,4 +1,5 @@
 /**
+ * @version 2.0.0
  * @fileoverview Home route — renders the CMS page for slug 'home'.
  * Falls back to redirect to /properties if no home page is published.
  */
