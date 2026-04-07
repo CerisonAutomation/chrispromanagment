@@ -1,42 +1,37 @@
 /**
- * GET /api/guesty/listings/:id
- * Returns full detail for a single Guesty listing.
- * Uses Result pattern for error handling.
+ * @fileoverview GET /api/guesty/listings/[id]
+ * Returns a single Guesty Booking Engine listing by ID.
+ * Proxies to: GET https://booking.guesty.com/api/listings/{listingId}
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getListingOpenApi } from '@/lib/guesty';
+import { getListingResult } from '@/lib/guesty/booking-api-result';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
-  try {
-    const { id } = await params;
-    if (!id) return NextResponse.json({ error: 'Missing listing id' }, { status: 400 });
+  const { id } = await params;
 
-    const result = await getListingOpenApi(id);
-    
+  if (!id) {
+    return NextResponse.json({ error: 'Missing listing id' }, { status: 400 });
+  }
+
+  try {
+    const result = await getListingResult(id);
+
     if (!result.success) {
-      const is404 = result.error.message.includes('404') || result.error.message.includes('not found');
-      console.error('[/api/guesty/listings/[id]]', result.error.message);
-      return NextResponse.json(
-        { error: is404 ? 'Listing not found' : 'Failed to fetch listing', details: result.error.message },
-        { status: is404 ? 404 : 502 }
-      );
+      console.error('[api/guesty/listings/[id]]', result.error.message);
+      return NextResponse.json({ error: result.error.message }, { status: 502 });
     }
 
     return NextResponse.json(result.data, {
-      headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600' },
+      headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=60' },
     });
-  } catch (error) {
-    console.error('[/api/guesty/listings/[id]]', error);
-    const message = error instanceof Error ? error.message : String(error);
-    const is404 = message.includes('404');
-    return NextResponse.json(
-      { error: is404 ? 'Listing not found' : 'Failed to fetch listing', details: message },
-      { status: is404 ? 404 : 502 }
-    );
+  } catch (err) {
+    console.error('[api/guesty/listings/[id]]', err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

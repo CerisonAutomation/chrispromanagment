@@ -1,11 +1,10 @@
 /**
  * @fileoverview GET /api/guesty/listings
  * Proxies to Guesty Booking Engine API: GET https://booking.guesty.com/api/listings
- * Uses Result pattern for error handling.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { getListingsResult } from '@/lib/guesty/booking-api';
+import { getListingsResult } from '@/lib/guesty/booking-api-result';
 
 export const runtime = 'edge';
 

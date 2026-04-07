@@ -2,18 +2,17 @@
  * @fileoverview GET /api/guesty/cities
  * Returns all cities that have active Guesty Booking Engine listings.
  * Use this to populate city search dropdowns in GuestyPropertySearch block.
- * Uses Result pattern for error handling.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { getCitiesResult } from '@/lib/guesty/booking-api';
+import { getCitiesResult } from '@/lib/guesty/booking-api-result';
 
 export const runtime = 'edge';
 
 export async function GET(_req: NextRequest): Promise<NextResponse> {
   try {
     const result = await getCitiesResult();
-    
+
     if (!result.success) {
       console.error('[api/guesty/cities]', result.error.message);
       return NextResponse.json({ error: result.error.message }, { status: 502 });

@@ -2,7 +2,6 @@
  * @fileoverview POST /api/guesty/quotes
  * Creates a Guesty Booking Engine price quote.
  * Proxies to: POST https://booking.guesty.com/api/reservations/quotes
- * Uses Result pattern for error handling.
  *
  * PRICE DISPLAY RULE:
  *   Use response.rates.ratePlans[0].money.farePaid for the guest-facing price.
@@ -10,7 +9,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { createQuoteResult } from '@/lib/guesty/booking-api';
+import { createQuoteResult } from '@/lib/guesty/booking-api-result';
 import { z } from 'zod';
 
 export const runtime = 'edge';
@@ -41,7 +40,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const result = await createQuoteResult(parsed.data);
-    
+
     if (!result.success) {
       console.error('[api/guesty/quotes]', result.error.message);
       return NextResponse.json({ error: result.error.message }, { status: 502 });
