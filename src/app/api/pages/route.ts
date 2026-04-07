@@ -1,46 +1,47 @@
 /**
- * @fileoverview GET /api/pages — list all CMS pages (server-only).
- * POST /api/pages — create/upsert a page.
+ * GET  /api/pages          — list all CMS pages
+ * POST /api/pages          — create or upsert a CMS page
  */
-import { NextResponse, type NextRequest } from 'next/server';
-import { getAllPages, upsertPage } from '@/lib/supabase';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server';
+import { cmsPage } from '@/lib/db';
 
-export const runtime = 'nodejs';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const pages = await getAllPages();
-  return NextResponse.json(pages);
+export async function GET(): Promise<NextResponse> {
+  try {
+    const pages = await cmsPage.findMany();
+    return NextResponse.json(pages);
+  } catch (error) {
+    console.error('[GET /api/pages]', error);
+    return NextResponse.json({ error: 'Failed to fetch pages', details: String(error) }, { status: 500 });
+  }
 }
 
-const UpsertPageSchema = z.object({
-  slug: z.string().min(1).regex(/^[a-z0-9-/]+$/, 'Slug must be URL-safe'),
-  title: z.string().min(1).max(200),
-  content: z.unknown().optional(),
-  published: z.boolean().optional(),
-  meta_title: z.string().max(70).optional(),
-  meta_description: z.string().max(160).optional(),
-});
-
-export async function POST(request: NextRequest) {
-  let body: unknown;
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
+    const body = await req.json() as {
+      slug: string;
+      title: string;
+      data: unknown;
+      theme?: string;
+      published?: boolean;
+    };
 
-  const parsed = UpsertPageSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Validation failed', details: parsed.error.flatten() },
-      { status: 422 }
-    );
-  }
+    if (!body.slug || !body.title) {
+      return NextResponse.json({ error: 'slug and title are required' }, { status: 400 });
+    }
 
-  const { slug, ...rest } = parsed.data;
-  const ok = await upsertPage(slug, rest as Parameters<typeof upsertPage>[1]);
-  if (!ok) return NextResponse.json({ error: 'DB write failed' }, { status: 500 });
-  return NextResponse.json({ slug, ok: true }, { status: 201 });
+    const page = await cmsPage.upsert({
+      slug: body.slug,
+      title: body.title,
+      data: typeof body.data === 'string' ? body.data : JSON.stringify(body.data),
+      theme: body.theme,
+      published: body.published,
+    });
+
+    return NextResponse.json(page, { status: 201 });
+  } catch (error) {
+    console.error('[POST /api/pages]', error);
+    return NextResponse.json({ error: 'Failed to save page', details: String(error) }, { status: 500 });
+  }
 }

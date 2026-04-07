@@ -1,59 +1,66 @@
 /**
- * Canonical blocks barrel — single import surface for puck.config.tsx.
- * All duplicate/legacy block files have been removed; every export here
- * maps 1-to-1 to a file in src/blocks/.
- * @module blocks
+ * Canonical block registry barrel export.
+ * ALL Puck blocks must be registered here — this is the single source of truth
+ * imported by puck.config.tsx and the block renderer.
  */
 
-// ─── Layout ──────────────────────────────────────────────────────────────────
-export { HeroSection,            HeroSectionConfig }           from "./hero-section";
-export { CtaBanner,              CtaBannerConfig }              from "./cta-banner";
-export { FooterSection,          FooterSectionConfig }          from "./footer-section";
-export { Layout,                 LayoutConfig }                 from "./layout";
-export { Divider,                DividerConfig }                from "./divider";
-export { Spacer,                 SpacerConfig }                 from "./spacer";
+// ─── Layout & Structure ───────────────────────────────────────────────────────────────────
+export * from './layout';
+export * from './divider';
+export * from './spacer';
 
-// ─── Content ─────────────────────────────────────────────────────────────────
-export { AboutSection,           AboutSectionConfig }           from "./about-section";
-export { ContentBlock,           ContentBlockConfig }           from "./content";
-export { TextBlock,              TextBlockConfig }              from "./text-block";
-export { ImageWithText,          ImageWithTextConfig }          from "./image-with-text";
-export { VideoSection,           VideoSectionConfig }           from "./video-section";
-export { Timeline,               TimelineConfig }               from "./timeline";
+// ─── Content Blocks ────────────────────────────────────────────────────────────────────
+export * from './hero';
+export * from './hero-section';
+export * from './text-block';
+export * from './content';
+export * from './elements';
+export * from './image-with-text';
+export * from './image-gallery';
+export * from './video-section';
 
-// ─── Property / Guesty ───────────────────────────────────────────────────────
-export { PropertyShowcase,       PropertyShowcaseConfig }       from "./property-showcase";
-export { BookingSection,         BookingSectionConfig }         from "./booking-section";
-export { GuestyBookingWidget,    GuestyBookingWidgetConfig }    from "./guesty-booking-widget";
-export { GuestyPropertyGrid,     GuestyPropertyGridConfig }     from "./guesty-property-grid";
-export { GuestyPropertyDetail,   GuestyPropertyDetailConfig }  from "./guesty-property-detail";
-export { GuestyPropertySearch,   GuestyPropertySearchConfig }  from "./guesty-property-search";
-export { GuestyBookingDashboard, GuestyBookingDashboardConfig } from "./guesty-booking-dashboard";
-export { GuestyBookingConfirmation, GuestyBookingConfirmationConfig } from "./guesty-booking-confirmation";
-export { ImageGallery,           ImageGalleryConfig }           from "./image-gallery";
+// ─── Marketing & Conversion ──────────────────────────────────────────────────────────
+export * from './cta-banner';
+export * from './feature-grid';
+export * from './stats-section';
+export * from './social-proof-strip';
+export * from './logo-bar';
+export * from './testimonial-section';
+export * from './pricing-table';
+export * from './comparison-section';
+export * from './why-choose-us';
 
-// ─── Sections ────────────────────────────────────────────────────────────────
-export { ServicesSection,        ServicesSectionConfig }        from "./services-section";
-export { TestimonialSection,     TestimonialSectionConfig }     from "./testimonial-section";
-export { StatsSection,           StatsSectionConfig }           from "./stats-section";
-export { FeatureGrid,            FeatureGridConfig }            from "./feature-grid";
-export { FaqSection,             FaqSectionConfig }             from "./faq-section";
-export { TeamSection,            TeamSectionConfig }            from "./team-section";
-export { PricingTable,           PricingTableConfig }           from "./pricing-table";
-export { ComparisonSection,      ComparisonSectionConfig }      from "./comparison-section";
-export { WhyChooseUs,            WhyChooseUsConfig }            from "./why-choose-us";
-export { SocialProofStrip,       SocialProofStripConfig }       from "./social-proof-strip";
-export { NewsletterSection,      NewsletterSectionConfig }      from "./newsletter-section";
-export { LogoBar,                LogoBarConfig }                from "./logo-bar";
-export { ContactSection,         ContactSectionConfig }         from "./contact-section";
+// ─── Sections ───────────────────────────────────────────────────────────────────────
+export * from './about-section';
+export * from './services-section';
+export * from './team-section';
+export * from './faq-section';
+export * from './contact-section';
+export * from './newsletter-section';
+export * from './timeline';
+export * from './footer-section';
+export * from './map-section';
+export * from './malta-map-section';
 
-// ─── Media / Map ─────────────────────────────────────────────────────────────
-export { MaltaMapSection,        MaltaMapSectionConfig }        from "./malta-map-section";
-export { MapSection,             MapSectionConfig }             from "./map-section";
+// ─── Property & Booking ────────────────────────────────────────────────────────────────
+export * from './property-showcase';
+export * from './booking-section';
 
-// ─── Theme / Elements ────────────────────────────────────────────────────────
-export { ThemeSettings,          ThemeSettingsConfig }          from "./theme-settings";
-export { Elements,               ElementsConfig }               from "./elements";
+// ─── Guesty Integration Blocks ───────────────────────────────────────────────────────
+export { GuestyBookingWidgetBlock } from './guesty-booking-widget';
+export { GuestyPropertyGridBlock } from './guesty-property-grid';
+export { GuestyPropertyDetailBlock } from './guesty-property-detail';
+export { GuestyPropertySearchBlock } from './guesty-property-search';
+export { GuestyBookingConfirmationBlock } from './guesty-booking-confirmation';
+export { GuestyBookingDashboardBlock } from './guesty-booking-dashboard';
 
-// ─── Canonical bundle (Puck AI preview renderer) ─────────────────────────────
-export { default as CanonicalBlocks } from "./canonical-blocks";
+// Component exports (for use outside Puck)
+export { GuestyBookingWidget } from './guesty-booking-widget';
+export { GuestyPropertyGrid } from './guesty-property-grid';
+export { GuestyPropertyDetail } from './guesty-property-detail';
+export { GuestyPropertySearch } from './guesty-property-search';
+export { GuestyBookingConfirmation } from './guesty-booking-confirmation';
+export { GuestyBookingDashboard } from './guesty-booking-dashboard';
+
+// ─── Theme & Meta ──────────────────────────────────────────────────────────────────────
+export * from './theme-settings';

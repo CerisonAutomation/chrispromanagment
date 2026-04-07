@@ -1,56 +1,71 @@
 /**
- * @fileoverview GET /api/pages/[slug] — single page by slug.
- * PATCH /api/pages/[slug] — partial update.
- * DELETE /api/pages/[slug] — permanent delete.
+ * GET    /api/pages/:slug  — fetch single CMS page
+ * PUT    /api/pages/:slug  — update CMS page
+ * DELETE /api/pages/:slug  — delete CMS page
  */
-import { NextResponse, type NextRequest } from 'next/server';
-import { getPageBySlug, upsertPage, deletePage, publishPage, unpublishPage } from '@/lib/supabase';
+import { NextRequest, NextResponse } from 'next/server';
+import { cmsPage } from '@/lib/db';
 
-export const runtime = 'nodejs';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
-) {
-  const { slug } = await params;
-  const page = await getPageBySlug(slug);
-  if (!page) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(page);
+): Promise<NextResponse> {
+  try {
+    const { slug } = await params;
+    const page = await cmsPage.findUnique({ where: { slug } });
+    if (!page) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+    return NextResponse.json(page);
+  } catch (error) {
+    console.error('[GET /api/pages/[slug]]', error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
 }
 
-export async function PATCH(
-  request: NextRequest,
+export async function PUT(
+  req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
-) {
-  const { slug } = await params;
-  let body: Record<string, unknown>;
+): Promise<NextResponse> {
   try {
-    body = (await request.json()) as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
+    const { slug } = await params;
+    const body = await req.json() as {
+      title?: string;
+      data?: unknown;
+      theme?: string;
+      published?: boolean;
+    };
 
-  const { action, ...rest } = body;
-  if (action === 'publish') {
-    await publishPage(slug);
-    return NextResponse.json({ ok: true, published: true });
-  }
-  if (action === 'unpublish') {
-    await unpublishPage(slug);
-    return NextResponse.json({ ok: true, published: false });
-  }
+    const existing = await cmsPage.findUnique({ where: { slug } });
+    if (!existing) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
 
-  const ok = await upsertPage(slug, rest as Parameters<typeof upsertPage>[1]);
-  return NextResponse.json({ ok });
+    const updated = await cmsPage.upsert({
+      slug,
+      title: body.title ?? (existing as { title: string }).title,
+      data: body.data !== undefined
+        ? (typeof body.data === 'string' ? body.data : JSON.stringify(body.data))
+        : (existing as { data: string }).data,
+      theme: body.theme ?? (existing as { theme: string }).theme,
+      published: body.published ?? (existing as { published: boolean }).published,
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error('[PUT /api/pages/[slug]]', error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
 }
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
-) {
-  const { slug } = await params;
-  const ok = await deletePage(slug);
-  if (!ok) return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
-  return NextResponse.json({ ok: true });
+): Promise<NextResponse> {
+  try {
+    const { slug } = await params;
+    await cmsPage.delete({ where: { slug } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('[DELETE /api/pages/[slug]]', error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
 }

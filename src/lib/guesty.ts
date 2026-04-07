@@ -1,118 +1,177 @@
 /**
- * @fileoverview Guesty Open API v1 client — OAuth2 CC grant, auto-refresh.
- * All methods return ApiResult<T> — never throws.
+ * Canonical Guesty API client.
+ * All Guesty API routes must import from here — never call Guesty directly from route handlers.
+ * Handles: OAuth2 token refresh, rate-limit (429) retry with exponential backoff, typed responses.
  */
-import { env } from './env';
-import { apiOk, apiErr } from '@/types';
-import type { ApiResult, GuestyListing, GuestyCalendarDay, BookingQuote, BookingInquiry } from '@/types';
 
-// ─── Token cache (module-level singleton) ────────────────────────────────────
-let _token: string | null = null;
+const GUESTY_BASE = 'https://open-api.guesty.com/v1';
+const TOKEN_URL = 'https://open-api.guesty.com/oauth2/token';
+
+// ─── Token cache (module-level singleton) ────────────────────────────────────────────
+let _accessToken: string | null = null;
 let _tokenExpiry = 0;
 
-async function getToken(): Promise<string> {
-  if (_token && Date.now() < _tokenExpiry - 60_000) return _token;
-  if (!env.GUESTY_CLIENT_ID || !env.GUESTY_CLIENT_SECRET) {
-    throw new Error('[Guesty] Missing GUESTY_CLIENT_ID or GUESTY_CLIENT_SECRET');
+async function getAccessToken(): Promise<string> {
+  if (_accessToken && Date.now() < _tokenExpiry - 60_000) return _accessToken;
+
+  const clientId = process.env.GUESTY_CLIENT_ID;
+  const clientSecret = process.env.GUESTY_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error('[guesty.ts] Missing GUESTY_CLIENT_ID or GUESTY_CLIENT_SECRET env vars.');
   }
-  const res = await fetch(`${env.GUESTY_API_URL}/oauth2/token`, {
+
+  const res = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      client_id: env.GUESTY_CLIENT_ID,
-      client_secret: env.GUESTY_CLIENT_SECRET,
       scope: 'open-api',
+      client_id: clientId,
+      client_secret: clientSecret,
     }),
   });
-  if (!res.ok) throw new Error(`[Guesty] Token fetch failed: ${res.status}`);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[guesty.ts] Token fetch failed: ${res.status} ${text}`);
+  }
+
   const json = await res.json() as { access_token: string; expires_in: number };
-  _token = json.access_token;
+  _accessToken = json.access_token;
   _tokenExpiry = Date.now() + json.expires_in * 1000;
-  return _token;
+  return _accessToken;
 }
 
-async function guestyFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = await getToken();
-  const res = await fetch(`${env.GUESTY_API_URL}${path}`, {
-    ...init,
+// ─── Core fetch with retry ────────────────────────────────────────────────────────────
+
+async function guestyFetch<T>(
+  path: string,
+  options: RequestInit = {},
+  retries = 3
+): Promise<T> {
+  const token = await getAccessToken();
+
+  const res = await fetch(`${GUESTY_BASE}${path}`, {
+    ...options,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
+      Accept: 'application/json',
+      ...(options.headers ?? {}),
     },
+    next: { revalidate: 60 }, // Next.js cache: revalidate every 60s
   });
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`[Guesty] ${path} → ${res.status}: ${body.slice(0, 200)}`);
+
+  if (res.status === 429 && retries > 0) {
+    const retryAfter = Number(res.headers.get('Retry-After') ?? '2');
+    await new Promise((r) => setTimeout(r, retryAfter * 1000));
+    return guestyFetch(path, options, retries - 1);
   }
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[guesty.ts] ${res.status} ${path}: ${text}`);
+  }
+
   return res.json() as Promise<T>;
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// ─── Typed API methods ────────────────────────────────────────────────────────────────────
 
-export async function getListings(limit = 20, skip = 0): Promise<ApiResult<GuestyListing[]>> {
-  try {
-    const data = await guestyFetch<{ results: GuestyListing[]; count: number }>(
-      `/v1/listings?limit=${limit}&skip=${skip}&fields=_id,title,nickname,address,prices,amenities,pictures,bedrooms,bathrooms,accommodates,propertyType,roomType,publicDescription`
-    );
-    return apiOk(data.results ?? []);
-  } catch (e) {
-    console.error('[Guesty] getListings:', e);
-    return apiErr((e as Error).message);
-  }
+export interface GuestyListingsResponse {
+  results: GuestyListing[];
+  count: number;
+  limit: number;
+  skip: number;
 }
 
-export async function getListing(id: string): Promise<ApiResult<GuestyListing>> {
-  try {
-    const data = await guestyFetch<GuestyListing>(`/v1/listings/${id}`);
-    return apiOk(data);
-  } catch (e) {
-    console.error('[Guesty] getListing:', e);
-    return apiErr((e as Error).message);
-  }
+export interface GuestyListing {
+  _id: string;
+  title: string;
+  nickname?: string;
+  address: {
+    city: string;
+    country: string;
+    full?: string;
+    lat?: number;
+    lng?: number;
+  };
+  bedrooms: number;
+  bathrooms: number;
+  accommodates: number;
+  prices: { basePrice: number; currency: string };
+  pictures: Array<{ thumbnail: string; large: string }>;
+  publicDescription?: { summary?: string; space?: string; houseRules?: string };
+  amenities?: string[];
+  tags?: string[];
+  checkInOutPolicy?: { checkIn: string; checkOut: string };
+  active: boolean;
+  listed: boolean;
 }
 
-export async function getListingCalendar(
-  id: string, from: string, to: string
-): Promise<ApiResult<GuestyCalendarDay[]>> {
-  try {
-    const data = await guestyFetch<{ days: GuestyCalendarDay[] }>(
-      `/v1/listings/${id}/calendar?from=${from}&to=${to}`
-    );
-    return apiOk(data.days ?? []);
-  } catch (e) {
-    console.error('[Guesty] getListingCalendar:', e);
-    return apiErr((e as Error).message);
-  }
+export interface GuestyReservation {
+  _id: string;
+  status: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  nights?: number;
+  listing: {
+    nickname?: string;
+    title: string;
+    address?: { city: string };
+    pictures?: Array<{ thumbnail: string }>;
+  };
+  money: { totalPaid: number; currency: string };
+  guests: { adults: number; children: number };
+  confirmationCode?: string;
 }
 
-export async function getBookingQuote(
-  listingId: string, checkIn: string, checkOut: string, guests: number
-): Promise<ApiResult<BookingQuote>> {
-  try {
-    const data = await guestyFetch<BookingQuote>('/v1/quotes', {
-      method: 'POST',
-      body: JSON.stringify({ listingId, checkIn, checkOut, guests }),
-    });
-    return apiOk(data);
-  } catch (e) {
-    console.error('[Guesty] getBookingQuote:', e);
-    return apiErr((e as Error).message);
-  }
+export interface GuestyReservationsResponse {
+  results: GuestyReservation[];
+  count: number;
+  limit: number;
+  skip: number;
 }
 
-export async function createInquiry(
-  inquiry: BookingInquiry
-): Promise<ApiResult<{ id: string }>> {
-  try {
-    const data = await guestyFetch<{ _id: string }>('/v1/inquiries', {
-      method: 'POST',
-      body: JSON.stringify(inquiry),
-    });
-    return apiOk({ id: data._id });
-  } catch (e) {
-    console.error('[Guesty] createInquiry:', e);
-    return apiErr((e as Error).message);
-  }
+/** Get all active listings with optional filters */
+export async function getListings(opts?: {
+  limit?: number;
+  skip?: number;
+  tags?: string;
+  fields?: string;
+}): Promise<GuestyListingsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 25));
+  params.set('skip', String(opts?.skip ?? 0));
+  params.set('filters', JSON.stringify([{ field: 'active', operator: '$eq', value: true }]));
+  if (opts?.tags) params.set('tags', opts.tags);
+  if (opts?.fields) params.set('fields', opts.fields);
+  return guestyFetch<GuestyListingsResponse>(`/listings?${params}`);
+}
+
+/** Get single listing by ID */
+export async function getListing(id: string): Promise<GuestyListing> {
+  return guestyFetch<GuestyListing>(`/listings/${id}`);
+}
+
+/** Get reservations (optionally filtered by guest email or listing) */
+export async function getReservations(opts?: {
+  guestEmail?: string;
+  listingId?: string;
+  limit?: number;
+  skip?: number;
+}): Promise<GuestyReservationsResponse> {
+  const params = new URLSearchParams();
+  params.set('limit', String(opts?.limit ?? 20));
+  params.set('skip', String(opts?.skip ?? 0));
+  if (opts?.guestEmail) params.set('guestEmail', opts.guestEmail);
+  if (opts?.listingId) params.set('listingId', opts.listingId);
+  return guestyFetch<GuestyReservationsResponse>(`/reservations?${params}`);
+}
+
+/** Get single reservation by ID */
+export async function getReservation(id: string): Promise<GuestyReservation> {
+  return guestyFetch<GuestyReservation>(`/reservations/${id}`);
 }
