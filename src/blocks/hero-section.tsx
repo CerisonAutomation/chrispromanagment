@@ -1,152 +1,209 @@
-// =============================================================================
-// CANONICAL PUCK HERO SECTION BLOCK
-// Hero section with background image and CTA
-// =============================================================================
-
+/**
+ * HeroSection — canonical Puck CMS block.
+ * Merges legacy hero.tsx + hero-section.tsx into one source of truth.
+ * @module blocks/hero-section
+ */
 "use client";
 
-import { HERO_BG } from "@/lib/images";
-import { safeHref } from "./helpers";
-import { BlurFade } from "@/components/effects/blur-fade";
-import { BlurFadeText } from "@/components/effects/blur-fade-text";
-import { MorphingText } from "@/components/effects/morphing-text";
-import { ShimmerButton } from "@/components/effects/shimmer-button";
-import { RetroGrid } from "@/components/effects/retro-grid";
-import { Particles } from "@/components/effects/particles";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { type ComponentConfig } from "@measured/puck";
+import { cn } from "@/lib/utils";
 
-export const HeroSection = {
-  label: "Hero Section",
-  fields: {
-    title: { type: "text" as const },
-    subtitle: { type: "textarea" as const },
-    backgroundImage: { type: "text" as const, label: "Background Image URL" },
-    ctaText: { type: "text" as const, label: "CTA Button Text" },
-    ctaLink: { type: "text" as const, label: "CTA Button Link" },
-  },
-  defaultProps: {
-    title: "Dedicated to Maximizing Your Property's Potential",
-    subtitle:
-      "9 years of Superhost experience managing luxury short-term rentals across Malta. International luxury hotel management background. Transparent fees, no hidden markups.",
-    backgroundImage: HERO_BG,
-    ctaText: "Learn More",
-    ctaLink: "#about",
-  },
-  render: (props: Record<string, unknown>) => {
-    const p = props as {
-      title: string;
-      subtitle: string;
-      backgroundImage: string;
-      ctaText: string;
-      ctaLink: string;
-    };
-    return (
-      <>
-        <section className="relative flex min-h-[700px] items-center justify-center overflow-hidden">
-          {p.backgroundImage && (
-            <>
-              <div
-                className="absolute inset-0 bg-fixed"
-                style={{
-                  backgroundImage: `url(${p.backgroundImage})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-cpm-bg-primary via-cpm-bg-primary/60 to-cpm-bg-primary/30" />
-            </>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-r from-cpm-bg-primary/40 to-transparent" />
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-          {/* 21st.dev: RetroGrid background effect */}
-          <RetroGrid className="z-0" cellSize={50} opacity={0.04} />
+type Alignment = "left" | "center" | "right";
+type Variant   = "default" | "minimal" | "full-bleed";
 
-          {/* 21st.dev: Interactive particles */}
-          <Particles className="z-0" quantity={25} size={1.5} />
+export interface HeroSectionProps {
+  /** Main headline */
+  title:            string;
+  /** Supporting subtitle shown beneath the headline */
+  subtitle:         string;
+  /** Background image URL (Cloudinary / any CDN) */
+  backgroundImage?: string;
+  /** Alt text for background image (a11y) */
+  backgroundAlt?:   string;
+  /** Primary CTA label */
+  ctaText?:         string;
+  /** Primary CTA destination */
+  ctaHref?:         string;
+  /** Secondary CTA label */
+  secondaryCtaText?: string;
+  /** Secondary CTA destination */
+  secondaryCtaHref?: string;
+  /** Horizontal text alignment */
+  alignment?:       Alignment;
+  /** Layout variant controlling height + overlay intensity */
+  variant?:         Variant;
+  /** Dark overlay opacity 0–100 */
+  overlayOpacity?:  number;
+  /** Show a scroll-down caret */
+  showScrollCue?:   boolean;
+}
 
-          {/* Decorative floating orbs */}
-          <div className="absolute top-1/4 right-1/4 h-64 w-64 rounded-full bg-cpm-accent/8 blur-3xl" style={{ animation: "float 6s ease-in-out infinite" }} />
-          <div className="absolute bottom-1/3 left-1/6 h-48 w-48 rounded-full bg-cpm-accent/5 blur-3xl" style={{ animation: "float 8s ease-in-out infinite 2s" }} />
+// ─── Component ───────────────────────────────────────────────────────────────
 
-          <div className="relative z-10 mx-auto max-w-5xl px-6 py-32 text-center">
-            {/* 21st.dev: BlurFade for badge entrance */}
-            <BlurFade delay={0.1} duration={0.5}>
-              <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-cpm-accent/30 bg-cpm-accent/10 px-5 py-2 backdrop-blur-sm">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-cpm-accent" style={{ animation: "pulseRing 2s cubic-bezier(0,0,0.2,1) infinite" }} />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-cpm-accent" />
-                </span>
-                {/* 21st.dev: MorphingText for rotating badge text */}
-                <MorphingText
-                  texts={[
-                    "Superhost Since 2015",
-                    "Luxury Property Experts",
-                    "Malta's Premier Host",
-                    "Trusted by 1000+ Guests",
-                  ]}
-                  className="text-xs font-semibold tracking-[0.15em] text-cpm-accent uppercase"
-                  interval={3000}
-                />
-              </div>
-            </BlurFade>
+export function HeroSection({
+  title,
+  subtitle,
+  backgroundImage,
+  backgroundAlt       = "Hero background",
+  ctaText,
+  ctaHref             = "/properties",
+  secondaryCtaText,
+  secondaryCtaHref    = "/contact",
+  alignment           = "center",
+  variant             = "default",
+  overlayOpacity      = 55,
+  showScrollCue       = true,
+}: HeroSectionProps) {
+  const heightClass = {
+    default:    "min-h-[85vh]",
+    minimal:    "min-h-[55vh]",
+    "full-bleed": "min-h-screen",
+  }[variant];
 
-            {/* 21st.dev: BlurFadeText for title with per-word stagger */}
-            <h1 className="mb-6 font-[family-name:var(--font-heading)] text-4xl font-light leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage: "linear-gradient(135deg, var(--cpm-accent) 0%, var(--cpm-text-primary) 50%, var(--cpm-accent) 100%)",
-                  }}
+  const alignClass = {
+    left:   "items-start text-left",
+    center: "items-center text-center",
+    right:  "items-end text-right",
+  }[alignment];
+
+  const clampedOpacity = Math.min(100, Math.max(0, overlayOpacity ?? 55));
+
+  return (
+    <section
+      className={cn(
+        "relative flex flex-col justify-center overflow-hidden",
+        heightClass,
+      )}
+      aria-label="Hero section"
+    >
+      {/* Background */}
+      {backgroundImage ? (
+        <Image
+          src={backgroundImage}
+          alt={backgroundAlt}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700" />
+      )}
+
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black"
+        style={{ opacity: clampedOpacity / 100 }}
+        aria-hidden="true"
+      />
+
+      {/* Content */}
+      <div
+        className={cn(
+          "relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-6 px-6 py-20",
+          alignClass,
+        )}
+      >
+        <h1 className="font-serif text-4xl font-bold leading-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
+          {title}
+        </h1>
+
+        {subtitle && (
+          <p className="max-w-2xl text-lg text-white/85 drop-shadow sm:text-xl">
+            {subtitle}
+          </p>
+        )}
+
+        {(ctaText ?? secondaryCtaText) && (
+          <div className="mt-2 flex flex-wrap gap-4">
+            {ctaText && (
+              <Link
+                href={ctaHref}
+                className="inline-flex items-center rounded-lg bg-amber-500 px-7 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-amber-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
               >
-                <BlurFadeText
-                    text={p.title}
-                    byWord
-                    characterDelay={0.06}
-                    delay={0.3}
-                    className="inline"
-                />
-              </span>
-            </h1>
-
-            {/* 21st.dev: SparklesText for premium subtitle highlight */}
-            <BlurFade delay={0.7} yOffset={8}>
-              <p className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-cpm-text-secondary sm:text-lg">
-                {p.subtitle}
-              </p>
-            </BlurFade>
-
-            {/* 21st.dev: ShimmerButton for CTA */}
-            {p.ctaText && (
-              <BlurFade delay={0.9} yOffset={8}>
-                <a href={safeHref(p.ctaLink)} className="inline-block">
-                  <ShimmerButton
-                    className="rounded-lg text-sm font-semibold text-cpm-bg-primary"
-                    shimmerDuration={2.5}
-                    borderRadius="0.5rem"
-                  >
-                    {p.ctaText}
-                    <ArrowRight className="h-4 w-4" />
-                  </ShimmerButton>
-                </a>
-              </BlurFade>
+                {ctaText}
+              </Link>
+            )}
+            {secondaryCtaText && (
+              <Link
+                href={secondaryCtaHref}
+                className="inline-flex items-center rounded-lg border border-white/60 px-7 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                {secondaryCtaText}
+              </Link>
             )}
           </div>
+        )}
+      </div>
 
-          {/* 21st.dev: BlurFade scroll indicator */}
-          <BlurFade delay={1.2} yOffset={12} className="absolute bottom-20 left-1/2 z-10 -translate-x-1/2">
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cpm-text-tertiary">Scroll</span>
-              <div className="flex h-8 w-5 items-start justify-center rounded-full border border-cpm-text-tertiary/30 pt-1.5">
-                <ChevronDown className="h-3 w-3 text-cpm-accent" style={{ animation: "scrollBounce 2s ease-in-out infinite" }} />
-              </div>
-            </div>
-          </BlurFade>
+      {/* Scroll cue */}
+      {showScrollCue && (
+        <div
+          className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-bounce"
+          aria-hidden="true"
+        >
+          <svg
+            className="h-6 w-6 text-white/70"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      )}
+    </section>
+  );
+}
 
-          {/* Bottom gradient fade */}
-          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-cpm-bg-primary via-cpm-bg-primary/60 to-transparent" />
-        </section>
-      </>
-    );
+// ─── Puck Config ─────────────────────────────────────────────────────────────
+
+export const HeroSectionConfig: ComponentConfig<HeroSectionProps> = {
+  label: "Hero Section",
+  fields: {
+    title:            { type: "text", label: "Headline" },
+    subtitle:         { type: "textarea", label: "Subtitle" },
+    backgroundImage:  { type: "text", label: "Background Image URL" },
+    backgroundAlt:    { type: "text", label: "Background Alt Text" },
+    ctaText:          { type: "text", label: "Primary CTA Text" },
+    ctaHref:          { type: "text", label: "Primary CTA URL" },
+    secondaryCtaText: { type: "text", label: "Secondary CTA Text" },
+    secondaryCtaHref: { type: "text", label: "Secondary CTA URL" },
+    alignment: {
+      type: "select",
+      label: "Text Alignment",
+      options: [
+        { label: "Left",   value: "left" },
+        { label: "Center", value: "center" },
+        { label: "Right",  value: "right" },
+      ],
+    },
+    variant: {
+      type: "select",
+      label: "Variant",
+      options: [
+        { label: "Default",    value: "default" },
+        { label: "Minimal",    value: "minimal" },
+        { label: "Full Bleed", value: "full-bleed" },
+      ],
+    },
+    overlayOpacity: { type: "number", label: "Overlay Opacity (0–100)" },
+    showScrollCue:  { type: "radio",  label: "Show Scroll Cue", options: [{ label: "Yes", value: true }, { label: "No", value: false }] },
   },
-  ai: { instructions: "Create impactful headlines under 80 characters with benefit-focused messaging about luxury Malta stays. Subtitle 2-3 sentences max, under 300 chars. CTA 2-4 action words. Background image must be from the CDN." },
+  defaultProps: {
+    title:           "Welcome to Chris Property Management",
+    subtitle:        "Premium short-term rentals in Malta's finest locations.",
+    ctaText:         "Browse Properties",
+    ctaHref:         "/properties",
+    alignment:       "center",
+    variant:         "default",
+    overlayOpacity:  55,
+    showScrollCue:   true,
+  },
+  render: (props) => <HeroSection {...props} />,
 };

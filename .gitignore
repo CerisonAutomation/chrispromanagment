@@ -1,55 +1,74 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# dependencies
-node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Build outputs
+.next/
+out/
+build/
+dist/
 
-# testing
-/coverage
+# Environment — NEVER commit real secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
+# Vercel
 .vercel
 
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-local-*
-.claude
-.z-ai-config
+# Logs
 *.log
-dev.log
-dev.out.log
-test
-prompt
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+bun-debug.log*
 
-server.log
-# Skills directory
-/skills/
-.env*.local
+# Lock file duplication — keep only bun.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temp / scratch artefacts
+-p
+3001
+worklog*.md
+21st-dev-*.json
+search-21st*.json
+skills/
+mini-services/
+docs/
+CANONICAL_CONSOLIDATION_REPORT.md
+CODEBASE_AUDIT.md
+COMPLETE_EXTRACTION.md
+MILLION_X_PUCK_AUDIT_COMPLETE.md
+OMNISCAN_SUMMARY.md
+UNIFIED_ARCHITECTURE.md
+UNIFIED_SUMMARY.md
+FIX_PAGES_BLOCKS.md
+IMPROVEMENTS.md
+PRISMA_FIX.md
+PUCK_AI_SETUP.md
+QUICK_START.md
+BUILD_CHECKLIST.md
+ARCHITECTURE.md
+DEPLOYMENT_GUIDE.md
+mcp-config.json
+generate-prisma.js
+netlify.toml
+Caddyfile
+
+# Drizzle / DB migrations output
+drizzle/
+
+# Test coverage
+coverage/
+.nyc_output/
