@@ -837,4 +837,5 @@ export function apiCreatedResponse<T>(data: T, location?: string): Response {
 // SECTION 10: Re-exports from domain
 // ---------------------------------------------------------------------------
 
-export { DomainError, Result, err, ok } from '../domain/types';
+export type {DomainError, Result} from '../domain/types';
+export {err, ok} from '../domain/types';

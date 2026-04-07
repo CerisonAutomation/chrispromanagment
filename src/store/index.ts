@@ -2,61 +2,50 @@
 // STORE INDEX - Canonical Store Exports
 // =============================================================================
 
-// Canonical editor store
+// Canonical types
+export * from '@/lib/canonical';
+
+// Admin store (new unified store)
 export {
-  useEditorStore,
-  selectSelectedBlock,
+    useAdminStore,
+} from './admin-store';
+
+export type {
+    AdminState,
+    AdminActions,
+    PageData,
+    ThemeData,
+    Toast,
+    ToastType,
+    AIMessage,
+    DeviceMode,
+    ViewMode,
+    SidebarPanel,
+    RightPanel,
+} from './admin-store';
+
+// Selectors from admin store
+export {
   selectCanUndo,
   selectCanRedo,
-  selectBlockById,
-  selectBlockIndex,
-  selectBlocksByType,
   selectIsDirty,
-  selectIsSaving,
-  selectSyncStatus,
-  selectCurrentTheme,
-  selectToasts,
+    selectCurrentPage,
+    selectContent,
   selectViewMode,
   selectDeviceMode,
-  selectCanvasZoom,
   selectSidebarPanel,
   selectRightPanel,
-} from './editor-store-canonical';
+    selectCurrentTheme,
+    selectThemes,
+    selectAiMessages,
+    selectIsAiGenerating,
+    selectToasts,
+    selectIsSaving,
+    selectIsPublishing,
+    selectLastSavedAt,
+    selectPages,
+    selectIsLoadingPages,
+} from './admin-store';
 
-export type {
-  EditorStore,
-  EditorState,
-  EditorActions,
-  ViewMode,
-  DeviceMode,
-  SidebarPanel,
-  RightPanel,
-  ToastType,
-  Toast,
-  UndoSnapshot,
-  SyncStatus,
-} from './editor-store-canonical';
-
-// Puck editor store (legacy, for compatibility)
-export { usePuckEditorStore } from './puck-editor-store';
-
-// Puck reducer
-export { puckReducer, createReducer } from './puck-reducer';
-
-export type {
-  PuckAction,
-  InsertAction,
-  RemoveAction,
-  ReplaceAction,
-  ReorderAction,
-  MoveAction,
-  DuplicateAction,
-  SelectAction,
-  SetUiAction,
-  SetDataAction,
-  BatchAction,
-  ResetAction,
-} from './puck-reducer';
-
-// Default app state
-export { defaultAppState } from './default-app-state';
+// Re-export canonicalThemes from canonical
+export { canonicalThemes } from '@/lib/canonical';

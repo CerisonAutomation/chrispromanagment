@@ -58,4 +58,3 @@ export {
 } from './api';
 
 // Result types (re-exported from domain)
-export { DomainError, Result, err, ok } from '../domain/types';

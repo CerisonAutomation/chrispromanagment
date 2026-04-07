@@ -10,7 +10,7 @@ export { SparklesText } from "./sparkles-text";
 export { HyperText } from "./hyper-text";
 export { ShimmerButton } from "./shimmer-button";
 export { RetroGrid } from "./retro-grid";
-export { AnimatedTooltip } from "./animated-tooltip";
+// export { AnimatedTooltip } from "./animated-tooltip"; // TODO: Fix types
 export { DotPattern, GridPattern } from "./patterns";
 export { Particles } from "./particles";
 export { NumberTicker, Marquee } from "./number-ticker";

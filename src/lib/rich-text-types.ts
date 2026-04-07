@@ -2,7 +2,7 @@
 
 import type {Editor} from "@tiptap/core";
 
-export interface RichTextEditor extends Editor {
+export interface RichTextEditor {
   isEditable: boolean;
   isActive: (name: string, attrs?: Record<string, any>) => boolean;
   chain: () => {

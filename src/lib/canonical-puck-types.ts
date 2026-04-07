@@ -32,12 +32,12 @@ type Indexable<T = Unknown> = {
 // FIELD TYPES
 // =============================================================================
 
-type FieldOption = {
+export type FieldOption = {
   label: string;
   value: string | number | boolean | undefined | null | object;
 };
 
-type FieldOptions = Array<FieldOption> | ReadonlyArray<FieldOption>;
+export type FieldOptions = Array<FieldOption> | ReadonlyArray<FieldOption>;
 
 export interface BaseField {
   label?: string;
@@ -353,6 +353,7 @@ export type UiState = {
   itemSelector: ItemSelector | null;
   isDragging: boolean;
   section: string;
+  previewMode?: string;
   viewports: {
     current: Viewport;
   };
@@ -391,6 +392,18 @@ export type UserGenerics<UserConfig extends Config = Config> = {
 // =============================================================================
 
 export type Overrides = {
+  header?: React.ComponentType<{ children?: React.ReactNode; actions?: React.ReactNode }>;
+  fieldLabel?: React.ComponentType<{ children?: React.ReactNode; label?: string }>;
+  fields?: React.ComponentType<{ children?: React.ReactNode; isLoading?: boolean }>;
+  preview?: React.ComponentType<{ children?: React.ReactNode }>;
+  canvas?: React.ComponentType<{ children?: React.ReactNode }>;
+  page?: React.ComponentType<any>;
+  dropZone?: React.ComponentType<any>;
+  drawer?: React.ComponentType<any>;
+  tabs?: React.ComponentType<any>;
+  field?: React.ComponentType<any>;
+  root?: React.ComponentType<any>;
+  zones?: React.ComponentType<any>;
   fieldTypes?: Indexable<React.ComponentType<FieldProps<Field, Unknown>>>;
   components?: Indexable<React.ComponentType<Unknown>>;
 };

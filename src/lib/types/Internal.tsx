@@ -2,9 +2,8 @@
 // CANONICAL PUCK INTERNAL TYPES
 // =============================================================================
 
-import {ComponentData, Data} from "./Data";
+import {ComponentData, Data, ZoneType} from "./Data";
 
-export type ZoneType = "root" | "slot" | "dropzone";
 
 export type NodeIndexEntry = {
   data: ComponentData;
@@ -30,3 +29,4 @@ export type PrivateAppState<UserData extends Data = Data> = {
     zones: ZoneIndex;
   };
 };
+export type { ZoneType } from "./Data";

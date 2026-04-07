@@ -1,53 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
    Puck Block Animations — shared across all rendered blocks
+   Note: Core keyframes are defined in globals.css to avoid duplication
    ══════════════════════════════════════════════════════════════════════ */
-
-/* ── Core Keyframes ── */
-@keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes scaleIn {
-  0% { opacity: 0; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1); }
-}
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-@keyframes pulseRing {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-@keyframes dotPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-@keyframes expandWidth {
-  0% { width: 0; }
-  100% { width: 4rem; }
-}
-@keyframes slideUp {
-  0% { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes chevronRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(180deg); }
-}
 
 /* ── Page Skeleton Loader Animations ── */
 @keyframes logoBreath {
@@ -59,17 +13,13 @@
   100% { background-position: 200% 0; }
 }
 
-/* ── Premium Keyframes ── */
+/* ── Premium Keyframes (unique to puck-animations) ── */
 @keyframes revealDown {
   0% { opacity: 0; transform: translateY(-16px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-@keyframes shimmerGold {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 @keyframes borderGlow {
-  0%, 100% { box-shadow: 0 0 0px rgba(200, 169, 106, 0); }
+  0%, 100% { box-shadow: 0 0 0 rgba(200, 169, 106, 0); }
   50% { box-shadow: 0 0 16px rgba(200, 169, 106, 0.45); }
 }
 @keyframes particleFloat {
@@ -95,22 +45,18 @@
   0%, 100% { box-shadow: 0 0 20px rgba(200, 169, 106, 0.1); }
   50% { box-shadow: 0 0 40px rgba(200, 169, 106, 0.25); }
 }
-@keyframes typewriter {
-  0% { width: 0; }
-  100% { width: 100%; }
+@keyframes chevronRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(180deg); }
 }
 @keyframes dashDraw {
   0% { stroke-dashoffset: 1000; }
   100% { stroke-dashoffset: 0; }
 }
 
-/* ── Animation Utility Classes ── */
+/* ── Animation Utility Classes (unique to puck-animations) ── */
 @utility animate-reveal-down {
   animation: revealDown 0.5s ease-out both;
-}
-@utility animate-shimmer-gold {
-  animation: shimmerGold 2.5s ease-in-out infinite;
-  background-size: 200% 100%;
 }
 @utility animate-border-glow {
   animation: borderGlow 3s ease-in-out infinite;

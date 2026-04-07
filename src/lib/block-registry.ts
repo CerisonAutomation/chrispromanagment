@@ -691,6 +691,147 @@ export const BLOCK_REGISTRY: Record<string, BlockSchema> = {
       ],
     },
   },
+
+  ImageGallery: {
+    label: "Image Gallery",
+    fields: {
+      title: { type: "text", description: "Section headline — e.g., 'Gallery'" },
+      images: {
+        type: "array",
+        label: "Images",
+        description: "Array of images for the gallery, 4-12 recommended",
+        defaultItemProps: { url: "", alt: "Image" },
+        arrayFields: {
+          url: { type: "text", label: "Image URL", description: "Full URL to the image" },
+          alt: { type: "text", label: "Alt Text", description: "Accessibility alternative text" },
+        },
+      },
+      columns: {
+        type: "select",
+        label: "Columns",
+        description: "Number of columns in the grid",
+        options: [
+          { label: "2 Columns", value: "2" },
+          { label: "3 Columns", value: "3" },
+          { label: "4 Columns", value: "4" },
+        ],
+      },
+    },
+    defaultProps: {
+      title: "Image Gallery",
+      images: [],
+      columns: "3",
+    },
+  },
+
+  Timeline: {
+    label: "Timeline",
+    fields: {
+      title: { type: "text", description: "Section headline — e.g., 'Our Journey'" },
+      items: {
+        type: "array",
+        label: "Timeline Items",
+        description: "Array of timeline events, 3-8 recommended",
+        defaultItemProps: { year: "2024", title: "Event", description: "Description" },
+        arrayFields: {
+          year: { type: "text", description: "Year or date" },
+          title: { type: "text", description: "Event title" },
+          description: { type: "textarea", description: "Event description, 1-2 sentences" },
+        },
+      },
+    },
+    defaultProps: {
+      title: "Our Journey",
+      items: [
+        { year: "2016", title: "Company Founded", description: "Started with one property in Valletta." },
+        { year: "2019", title: "Expanded Operations", description: "Grew to 20 properties across Malta." },
+        { year: "2024", title: "50+ Properties", description: "Now managing 50+ luxury properties." },
+      ],
+    },
+  },
+
+  TextBlock: {
+    label: "Text Block",
+    fields: {
+      content: { type: "textarea", description: "Text content. Support paragraph breaks with double newlines." },
+    },
+    defaultProps: {
+      content: "Your text content here.",
+    },
+  },
+
+  FeatureGrid: {
+    label: "Feature Grid",
+    fields: {
+      title: { type: "text", description: "Section headline — e.g., 'Key Features'" },
+      features: {
+        type: "array",
+        label: "Features",
+        description: "Array of feature cards, 3-6 recommended",
+        defaultItemProps: { title: "Feature", description: "Description", icon: "star" },
+        arrayFields: {
+          title: { type: "text", description: "Feature title" },
+          description: { type: "textarea", description: "Feature description" },
+          icon: { type: "text", label: "Icon (lucide)", description: "Lucide icon name" },
+        },
+      },
+    },
+    defaultProps: {
+      title: "Key Features",
+      features: [
+        { title: "Feature 1", description: "Description here.", icon: "star" },
+        { title: "Feature 2", description: "Description here.", icon: "award" },
+        { title: "Feature 3", description: "Description here.", icon: "shield" },
+      ],
+    },
+  },
+
+  MapSection: {
+    label: "Map Section",
+    fields: {
+      title: { type: "text", description: "Section headline — e.g., 'Find Us'" },
+      address: { type: "text", description: "Address to display on the map" },
+      latitude: { type: "text", label: "Latitude", description: "Google Maps latitude coordinate" },
+      longitude: { type: "text", label: "Longitude", description: "Google Maps longitude coordinate" },
+      zoom: {
+        type: "select",
+        label: "Zoom Level",
+        description: "Initial map zoom level",
+        options: [
+          { label: "City", value: "12" },
+          { label: "Street", value: "15" },
+          { label: "Building", value: "18" },
+        ],
+      },
+    },
+    defaultProps: {
+      title: "Find Us",
+      address: "Birkirkara, Malta",
+      latitude: "35.8961327",
+      longitude: "14.4644929",
+      zoom: "14",
+    },
+  },
+
+  Spacer: {
+    label: "Spacer",
+    fields: {
+      height: {
+        type: "select",
+        label: "Height",
+        description: "Vertical spacing amount",
+        options: [
+          { label: "Small (16px)", value: "16" },
+          { label: "Medium (32px)", value: "32" },
+          { label: "Large (64px)", value: "64" },
+          { label: "Extra Large (96px)", value: "96" },
+        ],
+      },
+    },
+    defaultProps: {
+      height: "32",
+    },
+  },
 };
 
 export const BLOCK_TYPE_NAMES = Object.keys(BLOCK_REGISTRY);

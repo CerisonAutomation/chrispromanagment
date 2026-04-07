@@ -2,7 +2,7 @@ import {NextRequest, NextResponse} from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
 import {BLOCK_REGISTRY, buildSchemaSummary} from "@/lib/block-registry";
 import {BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT, PAGE_GENERATION_PROMPT} from "@/lib/ai-context";
-import {createApiError, createRequestLogger, ErrorCodes, ErrorCode, ErrorSeverity, withLogging} from "@/lib/error";
+import {createApiError, createRequestLogger, ErrorCode, ErrorCodes, ErrorSeverity, withLogging} from "@/lib/error";
 
 // ============================================================
 // Request-scoped logging

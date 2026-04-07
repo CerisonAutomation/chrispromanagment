@@ -6,9 +6,10 @@
 import type {NextConfig} from "next";
 
 const nextConfig: NextConfig = {
-  // =============================================================================
-  // OUTPUT CONFIGURATION
-  // =============================================================================
+  // Turbopack configuration - empty to use defaults
+  turbopack: {},
+
+  // Output configuration
   output: "standalone",
 
   // =============================================================================

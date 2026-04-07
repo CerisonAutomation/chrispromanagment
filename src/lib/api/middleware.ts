@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { logger } from '@/lib/error/logger';
-import { v4 as uuidv4 } from 'uuid';
+import {NextRequest, NextResponse} from 'next/server';
+import {logger} from '@/lib/error/logger';
+import {v4 as uuidv4} from 'uuid';
 
 /**
  * API Response wrapper with consistent formatting
@@ -159,7 +159,7 @@ export function rateLimit(maxRequests: number = 100, windowMs: number = 60000) {
       req: NextRequest,
       context: { params: Record<string, string> }
     ): Promise<NextResponse> => {
-      const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('cf-connecting-ip') || 'unknown';
       const now = Date.now();
       const key = `${ip}:${new URL(req.url).pathname}`;
 

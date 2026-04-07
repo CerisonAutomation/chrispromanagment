@@ -1,10 +1,10 @@
 // =============================================================================
-// TANSTACK QUERY HOOKS - Optimistic Updates for Puck CMS
-// Million-Times-Better Data Sync Layer
+// CANONICAL PUCK USE-PAGES HOOK
+// TanStack Query hooks for page management with optimistic updates
 // =============================================================================
 
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import type {Data} from '@puckeditor/core';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Data } from "@puckeditor/core";
 
 // =============================================================================
 // QUERY KEYS - Hierarchical cache keys for granular invalidation

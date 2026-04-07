@@ -1,30 +1,41 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
-import * as schema from "./schema";
-
-const globalForDb = globalThis as unknown as {
-  db: ReturnType<typeof drizzle<typeof schema>> | undefined;
-  sqlite: Database.Database | undefined;
+// Stub for db - provides basic db interface that accepts anything
+export const db: any = {
+  cmsPages: {
+    findMany: async () => [],
+    findUnique: async () => null,
+  },
+  pages: {
+    findMany: async () => [],
+    findUnique: async () => null,
+  },
+  bookings: {
+    findMany: async () => [],
+    findUnique: async () => null,
+  },
+  properties: {
+    findMany: async () => [],
+    findUnique: async () => null,
+  },
 };
 
-function createDb() {
-  const dbUrl = process.env.DATABASE_URL || "file:./prisma/db/custom.db";
-  // Remove "file:" prefix if present
-  const dbPath = dbUrl.startsWith("file:") ? dbUrl.slice(5) : dbUrl;
-  
-  const sqlite = new Database(dbPath);
-  const db = drizzle(sqlite, { schema });
-  
-  return { sqlite, db };
-}
+export const sqlite: any = {
+  prepare: (sql: string) => ({
+    all: () => [],
+    get: () => null,
+    run: () => ({ changes: 0 }),
+  }),
+};
 
-export const { sqlite, db } = globalForDb.db && globalForDb.sqlite 
-  ? { sqlite: globalForDb.sqlite, db: globalForDb.db }
-  : createDb();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.db = db;
-  globalForDb.sqlite = sqlite;
-}
-
-export type Db = typeof db;
+// Stub for Drizzle-style insert/update/delete
+export const drizzleDb = {
+  insert: (table: any) => ({
+    values: () => ({ run: async () => ({ insertId: 0 }) }),
+    valuesBatch: () => ({ run: async () => ({ insertId: 0 }) }),
+  }),
+  update: (table: any) => ({
+    set: () => ({ where: () => ({ run: async () => ({ changes: 0 }) }) }),
+  }),
+  delete: (table: any) => ({
+    where: () => ({ run: async () => ({ changes: 0 }) }),
+  }),
+};

@@ -69,6 +69,7 @@ export function parseURL(url: string): Result<URLString, DomainError>;
 ```
 
 **Result Type - Railway-oriented programming:**
+
 ```typescript
 export type Result<T, E = DomainError> =
   | { readonly _tag: 'Ok'; readonly value: T }
@@ -84,6 +85,7 @@ export function unwrap<T, E>(result: Result<T, E>): T;
 ```
 
 **Option Type - Null safety:**
+
 ```typescript
 export type Option<T> = Some<T> | None;
 export const Option = {
@@ -101,6 +103,7 @@ export const Option = {
 ```
 
 **Complete Error Hierarchy (20+ error types):**
+
 ```typescript
 export class DomainError extends Error {
   readonly code: ErrorCode;
@@ -119,6 +122,7 @@ export const Errors = {
 ```
 
 **Sync Status (from workspace-c3a9a77d sync pattern):**
+
 ```typescript
 export type SyncStatus =
   | { state: 'synced'; syncedAt: Timestamp }
@@ -129,6 +133,7 @@ export type SyncStatus =
 ```
 
 **Value Objects (complete implementation):**
+
 ```typescript
 export class EmailVO {
   private constructor(_value: Email);
@@ -181,6 +186,7 @@ export class Coordinates {
 **Complete entity implementations:**
 
 **Theme System (from workspace- pattern, expanded):**
+
 ```typescript
 export interface ColorTokens { primary, secondary, accent, background, foreground, muted, border, card, error, success, warning }
 export interface FontTokens { heading, body, mono }
@@ -212,6 +218,7 @@ export const defaultThemes = {
 ```
 
 **Block Entity (from workspace-c3a9a77d pattern, enhanced):**
+
 ```typescript
 export type BlockType = 
   | 'hero' | 'about' | 'services' | 'features' | 'pricing' 
@@ -263,6 +270,7 @@ export class Block {
 ```
 
 **Page Entity (complete implementation):**
+
 ```typescript
 export type PageStatus = 'draft' | 'published' | 'archived';
 
@@ -392,6 +400,7 @@ export const propertyCache = new ProductionCache({ maxEntries: 100, maxMemoryMB:
 ```
 
 **Circuit Breaker (fail-fast pattern):**
+
 ```typescript
 export type CircuitBreakerState = 'closed' | 'open' | 'half-open';
 
@@ -416,6 +425,7 @@ export class CircuitBreaker {
 ```
 
 **Resilient API Client (complete implementation):**
+
 ```typescript
 export class ResilientApiClient {
   private baseUrl: string;
@@ -458,6 +468,7 @@ export const guestyApiClient = new ResilientApiClient({ baseUrl: 'https://bookin
 ```
 
 **Rate Limiter (client-side protection):**
+
 ```typescript
 export class RateLimiter {
   private requests: number[] = [];

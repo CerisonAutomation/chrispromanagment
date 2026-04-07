@@ -27,8 +27,7 @@ export function createNestedDroppablePlugin(
       event: any,
       manager: DragDropManager
     ) => {
-      const active = manager.dragOperation.activator;
-      const over = manager.dragOperation.over;
+      const over = event?.over;
       
       if (!over) {
         options.onChange?.({ zone: null, area: null }, manager);

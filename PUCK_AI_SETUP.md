@@ -8,7 +8,7 @@ This workspace now follows the **puck-main next-ai recipe** pattern for AI-power
 ┌─────────────────────────────────────────────────────────────────┐
 │                        URL Routing                              │
 ├─────────────────────────────────────────────────────────────────┤
-│  /any-path/edit  ──►  middleware.ts  ──►  /puck/any-path        │
+│  /any-path/edit  ──►  middleware.ts  ──►  /puck/any-path      │
 │                                                                 │
 │  /puck/[...puckPath]  ──►  Puck Editor + AI Plugin            │
 │  /[...puckPath]        ──►  Page Renderer (published pages)    │
@@ -41,7 +41,8 @@ This workspace now follows the **puck-main next-ai recipe** pattern for AI-power
 
 ### 1. Set up environment variables
 Create `.env.local` with your Puck API key:
-```
+
+```env
 PUCK_API_KEY=your_api_key_here
 ```
 
@@ -80,6 +81,7 @@ export default async function Page({ params }) {
 
 ### Prisma Client
 The Prisma schema has `draftData` and `publishedData` fields. If you see type errors:
+
 ```bash
 npx prisma db push
 npx prisma generate

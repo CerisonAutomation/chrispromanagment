@@ -18,12 +18,12 @@ import {analyzeChartImage, analyzeMultipleStocks} from "./analyzer";
 import {analyzeDividends, formatDividendMarkdown} from "./dividend";
 import {formatRumorMarkdown, scanRumors} from "./rumorScanner";
 import {
-    addToWatchlist,
-    checkAlerts,
-    formatAlertsMarkdown,
-    formatWatchlistMarkdown,
-    listWatchlist,
-    removeFromWatchlist,
+  addToWatchlist,
+  checkAlerts,
+  formatAlertsMarkdown,
+  formatWatchlistMarkdown,
+  listWatchlist,
+  removeFromWatchlist,
 } from "./watchlist";
 import {AnalysisResult, OutputFormat, PositionInfo, StockInput, Verdict} from "./types";
 

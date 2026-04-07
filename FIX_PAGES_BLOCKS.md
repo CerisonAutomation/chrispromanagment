@@ -98,7 +98,9 @@ bun run dev
 
 ## Summary
 
-**Root Cause**: Prisma Client code not generated
-**Solution**: Run `bun prisma generate`
-**Time to Fix**: 10 seconds
-**Result**: All pages/blocks load successfully
+| Item | Details |
+|------|---------|
+| **Root Cause** | Prisma Client code not generated |
+| **Solution** | Run `bun prisma generate` |
+| **Time to Fix** | 10 seconds |
+| **Result** | All pages/blocks load successfully |

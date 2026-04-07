@@ -3,6 +3,7 @@
 ## For Developers
 
 ### Get Started
+
 ```bash
 # Install dependencies
 bun install
@@ -20,6 +21,7 @@ bun dev
 ```
 
 ### Key Commands
+
 ```bash
 # Development
 bun dev              # Start dev server
@@ -38,6 +40,7 @@ bun start           # Start production server
 ```
 
 ### Project Structure
+
 ```
 src/
 ├── app/                  # Next.js app directory
@@ -70,6 +73,7 @@ public/
 ```
 
 ### Import Aliases
+
 ```typescript
 // Use these instead of relative paths
 import { db } from '@/lib/db'
@@ -83,6 +87,7 @@ import { SITE_BASE } from '@/lib/constants'
 ## API Endpoints
 
 ### Contact Form
+
 ```bash
 POST /api/contact
 Content-Type: application/json
@@ -95,6 +100,7 @@ Content-Type: application/json
 ```
 
 ### Upload File
+
 ```bash
 POST /api/upload
 Content-Type: multipart/form-data
@@ -104,12 +110,14 @@ Form Data:
 ```
 
 ### Get Properties
+
 ```bash
 GET /api/properties
 GET /api/properties?city=Valletta&featured=true
 ```
 
 ### Get Bookings
+
 ```bash
 GET /api/bookings
 GET /api/bookings?status=confirmed&propertyId=xxx
@@ -120,6 +128,7 @@ GET /api/bookings?status=confirmed&propertyId=xxx
 ## Utility Functions
 
 ### String Utilities
+
 ```typescript
 import { 
   slugify, 
@@ -135,6 +144,7 @@ isValidEmail("test@mail.com") // true
 ```
 
 ### Validation Utilities
+
 ```typescript
 import { 
   validateEmail, 
@@ -154,6 +164,7 @@ const file = validateFile(fileObj)
 ```
 
 ### Format Utilities
+
 ```typescript
 import { 
   formatCurrency, 
@@ -173,6 +184,7 @@ formatFileSize(1024000)         // "1000 KB"
 ## Common Tasks
 
 ### Add a New API Route
+
 ```typescript
 // src/app/api/my-endpoint/route.ts
 import { NextRequest, NextResponse } from 'next/server'
@@ -193,6 +205,7 @@ export async function GET(request: NextRequest) {
 ```
 
 ### Add a New Component
+
 ```typescript
 // src/components/my-component.tsx
 'use client'
@@ -214,6 +227,7 @@ export function MyComponent({ title, onClick }: MyComponentProps) {
 ```
 
 ### Add Database Model
+
 ```prisma
 // prisma/schema.prisma
 model MyModel {
@@ -229,12 +243,14 @@ model MyModel {
 ```
 
 Then run:
+
 ```bash
 bun db:push
 bun db:generate
 ```
 
 ### Use Error Boundary
+
 ```typescript
 'use client'
 
@@ -254,6 +270,7 @@ export default function Page() {
 ## Debugging
 
 ### Enable Debug Logging
+
 ```bash
 # Development
 DEBUG_PRISMA=true bun dev
@@ -263,6 +280,7 @@ DEBUG_MODE=true NODE_ENV=production bun start
 ```
 
 ### Check Logs
+
 ```bash
 # Development
 bun dev 2>&1 | grep -i error
@@ -275,6 +293,7 @@ journalctl -u app -f
 ```
 
 ### Type Check
+
 ```bash
 # Check for type errors
 bun exec tsc --noEmit
@@ -288,6 +307,7 @@ bun exec tsc --noEmit --watch
 ## Environment Variables
 
 ### Required
+
 ```env
 DATABASE_URL=sqlite:./db/custom.db
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -295,6 +315,7 @@ NODE_ENV=development
 ```
 
 ### Optional
+
 ```env
 DEBUG_MODE=false
 DEBUG_PRISMA=false
@@ -307,6 +328,7 @@ NEXT_PUBLIC_BETA=false
 ## Deployment
 
 ### To Vercel
+
 ```bash
 # Connect repository
 # 1. Push to GitHub
@@ -319,6 +341,7 @@ git push origin main
 ```
 
 ### To Self-Hosted
+
 ```bash
 # Build
 bun build
@@ -338,17 +361,20 @@ See `DEPLOYMENT_GUIDE.md` for detailed instructions.
 ## Common Issues
 
 ### "Prisma client not initialized"
+
 ```bash
 bun db:generate
 ```
 
 ### Build fails with TypeScript errors
+
 ```bash
 bun exec tsc --noEmit
 # Fix the reported errors
 ```
 
 ### Database connection fails
+
 ```bash
 # Check DATABASE_URL
 echo $DATABASE_URL
@@ -358,6 +384,7 @@ bunx prisma db execute --stdin < test.sql
 ```
 
 ### Port already in use
+
 ```bash
 bun dev -p 3001  # Use different port
 ```

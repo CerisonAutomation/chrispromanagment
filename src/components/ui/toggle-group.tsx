@@ -70,4 +70,4 @@ function ToggleGroupItem({
   )
 }
 
-export { ToggleGroup, ToggleGroupItem }
+export {ToggleGroup, ToggleGroupItem, toggleVariants as toggleGroupVariants}

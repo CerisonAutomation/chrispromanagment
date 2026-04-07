@@ -1,0 +1,137 @@
+// =============================================================================
+// SERVER-SIDE DATA FETCHING - React Server Components Pattern
+// Provides optimized data fetching for RSC with streaming support
+// =============================================================================
+
+import {db} from "./db";
+import {cmsPages, properties} from "./db/schema";
+import {unstable_cache} from "next/cache";
+import {eq, desc} from "drizzle-orm";
+
+// Cache tags for granular revalidation
+export const CACHE_TAGS = {
+  PAGE: "page",
+  PAGES_LIST: "pages-list",
+  PROPERTY: "property",
+  BOOKING: "booking",
+  ASSET: "asset",
+} as const;
+
+// =============================================================================
+// CACHED DATABASE QUERIES - ISR with on-demand revalidation
+// =============================================================================
+
+/**
+ * Get a single page by slug with published data
+ * Cached for 60 seconds, revalidated on tag
+ */
+export const getCachedPage = unstable_cache(
+  async (slug: string) => {
+    const page = await db.query.cmsPages.findFirst({
+      where: eq(cmsPages.slug, slug),
+    });
+
+    if (!page) return null;
+
+    // Parse JSON data
+    const dataString = page.publishedData || page.draftData;
+    if (!dataString) return null;
+
+    try {
+      return {
+        id: page.id,
+        slug: page.slug,
+        title: page.title,
+        status: page.workflowState,
+        data: JSON.parse(dataString),
+        metaTitle: page.metaTitle,
+        metaDescription: page.metaDescription,
+        ogTitle: page.ogTitle,
+        ogDescription: page.ogDescription,
+        ogImage: page.ogImage,
+        noIndex: page.noIndex,
+        updatedAt: page.updatedAt,
+      };
+    } catch {
+      return null;
+    }
+  },
+  ["page-by-slug"],
+  { 
+    tags: [CACHE_TAGS.PAGE],
+    revalidate: 60,
+  }
+);
+
+/**
+ * Get all published pages for sitemap/navigation
+ * Cached for 5 minutes
+ */
+export const getCachedPagesList = unstable_cache(
+  async () => {
+    return db.query.cmsPages.findMany({
+      where: eq(cmsPages.workflowState, "PUBLISHED"),
+      orderBy: desc(cmsPages.updatedAt),
+    });
+  },
+  ["pages-list"],
+  {
+    tags: [CACHE_TAGS.PAGES_LIST],
+    revalidate: 300,
+  }
+);
+
+/**
+ * Get properties with optimized query
+ */
+export const getCachedProperties = unstable_cache(
+  async (limit?: number) => {
+    return db.query.properties.findMany({
+      where: eq(properties.active, true),
+      orderBy: desc(properties.rating),
+      limit: limit || 10,
+    });
+  },
+  ["properties"],
+  {
+    tags: [CACHE_TAGS.PROPERTY],
+    revalidate: 300,
+  }
+);
+
+/**
+ * Get a single property by slug
+ */
+export const getCachedProperty = unstable_cache(
+  async (slug: string) => {
+    return db.query.properties.findFirst({
+      where: eq(properties.slug, slug),
+    });
+  },
+  ["property-by-slug"],
+  {
+    tags: [CACHE_TAGS.PROPERTY],
+    revalidate: 300,
+  }
+);
+
+// =============================================================================
+// MUTATION HELPERS - Server Actions for data updates
+// =============================================================================
+
+/**
+ * Revalidate page cache on publish/update
+ */
+export async function revalidatePageCache(slug: string) {
+  const { revalidateTag } = await import("next/cache");
+  revalidateTag(CACHE_TAGS.PAGE, "seconds");
+  revalidateTag(CACHE_TAGS.PAGES_LIST, "seconds");
+}
+
+/**
+ * Revalidate property cache
+ */
+export async function revalidatePropertyCache() {
+  const { revalidateTag } = await import("next/cache");
+  revalidateTag(CACHE_TAGS.PROPERTY, "seconds");
+}

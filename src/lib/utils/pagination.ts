@@ -51,7 +51,7 @@ export type PaginationStrategy = 'offset' | 'cursor' | 'infinite';
 export const DEFAULT_PAGINATION: Required<PaginationParams> = {
   page: 1,
   limit: 20,
-  cursor: undefined,
+  cursor: "",
   offset: 0,
 };
 
@@ -73,7 +73,7 @@ export function normalizePaginationParams(params: PaginationParams): Required<Pa
   return {
     page,
     limit,
-    cursor: params.cursor,
+    cursor: params.cursor ?? "",
     offset,
   };
 }

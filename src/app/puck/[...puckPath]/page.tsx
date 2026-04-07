@@ -29,9 +29,9 @@ export default async function Page({
 }) {
   const { puckPath = [] } = await params;
   const path = `/${puckPath.join("/")}`;
-  const data = getPage(path);
+  const data = await getPage(path);
 
-  return <Client path={path} data={data || {}} />;
+  return <Client path={path} data={data || {content: [], root: {props: {}}}}/>;
 }
 
 // Dynamic rendering required for editor

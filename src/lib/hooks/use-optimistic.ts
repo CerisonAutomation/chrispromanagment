@@ -1,10 +1,10 @@
 // =============================================================================
-// OPTIMISTIC UPDATES HOOK
+// CANONICAL PUCK USE-OPTIMISTIC HOOK
 // Immediate UI updates with automatic rollback on failure
 // =============================================================================
 
-import {useRef} from "react";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import { useRef } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface OptimisticUpdate<TData, TVariables, TResult = TData> {
   queryKey: string[];
@@ -36,7 +36,7 @@ export function useOptimisticUpdate<
   onSettled?: () => void;
 }) {
   const queryClient = useQueryClient();
-  const previousDataRef = useRef<TData | undefined>();
+  const previousDataRef = useRef<TData | undefined>(undefined);
 
   const mutation = useMutation({
     mutationFn,

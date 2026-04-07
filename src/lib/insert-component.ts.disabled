@@ -1,0 +1,21 @@
+// =============================================================================
+// INSERT COMPONENT UTILITY
+// =============================================================================
+
+import {AppStore} from "@/store/app-store-context";
+
+export function insertComponent(
+  componentType: string,
+  zone: string,
+  index: number,
+  appStore: AppStore
+) {
+  const { dispatch } = appStore;
+  
+  dispatch({
+    type: "insert",
+    componentType,
+    destinationZone: zone,
+    destinationIndex: index,
+  });
+}

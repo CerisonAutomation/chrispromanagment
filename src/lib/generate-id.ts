@@ -1,6 +1,7 @@
-/**
- * ID Generator - Generate unique IDs for components and history entries
- */
+// =============================================================================
+// CANONICAL PUCK ID GENERATOR
+// Generate unique IDs for components and history entries
+// =============================================================================
 
 let counter = 0;
 
@@ -15,7 +16,7 @@ export function generateId(prefix?: string): string {
     .map(() => chars[Math.floor(Math.random() * chars.length)])
     .join("");
   const counterPart = (++counter).toString(36);
-  
+
   return prefix
     ? `${prefix}_${timestamp}${randomPart}${counterPart}`
     : `${timestamp}${randomPart}${counterPart}`;

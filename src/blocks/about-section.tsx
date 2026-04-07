@@ -1,4 +1,18 @@
-import {ABOUT_IMG} from "@/lib/images";
+// =============================================================================
+// CANONICAL PUCK ABOUT SECTION BLOCK
+// About section with image and description
+// =============================================================================
+
+"use client";
+
+import React from "react";
+import { ABOUT_IMG } from "@/lib/images";
+
+export interface AboutSectionProps {
+  title: string;
+  description: string;
+  imageUrl: string;
+}
 
 export const AboutSection = {
   label: "About Section",
@@ -9,11 +23,12 @@ export const AboutSection = {
   },
   defaultProps: {
     title: "About Christiano Property Management",
-    description: "Christiano Property Management is a luxury short-term rental management company operating across Malta. With over 9 years of Superhost experience on Airbnb and a background in international luxury hotel management, we bring a five-star standard to every property we manage.\n\nWe believe in transparent, honest partnerships with property owners. Our selective approach means we work with a limited portfolio, ensuring each property receives our undivided attention and the highest level of service.\n\nFrom dynamic pricing strategies and 24/7 guest communication to meticulous cleaning and monthly performance reports, we handle every aspect of your short-term rental so you can enjoy passive income without the hassle.",
+    description:
+      "Christiano Property Management is a luxury short-term rental management company operating across Malta. With over 9 years of Superhost experience on Airbnb and a background in international luxury hotel management, we bring a five-star standard to every property we manage.\n\nWe believe in transparent, honest partnerships with property owners. Our selective approach means we work with a limited portfolio, ensuring each property receives our undivided attention and the highest level of service.\n\nFrom dynamic pricing strategies and 24/7 guest communication to meticulous cleaning and monthly performance reports, we handle every aspect of your short-term rental so you can enjoy passive income without the hassle.",
     imageUrl: ABOUT_IMG,
   },
   render: (props: Record<string, unknown>) => {
-    const p = props as { title: string; description: string; imageUrl: string };
+    const p = props as unknown as AboutSectionProps;
     const paragraphs = (p.description || "").split("\n\n");
     return (
       <>
@@ -39,13 +54,16 @@ export const AboutSection = {
                 style={{ animation: "float 7s ease-in-out infinite 1s" }}
               />
             </div>
-            <div className="w-full lg:w-1/2 border-l-2 border-cpm-accent/30 pl-6 lg:pl-8">
+            <div className="w-full border-l-2 border-cpm-accent/30 pl-6 lg:w-1/2 lg:pl-8">
               {/* Animated accent line */}
               <div
                 className="mb-4 h-[2px] bg-gradient-to-r from-cpm-accent to-cpm-accent/20"
                 style={{ animation: "expandWidth 0.8s ease-out forwards" }}
               />
-              <h2 className="mb-6 font-[family-name:var(--font-heading)] text-3xl font-light tracking-tight text-cpm-text-primary sm:text-4xl" style={{ animation: "fadeInUp 0.6s ease-out" }}>
+              <h2
+                className="mb-6 font-[family-name:var(--font-heading)] text-3xl font-light tracking-tight text-cpm-text-primary sm:text-4xl"
+                style={{ animation: "fadeInUp 0.6s ease-out" }}
+              >
                 {p.title}
               </h2>
               <div className="space-y-5" style={{ animation: "fadeInUp 0.8s ease-out 0.2s both" }}>

@@ -1,4 +1,4 @@
-import { Home, Search } from 'lucide-react';
+import {Home, Search} from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata = {

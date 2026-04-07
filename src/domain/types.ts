@@ -238,7 +238,7 @@ export class Block implements BlockProps {
   ): Result<Block, DomainError> {
     const validation = this.validateData(data);
     if (!validation.success) {
-      return validation;
+      return validation as Result<Block, DomainError>;
     }
 
     const updated: Block = new Block({
@@ -366,7 +366,7 @@ export class Page implements PageProps {
   ): Result<Page, DomainError> {
     const slugValidation = Page.validateSlug(slug);
     if (!slugValidation.success) {
-      return slugValidation;
+      return slugValidation as Result<Page, DomainError>;
     }
 
     const now = createTimestamp();
@@ -439,7 +439,7 @@ export class Page implements PageProps {
     const updateResult = block.update(data, userId);
 
     if (!updateResult.success) {
-      return updateResult;
+      return updateResult as Result<Page, DomainError>;
     }
 
     const newBlocks = [...this.blocks];

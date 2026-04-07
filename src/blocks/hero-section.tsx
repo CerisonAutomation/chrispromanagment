@@ -1,14 +1,19 @@
+// =============================================================================
+// CANONICAL PUCK HERO SECTION BLOCK
+// Hero section with background image and CTA
+// =============================================================================
+
 "use client";
 
-import {HERO_BG} from "@/lib/images";
-import {safeHref} from "./helpers";
-import {BlurFade} from "@/components/effects/blur-fade";
-import {BlurFadeText} from "@/components/effects/blur-fade-text";
-import {MorphingText} from "@/components/effects/morphing-text";
-import {ShimmerButton} from "@/components/effects/shimmer-button";
-import {RetroGrid} from "@/components/effects/retro-grid";
-import {Particles} from "@/components/effects/particles";
-import {ArrowRight, ChevronDown} from "lucide-react";
+import { HERO_BG } from "@/lib/images";
+import { safeHref } from "./helpers";
+import { BlurFade } from "@/components/effects/blur-fade";
+import { BlurFadeText } from "@/components/effects/blur-fade-text";
+import { MorphingText } from "@/components/effects/morphing-text";
+import { ShimmerButton } from "@/components/effects/shimmer-button";
+import { RetroGrid } from "@/components/effects/retro-grid";
+import { Particles } from "@/components/effects/particles";
+import { ArrowRight, ChevronDown } from "lucide-react";
 
 export const HeroSection = {
   label: "Hero Section",
@@ -21,7 +26,8 @@ export const HeroSection = {
   },
   defaultProps: {
     title: "Dedicated to Maximizing Your Property's Potential",
-    subtitle: "9 years of Superhost experience managing luxury short-term rentals across Malta. International luxury hotel management background. Transparent fees, no hidden markups.",
+    subtitle:
+      "9 years of Superhost experience managing luxury short-term rentals across Malta. International luxury hotel management background. Transparent fees, no hidden markups.",
     backgroundImage: HERO_BG,
     ctaText: "Learn More",
     ctaLink: "#about",

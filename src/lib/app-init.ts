@@ -3,8 +3,8 @@
  * Run this on app startup to set up global state
  */
 
-import { configureLogger, logger } from '@/lib/error/logger';
-import { ErrorSeverity } from '@/lib/error/types';
+import {configureLogger, logger} from '@/lib/error/logger';
+import {ErrorSeverity} from '@/lib/error/types';
 
 /**
  * Initialize the application

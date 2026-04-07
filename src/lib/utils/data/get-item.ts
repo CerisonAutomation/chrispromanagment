@@ -3,19 +3,13 @@
 // Mirror of puck-main/packages/core/lib/data/get-item.ts
 // =============================================================================
 
-import {ItemSelector} from "./get-item";
-import {PrivateAppState} from "../../types/Internal";
-
-export type ItemSelector = {
-  zone: string;
-  index: number;
-};
+import {PrivateAppState} from "@/lib/types/Internal";
 
 /**
  * Get a component by its item selector
  */
 export function getItem(
-  itemSelector: ItemSelector,
+  itemSelector: { zone: string; index: number },
   state: PrivateAppState
 ) {
   const zone = state.indexes.zones[itemSelector.zone];
@@ -39,7 +33,7 @@ export function getItem(
 export function getSelectorForId(
   state: PrivateAppState,
   id: string
-): Required<ItemSelector> | undefined {
+): { zone: string; index: number } | undefined {
   const node = state.indexes.nodes[id];
 
   if (!node) {

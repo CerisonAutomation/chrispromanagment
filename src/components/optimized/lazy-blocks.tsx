@@ -94,13 +94,14 @@ export function LazyBlock({
       const loader = LAZY_BLOCKS[blockType];
       if (loader) {
         try {
-          const module = await loader();
+          const loadedModule = await loader();
           // Wait for min load time if specified
           const remaining = minLoadTime - loadTime;
           if (remaining > 0) {
             await new Promise((r) => setTimeout(r, remaining));
           }
-          setComponent(() => module.default);
+          const mod = module as { default?: React.ComponentType<unknown> };
+          setComponent(() => mod.default || (() => null));
         } catch (error) {
           console.error(`Failed to load block ${blockType}:`, error);
         }
@@ -195,8 +196,8 @@ export function useLazyComponent<T extends ComponentType<unknown>>(
     if (Component || isLoading) return;
     setIsLoading(true);
     try {
-      const module = await loader();
-      setComponent(() => module.default);
+      const loadedModule = await loader();
+      setComponent(() => loadedModule.default);
     } catch (error) {
       console.error("Failed to lazy load component:", error);
     } finally {
@@ -246,7 +247,7 @@ export function useLazyComponent<T extends ComponentType<unknown>>(
 export function useBlockPrefetch() {
   const prefetch = (blockType: LazyBlockType) => {
     const loader = LAZY_BLOCKS[blockType];
-    if (loader) {
+    if (typeof loader === 'function') {
       // Prefetch the module
       const link = document.createElement("link");
       link.rel = "prefetch";

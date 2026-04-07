@@ -1,8 +1,23 @@
-import {NextRequest, NextResponse} from "next/server";
+// =============================================================================
+// CANONICAL PUCK AI CHAT API
+// AI chat completion endpoint with retry logic
+// =============================================================================
+
+import { NextRequest, NextResponse } from "next/server";
 import ZAI from "z-ai-web-dev-sdk";
-import {BLOCK_REGISTRY, buildSchemaSummary} from "@/lib/block-registry";
-import {AI_SYSTEM_PROMPT, BLOCK_INSTRUCTIONS, BUSINESS_CONTEXT} from "@/lib/ai-context";
-import {createApiError, createRequestLogger, ErrorCodes, ErrorSeverity, withLogging} from "@/lib/error";
+import { BLOCK_REGISTRY, buildSchemaSummary } from "@/lib/block-registry";
+import {
+  AI_SYSTEM_PROMPT,
+  BLOCK_INSTRUCTIONS,
+  BUSINESS_CONTEXT,
+} from "@/lib/ai-context";
+import {
+  createApiError,
+  createRequestLogger,
+  ErrorCodes,
+  ErrorSeverity,
+  withLogging,
+} from "@/lib/error";
 
 // ============================================================
 // Shared helpers
@@ -46,11 +61,12 @@ async function callAI(
         await new Promise((r) => setTimeout(r, 500));
       } else {
         throw error.name === "AbortError"
-            ? new Error("AI request timed out")
-            : error;
+          ? new Error("AI request timed out")
+          : error;
       }
     }
   }
+
   throw new Error("AI request failed after retries");
 }
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { logger } from '@/lib/error/logger';
+import {useEffect} from 'react';
+import {AlertTriangle, Home, RefreshCw} from 'lucide-react';
+import {logger} from '@/lib/error/logger';
 
 export default function Error({
   error,

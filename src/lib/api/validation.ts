@@ -1,5 +1,5 @@
-import { z, ZodSchema } from 'zod';
-import { NextRequest } from 'next/server';
+import {z, ZodSchema} from 'zod';
+import {NextRequest} from 'next/server';
 
 /**
  * Validation error details
@@ -22,7 +22,7 @@ export async function validateBody<T>(
     return { data: validated, errors: [] };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors: ValidationError[] = error.errors.map((err) => ({
+      const errors: ValidationError[] = error.issues.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -48,7 +48,7 @@ export function validateQuery<T>(
     return { data: validated, errors: [] };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors: ValidationError[] = error.errors.map((err) => ({
+      const errors: ValidationError[] = error.issues.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
       }));
@@ -78,7 +78,7 @@ export function validateHeaders<T>(
     return { data: validated, errors: [] };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors: ValidationError[] = error.errors.map((err) => ({
+      const errors: ValidationError[] = error.issues.map((err) => ({
         field: err.path.join('.'),
         message: err.message,
       }));

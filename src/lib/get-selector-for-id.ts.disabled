@@ -1,0 +1,28 @@
+"use client";
+
+import type {PuckEditorState} from "@/store/puck-editor-store";
+
+export function getSelectorForId(
+  state: PuckEditorState & { indexes?: { nodes: Record<string, { parentId?: string; zone: string; index: number }> }; zones?: Record<string, { contentIds?: string[] }> },
+  id: string
+): { zone: string; index: number } | null {
+  const indexes = state.indexes;
+  const zones = state.zones;
+  
+  if (!indexes || !zones) return null;
+  
+  const node = indexes.nodes[id];
+  
+  if (!node) return null;
+  
+  const { parentId, zone, index } = node;
+  const zoneCompound = parentId ? `${parentId}:${zone}` : zone;
+  const contentIds = zones[zoneCompound]?.contentIds || [];
+  
+  const itemIndex = contentIds.indexOf(id);
+  
+  return {
+    zone: zoneCompound,
+    index: itemIndex >= 0 ? itemIndex : index,
+  };
+}

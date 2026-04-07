@@ -246,6 +246,10 @@
   --sidebar-ring: #c8a96a;
 
   --cpm-gold-dark: #a08040;
+  --cpm-shadow-sm: 0 2px 8px rgba(0,0,0,0.15);
+  --cpm-shadow-md: 0 4px 16px rgba(0,0,0,0.2);
+  --cpm-shadow-lg: 0 8px 30px rgba(0,0,0,0.3);
+  --cpm-shadow-glow: 0 0 30px rgba(200,169,106,0.15);
   --cpm-success: #10b981;
   --cpm-success-dim: rgba(16, 185, 129, 0.15);
   --cpm-error: #ef4444;
@@ -454,7 +458,7 @@
 
 /* ── Mobile Responsive Utilities ── */
 @utility safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* ── Scrollbar Styling (WebKit) ── */

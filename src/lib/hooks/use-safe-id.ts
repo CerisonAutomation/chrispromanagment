@@ -5,7 +5,7 @@
 // =============================================================================
 
 import React, {useState} from "react";
-import {generateId} from "../utils/generate-id";
+import {generateId} from "../generate-id";
 
 export const useSafeId = () => {
   if (typeof React.useId !== "undefined") {

@@ -82,3 +82,29 @@ export const ADMIN_AUTH = {
   sessionDurationMs: 24 * 60 * 60 * 1000, // 24 hours
   demoPassword: "cpm-admin-2024",
 } as const;
+
+// ─── Validation Constants ─────────────────────────────────────────────────
+export const VALIDATION = {
+  email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  slug: /^[a-z0-9-]+$/,
+  minPasswordLength: 8,
+  maxPasswordLength: 64,
+  maxSlugLength: 50,
+  minNameLength: 2,
+  maxNameLength: 50,
+  minDescriptionLength: 10,
+  maxDescriptionLength: 500,
+} as const;
+
+// ─── File Upload Constants ─────────────────────────────────────────────
+export const FILE_UPLOAD = {
+  maxSizeBytes: 5 * 1024 * 1024, // 5MB
+  maxSizeMB: 5,
+  allowedMimeTypes: [
+    'image/jpeg',
+    'image/png', 
+    'image/webp',
+    'application/pdf',
+  ] as const,
+  allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'] as const,
+} as const;

@@ -12,6 +12,8 @@ import {type ReactNode, Suspense} from "react";
 export interface StreamingFallbackProps {
   delay?: number;
   height?: string;
+  columns?: number;
+  count?: number;
 }
 
 /**
@@ -229,7 +231,7 @@ export function Deferred<T>(
 ) {
   return (
     <Suspense fallback={fallback || null}>
-      <DeferredContent children={children} dataPromise={dataPromise} />
+      <DeferredContent dataPromise={dataPromise}>{children}</DeferredContent>
     </Suspense>
   );
 }
@@ -241,5 +243,5 @@ function DeferredContent<T>({
 }: DeferredProps<T>) {
   // use() hook would be ideal here with React 19
   // For now, we wrap in Suspense and let it stream
-  return <>{children(useSyncExternalStore ? {} as T : undefined as T)}</>;
+  return <>{children(undefined as T)}</>;
 }

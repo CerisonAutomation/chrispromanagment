@@ -38,7 +38,7 @@ This document outlines comprehensive improvements made to the codebase to ensure
 ### Enhanced `tsconfig.json`
 ```json
 {
-  "target": "ES2020" (upgraded from ES2017),
+  "target": "ES2020",
   "strict": true,
   "noImplicitAny": true,
   "noUnusedLocals": false,

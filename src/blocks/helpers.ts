@@ -1,13 +1,27 @@
+// =============================================================================
+// CANONICAL PUCK BLOCK HELPERS
 // Shared helpers and constants used across blocks
+// =============================================================================
 
-import {GALLERY_IMAGES, PROP_IMAGES} from "@/lib/images";
+import { GALLERY_IMAGES, PROP_IMAGES } from "@/lib/images";
 
 // ============================================================
 // safeHref — Validates URLs to prevent XSS
 // ============================================================
-export function safeHref(url: string | undefined, fallback: string = "#"): string {
+export function safeHref(
+  url: string | undefined,
+  fallback: string = "#"
+): string {
   if (!url) return fallback;
-  if (url.startsWith("#") || url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:") || url.startsWith("tel:")) return url;
+  if (
+    url.startsWith("#") ||
+    url.startsWith("/") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("mailto:") ||
+    url.startsWith("tel:")
+  )
+    return url;
   return fallback;
 }
 

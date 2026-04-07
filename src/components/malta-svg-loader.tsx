@@ -154,30 +154,34 @@ export default function MaltaSVGLoader({
       const t = Math.min((now - drawStart) / drawDuration, 1);
       const e = easeOutCubic(t);
 
-      malta.style.strokeDashoffset = `${-L1 * (1 - e)}`;
-      gozo.style.strokeDashoffset = `${L2 * (1 - e)}`;
+      if (malta && gozo) {
+        malta.style.strokeDashoffset = `${-L1 * (1 - e)}`;
+        gozo.style.strokeDashoffset = `${L2 * (1 - e)}`;
 
-      // Subtle glow pulse during draw
-      const glowIntensity = Math.sin(t * Math.PI) * 0.3 + 0.7;
-      malta.style.strokeWidth = `${1.2 + glowIntensity * 0.8}`;
-      gozo.style.strokeWidth = `${1.2 + glowIntensity * 0.8}`;
+        // Subtle glow pulse during draw
+        const glowIntensity = Math.sin(t * Math.PI) * 0.3 + 0.7;
+        malta.style.strokeWidth = `${1.2 + glowIntensity * 0.8}`;
+        gozo.style.strokeWidth = `${1.2 + glowIntensity * 0.8}`;
 
-      if (t < 1) {
-        safeRAF(drawFrame);
-      } else {
-        // Reset stroke width
-        malta.style.strokeWidth = "1.5";
-        gozo.style.strokeWidth = "1.5";
-        safeTimeout(() => {
-          setPhase("filling");
-          fillPhase(malta, gozo, maltaFill, gozoFill);
-        }, fillDelay);
+        if (t < 1) {
+          safeRAF(drawFrame);
+        } else {
+          // Reset stroke width
+          malta.style.strokeWidth = "1.5";
+          gozo.style.strokeWidth = "1.5";
+          safeTimeout(() => {
+            setPhase("filling");
+            if (malta && gozo && maltaFill && gozoFill) {
+              fillPhase(malta, gozo, maltaFill, gozoFill);
+            }
+          }, fillDelay);
+        }
       }
+      safeRAF(drawFrame);
     }
+
     safeRAF(drawFrame);
   }
-
-  // ── Phase 2: Fill ──
   function fillPhase(
     malta: SVGPathElement,
     gozo: SVGPathElement,

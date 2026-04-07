@@ -46,7 +46,7 @@ export const useSensors = (
 ) => {
   const [sensors] = useState(() => [
     PointerSensor.configure({
-      activationConstraint(event, source) {
+      activationConstraints(event, source) {
         const { pointerType, target } = event;
 
         if (

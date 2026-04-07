@@ -33,11 +33,12 @@ const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"
 const fraunces = Fraunces({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-heading", display: "swap" });
 
 // Select the active font pair based on env variable
-const fontPairMap: Record<string, { body: ReturnType<typeof Outfit>; heading: ReturnType<typeof Outfit> }> = {
-  default: { body: outfit, heading: cormorantGaramond },
-  modern: { body: inter, heading: playfairDisplay },
-  elegant: { body: lato, heading: libreBaskerville },
-  bold: { body: dmSans, heading: fraunces },
+type FontWithVariable = { variable: string };
+const fontPairMap: Record<string, { body: FontWithVariable; heading: FontWithVariable }> = {
+  default: {body: outfit as unknown as FontWithVariable, heading: cormorantGaramond as unknown as FontWithVariable},
+  modern: {body: inter as unknown as FontWithVariable, heading: playfairDisplay as unknown as FontWithVariable},
+  elegant: {body: lato as unknown as FontWithVariable, heading: libreBaskerville as unknown as FontWithVariable},
+  bold: {body: dmSans as unknown as FontWithVariable, heading: fraunces as unknown as FontWithVariable},
 };
 
 const selectedPair = fontPairMap[fontPair] || fontPairMap.default;

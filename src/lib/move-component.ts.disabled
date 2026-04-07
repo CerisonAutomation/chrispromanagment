@@ -1,0 +1,8 @@
+// =============================================================================
+// MOVE COMPONENT UTILITY (DISABLED)
+// =============================================================================
+
+// @ts-nocheck - File disabled due to missing dependencies
+export const moveComponent = () => {
+    console.warn("moveComponent is disabled");
+};

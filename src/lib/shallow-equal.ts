@@ -1,5 +1,5 @@
 // =============================================================================
-// SHALLOW EQUAL UTILITY
+// CANONICAL PUCK SHALLOW EQUAL
 // Mirror of puck-main/packages/core/lib/shallow-equal.ts
 // =============================================================================
 
@@ -8,8 +8,8 @@
  * @returns true if the objects are shallowly equal (excluding ignored keys), false otherwise.
  */
 export function shallowEqual(
-  obj1: any,
-  obj2: any,
+  obj1: Record<string, unknown>,
+  obj2: Record<string, unknown>,
   keysToIgnore: readonly string[] = []
 ): boolean {
   // Quick reference/value check

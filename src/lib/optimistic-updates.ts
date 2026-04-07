@@ -236,6 +236,10 @@ export interface OfflineQueue<TVariables = unknown> {
   remove: (id: string) => void;
   /** Check if online */
   isOnline: () => boolean;
+  /** Persist queue to localStorage */
+  persist: () => void;
+  /** Hydrate queue from localStorage */
+  hydrate: () => void;
 }
 
 export function createOfflineQueue<TVariables = unknown>(
@@ -271,9 +275,6 @@ export function createOfflineQueue<TVariables = unknown>(
         createdAt: Date.now(),
       };
       items.set(id, offlineItem);
-
-      // Persist to localStorage
-      queue.persist();
     },
 
     async process() {
@@ -307,7 +308,7 @@ export function createOfflineQueue<TVariables = unknown>(
       toRemove.forEach(id => items.delete(id));
 
       // Persist remaining
-      queue.persist();
+      persistQueue();
 
       if (items.size === 0) {
         onQueueEmpty?.();
@@ -322,40 +323,46 @@ export function createOfflineQueue<TVariables = unknown>(
 
     clear() {
       items.clear();
-      queue.persist();
+      persistQueue();
     },
 
     remove(id) {
       items.delete(id);
-      queue.persist();
+      persistQueue();
     },
 
     isOnline: () => isOnline,
-  };
 
-  // Persistence helpers
-  queue.persist = () => {
-    try {
-      localStorage.setItem('offline-queue', JSON.stringify(Array.from(items.entries())));
-    } catch {
-      // Ignore storage errors
-    }
-  };
-
-  queue.hydrate = () => {
-    try {
-      const stored = localStorage.getItem('offline-queue');
-      if (stored) {
-        const parsed = JSON.parse(stored) as [string, OfflineItem<TVariables>][];
-        parsed.forEach(([id, item]) => {
-          // Reset retry count on hydrate
-          items.set(id, { ...item, retries: 0 });
-        });
+    persist() {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('offline-queue', JSON.stringify(Array.from(items.entries())));
+        }
+      } catch {
+        // Ignore storage errors
       }
-    } catch {
-      // Ignore
-    }
+    },
+
+    hydrate() {
+      try {
+        if (typeof localStorage === 'undefined') return;
+        const stored = localStorage.getItem('offline-queue');
+        if (stored) {
+          const parsed = JSON.parse(stored) as [string, OfflineItem<TVariables>][];
+          parsed.forEach(([id, item]) => {
+            items.set(id, { ...item, retries: 0 });
+          });
+        }
+      } catch {
+        // Ignore
+      }
+    },
   };
+
+  // Helper function to call persist (defined after the object)
+  function persistQueue(): void {
+    queue.persist();
+  }
 
   // Hydrate on init
   queue.hydrate();
