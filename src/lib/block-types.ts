@@ -1,53 +1,38 @@
-// =============================================================================
-// Block Type Definitions — Local replacement for @puckeditor/core Data type
-// Based on the same structure used by Puck's Data type
-// =============================================================================
+/**
+ * @fileoverview Block type shims — legacy compatibility layer.
+ *
+ * All types have been migrated to `src/types/puck.ts`.
+ * This file exists solely to prevent import breakage in files that
+ * still reference '@/lib/block-types'. Migrate callsites to '@/types'.
+ *
+ * @deprecated Import from '@/types' instead.
+ */
+
+export type {
+  PuckData as BlockData,
+  PuckData,
+  ComponentData as BlockItem,
+  PageListItem,
+} from '@/types';
+
+import type { PuckData } from '@/types';
 
 /**
- * Represents a single block instance in page content.
+ * Create an empty Puck data structure.
+ * @deprecated Use `{ content: [], root: { props: { title } } }` inline.
  */
-export interface BlockItem {
-  type: string;
-  props: Record<string, unknown>;
-}
-
-/**
- * Page data structure compatible with Puck's Data format.
- * This allows seamless migration if Puck is ever re-introduced.
- */
-export interface BlockData {
-  content: BlockItem[];
-  root: {
-    props: Record<string, unknown>;
-  };
-}
-
-/**
- * Page list item for admin dashboard.
- */
-export interface PageListItem {
-  id: string;
-  slug: string;
-  title: string;
-  status: string;
-  updatedAt: string;
-}
-
-/**
- * Create an empty block data structure.
- */
-export function createEmptyBlockData(title?: string): BlockData {
+export function createEmptyBlockData(title = 'Untitled'): PuckData {
   return {
     content: [],
-    root: { props: { title: title || "Untitled" } },
+    root: { props: { title } },
   };
 }
 
 /**
- * Validate if data has proper BlockData structure.
+ * Type-guard: returns true if `data` conforms to the PuckData shape.
  */
-export function isValidBlockData(data: unknown): data is BlockData {
-  if (!data || typeof data !== "object") return false;
+export function isValidBlockData(data: unknown): data is PuckData {
+  if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  return Array.isArray(d.content) && d.root !== null && typeof d.root === "object";
+  return Array.isArray(d.content) && d.root !== null && typeof d.root === 'object';
 }
