@@ -1,75 +1,90 @@
-'use client';
 /**
- * @fileoverview Admin login page — /admin/login
- * Simple cookie-based auth for the admin key.
+ * @fileoverview Admin login — Supabase Magic Link (OTP email) flow.
  */
-import { useCallback, useState } from 'react';
+'use client';
+import { useState } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
-
-function LoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get('from') ?? '/admin';
-
-  const [key, setKey] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const submit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true); setError('');
-    try {
-      const r = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key }),
-      });
-      if (r.ok) {
-        router.push(from);
-      } else {
-        setError('Invalid admin key. Try again.');
-      }
-    } catch {
-      setError('Network error.');
-    } finally {
-      setLoading(false);
-    }
-  }, [key, from, router]);
-
-  return (
-    <form onSubmit={submit} className="w-full max-w-sm">
-      <div className="text-center mb-8">
-        <div className="text-4xl mb-3">✦</div>
-        <h1 className="text-xl font-bold text-gold">Admin Access</h1>
-        <p className="text-foreground/40 text-sm mt-1">Christo Property Management</p>
-      </div>
-      <div className="mb-4">
-        <label htmlFor="key" className="block text-xs text-foreground/50 mb-2 uppercase tracking-wide">Admin Key</label>
-        <input
-          id="key" type="password" value={key} onChange={e => setKey(e.target.value)}
-          autoFocus autoComplete="current-password" required
-          className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold/50"
-          placeholder="Enter admin key"
-        />
-      </div>
-      {error && <p className="text-red-400 text-xs mb-4 text-center">{error}</p>}
-      <button
-        type="submit" disabled={loading || !key.trim()}
-        className="w-full py-3 bg-gold text-[#0e0f11] font-bold rounded-xl text-sm hover:bg-gold-light transition-colors disabled:opacity-50"
-      >
-        {loading ? 'Signing in…' : 'Sign In'}
-      </button>
-    </form>
-  );
-}
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') ?? '/admin';
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}${redirectTo}`,
+      },
+    });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+    } else {
+      setSent(true);
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-3 max-w-sm p-8">
+          <div className="text-5xl">📬</div>
+          <h1 className="text-xl font-bold">Check your email</h1>
+          <p className="text-muted-foreground text-sm">
+            We sent a magic link to <strong>{email}</strong>. Click the link to sign in.
+          </p>
+          <Button variant="ghost" onClick={() => setSent(false)}>Use different email</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0e0f11] flex items-center justify-center px-6">
-      <Suspense fallback={<div className="text-gold">Loading…</div>}>
-        <LoginForm />
-      </Suspense>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm space-y-5 p-8 rounded-2xl border border-border shadow-lg bg-card"
+      >
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold">Admin Sign In</h1>
+          <p className="text-sm text-muted-foreground">Enter your email to receive a magic link.</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </div>
+        {error && (
+          <p className="text-sm text-destructive" role="alert">{error}</p>
+        )}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Sending…' : 'Send magic link'}
+        </Button>
+      </form>
     </div>
   );
 }

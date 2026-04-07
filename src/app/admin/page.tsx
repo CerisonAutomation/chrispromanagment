@@ -1,42 +1,76 @@
 /**
- * @fileoverview Admin dashboard — /admin
+ * @fileoverview Admin dashboard — shows CMS page stats + quick actions.
  */
+import Link from 'next/link';
 import { getAllPages } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { formatDateRange } from '@/lib/utils';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Dashboard' };
+export const revalidate = 0;
 
 export default async function AdminDashboard() {
   const pages = await getAllPages();
-  const published = pages.filter(p => p.published).length;
-  const drafts = pages.length - published;
-
-  const s = { gold: '#c8a96a', text: '#e8e4dc', dim: '#e8e4dc50', surface: '#1a1b1f', border: '1px solid #2a2b30' };
+  const published = pages.filter((p) => p.published);
+  const drafts = pages.filter((p) => !p.published);
+  const recentPages = [...pages].sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+  ).slice(0, 5);
 
   return (
-    <div style={{ padding: 32 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: s.gold, marginBottom: 4 }}>Dashboard</h1>
-      <p style={{ color: s.dim, fontSize: 13, marginBottom: 32 }}>Christo Property Management</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
-        {([
-          { label: 'Total Pages', value: pages.length, icon: '📄' },
-          { label: 'Published', value: published, icon: '✅' },
-          { label: 'Drafts', value: drafts, icon: '📝' },
-        ]).map(card => (
-          <div key={card.label} style={{ background: s.surface, border: s.border, borderRadius: 10, padding: 20 }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>{card.icon}</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: s.gold }}>{card.value}</div>
-            <div style={{ fontSize: 13, color: s.dim, marginTop: 4 }}>{card.label}</div>
+    <div className="p-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Button asChild>
+          <Link href="/admin/pages/new">+ New Page</Link>
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Pages', value: pages.length },
+          { label: 'Published', value: published.length },
+          { label: 'Drafts', value: drafts.length },
+          { label: 'Properties', value: '—' },
+        ].map(({ label, value }) => (
+          <div key={label} className="rounded-xl border border-border bg-card p-5 space-y-1">
+            <p className="text-sm text-muted-foreground">{label}</p>
+            <p className="text-3xl font-bold">{value}</p>
           </div>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <a href="/admin/pages" style={{ display: 'block', padding: 16, background: s.surface, border: s.border, borderRadius: 10, color: s.text, textDecoration: 'none' }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>📄 Manage Pages</div>
-          <div style={{ fontSize: 13, color: s.dim }}>Create and edit CMS pages</div>
-        </a>
-        <a href="/puck/home" style={{ display: 'block', padding: 16, background: s.surface, border: s.border, borderRadius: 10, color: s.text, textDecoration: 'none' }}>
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>✦ Edit Homepage</div>
-          <div style={{ fontSize: 13, color: s.dim }}>Open Puck visual editor</div>
-        </a>
-      </div>
+
+      {/* Recent pages */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Recent Pages</h2>
+        <div className="divide-y divide-border rounded-xl border border-border overflow-hidden">
+          {recentPages.length === 0 && (
+            <p className="p-5 text-sm text-muted-foreground">No pages yet.</p>
+          )}
+          {recentPages.map((page) => (
+            <div key={page.slug} className="flex items-center justify-between p-4 bg-card hover:bg-muted/50 transition-colors">
+              <div className="space-y-0.5">
+                <p className="font-medium text-sm">{page.title}</p>
+                <p className="text-xs text-muted-foreground">/{page.slug}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  page.published
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                }`}>
+                  {page.published ? 'Published' : 'Draft'}
+                </span>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={`/admin/pages/${page.slug}`}>Edit</Link>
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

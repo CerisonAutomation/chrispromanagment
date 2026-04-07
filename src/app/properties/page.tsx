@@ -1,37 +1,43 @@
 /**
- * @fileoverview Properties listing page — /properties
- * Server shell with client PropertyGrid for data fetching.
+ * @fileoverview Properties listing page — RSC, fetches Guesty listings server-side.
  */
-import type { Metadata } from 'next';
-import { SiteNav } from '@/components/nav/SiteNav';
-import { SiteFooter } from '@/components/nav/SiteFooter';
+import { Suspense } from 'react';
+import { getListings } from '@/lib/guesty-api';
 import { PropertyGrid } from '@/components/properties/PropertyGrid';
+import { PropertyCardSkeleton } from '@/components/suspense/PropertyCardSkeleton';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Properties',
-  description: 'Browse our collection of luxury holiday rentals and managed properties in Malta.',
+  description: 'Browse our curated selection of luxury properties in Malta.',
 };
+export const revalidate = 300;
 
-export default function PropertiesPage() {
+export default async function PropertiesPage() {
+  const { results } = await getListings({ limit: 20 });
+
   return (
-    <>
-      <SiteNav />
-      <main className="pt-24 pb-20">
-        <div className="max-w-6xl mx-auto px-6">
-          {/* Header */}
-          <div className="mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-              <span className="text-gold">✦</span> Our Properties
-            </h1>
-            <p className="text-foreground/50 text-base max-w-xl">
-              Discover our curated selection of luxury rentals across Malta&apos;s finest locations.
-            </p>
-          </div>
-          {/* Grid */}
-          <PropertyGrid limit={24} />
+    <main className="min-h-screen bg-background">
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold font-playfair mb-3">
+            Our Properties
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {results.length} handpicked {results.length === 1 ? 'property' : 'properties'} in Malta
+          </p>
         </div>
-      </main>
-      <SiteFooter />
-    </>
+
+        <Suspense
+          fallback={
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)}
+            </div>
+          }
+        >
+          <PropertyGrid properties={results} />
+        </Suspense>
+      </section>
+    </main>
   );
 }

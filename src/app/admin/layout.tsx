@@ -1,36 +1,73 @@
 /**
- * @fileoverview Admin shell layout — nav sidebar + content area.
+ * @fileoverview Admin layout — sidebar navigation + auth session check.
  */
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { Button } from '@/components/ui/button';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Admin — Christo PM' };
+export const metadata: Metadata = { title: { template: '%s | Admin', default: 'Admin' } };
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+async function getUser() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cs) { cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); },
+      },
+    }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+const NAV_ITEMS = [
+  { href: '/admin', label: '🏠 Dashboard' },
+  { href: '/admin/pages', label: '📄 Pages' },
+  { href: '/properties', label: '🏘 Properties', external: true },
+];
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getUser();
+  if (!user) redirect('/admin/login');
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0e0f11', color: '#e8e4dc', fontFamily: 'inherit' }}>
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <nav style={{ width: 220, background: '#0a0b0d', borderRight: '1px solid #1e2025', display: 'flex', flexDirection: 'column', padding: '24px 0', flexShrink: 0 }}>
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #1e2025', marginBottom: 16 }}>
-          <span style={{ color: '#c8a96a', fontWeight: 700, fontSize: 15, letterSpacing: '0.04em' }}>✦ Admin</span>
+      <aside className="w-60 shrink-0 border-r border-border bg-card flex flex-col">
+        <div className="p-5 border-b border-border">
+          <p className="font-bold text-sm">Christiano CMS</p>
+          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
-        {([
-          { href: '/admin', label: '⌂ Dashboard' },
-          { href: '/admin/pages', label: '📄 Pages' },
-          { href: '/admin/properties', label: '🏠 Properties' },
-          { href: '/admin/bookings', label: '📅 Bookings' },
-        ] as const).map(link => (
-          <a key={link.href} href={link.href}
-            style={{ padding: '10px 20px', fontSize: 13, color: '#e8e4dc90', textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#c8a96a')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#e8e4dc90')}>
-            {link.label}
-          </a>
-        ))}
-        <div style={{ flex: 1 }} />
-        <a href="/" style={{ padding: '10px 20px', fontSize: 12, color: '#e8e4dc30' }}>← View Site</a>
-      </nav>
-      {/* Content */}
-      <main style={{ flex: 1, overflow: 'auto' }}>{children}</main>
+        <nav className="flex-1 p-3 space-y-1">
+          {NAV_ITEMS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <div className="p-3 border-t border-border">
+          <form action="/api/auth/signout" method="POST">
+            <Button variant="ghost" size="sm" type="submit" className="w-full justify-start text-muted-foreground">
+              Sign out
+            </Button>
+          </form>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 min-w-0 overflow-auto">
+        {children}
+      </main>
     </div>
   );
 }

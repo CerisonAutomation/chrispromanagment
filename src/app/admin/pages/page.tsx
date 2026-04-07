@@ -1,100 +1,72 @@
-'use client';
 /**
- * @fileoverview Admin — Pages Manager. /admin/pages
- * Lists all CMS pages. Create, edit, publish/unpublish, delete.
+ * @fileoverview Admin pages list — CMS pages table with publish/unpublish actions.
  */
-import { useCallback, useEffect, useState } from 'react';
-import type { CmsPage } from '@/types';
+import Link from 'next/link';
+import { getAllPages } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import type { Metadata } from 'next';
 
-export default function AdminPagesManager() {
-  const [pages, setPages] = useState<CmsPage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [newSlug, setNewSlug] = useState('');
-  const [creating, setCreating] = useState(false);
+export const metadata: Metadata = { title: 'Pages' };
+export const revalidate = 0;
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await fetch('/api/pages', { cache: 'no-store' });
-      const j = await r.json() as { pages?: CmsPage[] };
-      setPages(Array.isArray(j?.pages) ? j.pages : []);
-    } catch { setPages([]); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { void refresh(); }, [refresh]);
-
-  const create = async () => {
-    const s = newSlug.trim().toLowerCase().replace(/[^a-z0-9\-/]/g, '-');
-    if (!s) return;
-    setCreating(true);
-    await fetch(`/api/puck/${s}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: [], root: { props: { title: s, theme: 'malta-gold' } } }),
-    });
-    setNewSlug(''); setCreating(false); void refresh();
-  };
-
-  const toggle = async (p: CmsPage) => {
-    await fetch(`/api/puck/${p.slug}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ published: !p.published }),
-    });
-    void refresh();
-  };
-
-  const remove = async (p: CmsPage) => {
-    if (!confirm(`Delete "${p.title}"?`)) return;
-    await fetch(`/api/puck/${p.slug}`, { method: 'DELETE' });
-    void refresh();
-  };
-
-  const s = { bg: '#0e0f11', surface: '#1a1b1f', border: '1px solid #2a2b30', gold: '#c8a96a', text: '#e8e4dc' };
+export default async function AdminPagesListPage() {
+  const pages = await getAllPages();
 
   return (
-    <div style={{ minHeight: '100vh', background: s.bg, color: s.text, padding: 32, fontFamily: 'inherit' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: s.gold, marginBottom: 8 }}>✦ Pages</h1>
-        <p style={{ color: '#e8e4dc50', fontSize: 13, marginBottom: 28 }}>
-          {pages.length} page{pages.length !== 1 ? 's' : ''}
-        </p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
-          <input value={newSlug} onChange={e => setNewSlug(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && create()}
-            placeholder="new-page-slug"
-            style={{ flex: 1, padding: '9px 14px', borderRadius: 6, background: s.surface, border: s.border, color: s.text, fontSize: 13, outline: 'none' }} />
-          <button onClick={create} disabled={creating || !newSlug.trim()}
-            style={{ padding: '9px 20px', borderRadius: 6, background: s.gold, color: '#0e0f11', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 13, opacity: creating ? 0.6 : 1 }}>
-            {creating ? 'Creating…' : '+ New Page'}
-          </button>
-        </div>
-        {loading ? (
-          <p style={{ color: '#e8e4dc30', fontSize: 13 }}>Loading…</p>
-        ) : pages.length === 0 ? (
-          <p style={{ color: '#e8e4dc30', fontSize: 13 }}>No pages yet. Create one above.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {pages.map(p => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 8, background: s.surface, border: s.border }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{p.title}</span>
-                  <code style={{ fontSize: 12, color: '#e8e4dc40' }}>/{p.slug}</code>
-                  <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 99, background: p.published ? '#16a34a20' : '#71717a20', color: p.published ? '#4ade80' : '#71717a' }}>
-                    {p.published ? 'Published' : 'Draft'}
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Pages</h1>
+        <Button asChild>
+          <Link href="/puck/new">+ New Page</Link>
+        </Button>
+      </div>
+
+      <div className="rounded-xl border border-border overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="text-left p-4 font-medium">Title</th>
+              <th className="text-left p-4 font-medium">Slug</th>
+              <th className="text-left p-4 font-medium">Status</th>
+              <th className="text-left p-4 font-medium">Updated</th>
+              <th className="p-4" />
+            </tr>
+          </thead>
+          <tbody>
+            {pages.length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                  No pages yet. Create your first page.
+                </td>
+              </tr>
+            )}
+            {pages.map((page) => (
+              <tr key={page.slug} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                <td className="p-4 font-medium">{page.title}</td>
+                <td className="p-4 text-muted-foreground">/{page.slug}</td>
+                <td className="p-4">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    page.published
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {page.published ? 'Published' : 'Draft'}
                   </span>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <a href={`/puck/${p.slug}`} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 5, border: `1px solid ${s.gold}40`, color: s.gold }}>Edit</a>
-                  <button onClick={() => toggle(p)} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 5, border: s.border, background: 'transparent', color: s.text, cursor: 'pointer' }}>
-                    {p.published ? 'Unpublish' : 'Publish'}
-                  </button>
-                  <a href={`/${p.slug === 'home' ? '' : p.slug}`} target="_blank" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 5, border: s.border, color: '#e8e4dc80' }}>View ↗</a>
-                  <button onClick={() => remove(p)} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 5, border: '1px solid #ef444430', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}>Delete</button>
-                </div>
-              </div>
+                </td>
+                <td className="p-4 text-muted-foreground">
+                  {new Date(page.updated_at).toLocaleDateString('en-MT', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                  })}
+                </td>
+                <td className="p-4 text-right">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/puck/${page.slug}`}>Edit</Link>
+                  </Button>
+                </td>
+              </tr>
             ))}
-          </div>
-        )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
