@@ -3,20 +3,19 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)puck-builder-mcp' ':(exclude)skills' ':(exclude)docs' ':(exclude)*.md'",
-  "regions": ["fra1"],
+  "regions": ["iad1"],
   "functions": {
-    "src/app/api/qstash/worker/route.ts": { "maxDuration": 60 },
-    "src/app/api/guesty/sync/route.ts": { "maxDuration": 60 },
-    "src/app/api/guesty/webhook/route.ts": { "maxDuration": 30 },
-    "src/app/api/guesty/listings/route.ts": { "maxDuration": 60 },
-    "src/app/api/guesty/reservations/route.ts": { "maxDuration": 60 },
-    "src/app/api/guesty/guests/route.ts": { "maxDuration": 30 },
-    "src/app/api/guesty/calendar/route.ts": { "maxDuration": 30 },
-    "src/app/api/guesty/quote/route.ts": { "maxDuration": 30 },
-    "src/app/api/ai/route.ts": { "maxDuration": 60 },
-    "src/app/api/cron/sync-listings/route.ts": { "maxDuration": 60 },
-    "src/app/api/cron/sync-reservations/route.ts": { "maxDuration": 60 }
+    "app/api/qstash/worker/route.ts": { "maxDuration": 60 },
+    "app/api/guesty/sync/route.ts": { "maxDuration": 60 },
+    "app/api/guesty/webhook/route.ts": { "maxDuration": 30 },
+    "app/api/guesty/listings/route.ts": { "maxDuration": 60 },
+    "app/api/guesty/reservations/route.ts": { "maxDuration": 60 },
+    "app/api/guesty/guests/route.ts": { "maxDuration": 30 },
+    "app/api/guesty/calendar/route.ts": { "maxDuration": 30 },
+    "app/api/guesty/quote/route.ts": { "maxDuration": 30 },
+    "app/api/ai/route.ts": { "maxDuration": 60 },
+    "app/api/cron/sync-listings/route.ts": { "maxDuration": 60 },
+    "app/api/cron/sync-reservations/route.ts": { "maxDuration": 60 }
   },
   "headers": [
     {
