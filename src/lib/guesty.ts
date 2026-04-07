@@ -17,22 +17,7 @@
  * @deprecated Import from '@/lib/guesty' instead.
  */
 
-// Re-export Open API types for any legacy consumers
-export type {
-  GuestyListingsResponse,
-  GuestyListing,
-  GuestyReservation,
-  GuestyReservationsResponse,
-  GuestyCalendarDay,
-  GuestyGuest,
-  GuestyGuestsResponse,
-  GuestyTask,
-  GuestyTasksResponse,
-  GuestyConversation,
-  GuestyConversationsResponse,
-} from './guesty/types';
-
-// Re-export canonical Open API client functions
+// Re-export Open API client functions
 export {
   guestyFetch,
   getAccessToken,

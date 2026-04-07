@@ -1,108 +1,56 @@
 // =============================================================================
-// GUESTY DOMAIN TYPES
-// Authoritative. Replaces: src/lib/guesty-types.ts
+// GUESTY DOMAIN TYPES — src/types/guesty.ts
+// Thin re-export shim. Canonical definitions live in src/lib/guesty/types.ts.
+// This file exists only so src/types/consolidated.ts can barrel-export them.
+// DO NOT add new types here — add to src/lib/guesty/types.ts instead.
 // =============================================================================
 
-export interface GuestyAddress {
-  full?: string;
-  street?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  zipcode?: string;
-  lat?: number;
-  lng?: number;
-}
+export type {
+  GuestyAuthToken,
+  GuestyPaginatedResponse,
+  GuestyListingStatus,
+  GuestyReservationStatus,
+  GuestyPropertyType,
+  GuestyListingAddress,
+  GuestyListingPrices,
+  GuestyListing,
+  GuestyListingRaw,
+  GuestyListingsResponse,
+  GuestyReservationMoney,
+  GuestyReservationGuest,
+  GuestyReservation,
+  GuestyReservationRaw,
+  GuestyReservationsResponse,
+  GuestyCalendarDay,
+  GuestyCalendar,
+  GuestyCalendarResponse,
+  GuestyQuoteRequest,
+  GuestyQuoteBreakdown,
+  GuestyQuoteRaw,
+  GuestyQuote,
+  GuestyGuestProfile,
+  GuestyGuestsResponse,
+  GuestyTask,
+  GuestyTasksResponse,
+  GuestyConversation,
+  GuestyConversationsResponse,
+  GuestyOwner,
+  GuestyOwnersResponse,
+  GuestyInvoice,
+  GuestyInvoicesResponse,
+  GuestyWebhookEvent,
+  GuestyWebhookPayload,
+  MappedListing,
+  MappedReservation,
+} from '../lib/guesty/types';
 
-export interface GuestyPicture {
-  thumbnail?: string;
-  regular?: string;
-  large?: string;
-  original?: string;
-  caption?: string;
-}
-
-export interface GuestyPrices {
-  basePrice?: number;
-  weeklyPriceFactor?: number;
-  monthlyPriceFactor?: number;
-  currency?: string;
-  cleaningFee?: number;
-  extraPersonFee?: number;
-  securityDepositFee?: number;
-}
-
-export interface GuestyPublicDescription {
-  summary?: string;
-  space?: string;
-  access?: string;
-  interaction?: string;
-  neighborhood?: string;
-  transit?: string;
-  houseRules?: string;
-}
-
-export interface GuestyListing {
-  _id: string;
-  title: string;
-  nickname?: string;
-  internalName?: string;
-  picture?: GuestyPicture;
-  pictures?: GuestyPicture[];
-  address?: GuestyAddress;
-  bedrooms?: number;
-  bathrooms?: number;
-  beds?: number;
-  accommodates?: number;
-  propertyType?: string;
-  roomType?: string;
-  prices?: GuestyPrices;
-  publicDescription?: GuestyPublicDescription;
-  amenities?: string[];
-  tags?: string[];
-  active?: boolean;
-  listed?: boolean;
-  importedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface GuestyListingsResult {
-  results: GuestyListing[];
-  count: number;
-  limit: number;
-  skip: number;
-}
-
+// Legacy aliases kept for backward compat with any remaining @/types/guesty imports
+export type GuestyAddress = import('../lib/guesty/types').GuestyListingAddress;
+export type GuestyPicture = { thumbnail?: string; regular?: string; large?: string; original?: string; caption?: string };
+export type GuestyPrices = import('../lib/guesty/types').GuestyListingPrices;
+export type GuestyListingsResult = import('../lib/guesty/types').GuestyListingsResponse;
 export type GuestyCalendarStatus = 'available' | 'unavailable' | 'booked' | 'blocked';
-
-export interface GuestyCalendarDay {
-  date: string;
-  status: GuestyCalendarStatus;
-  price?: number;
-  minNights?: number;
-  note?: string;
-}
-
-export interface GuestyBookingQuoteParams {
-  listingId: string;
-  checkIn: string;
-  checkOut: string;
-  guestsCount: number;
-  source?: string;
-}
-
-export interface GuestyQuoteResult {
-  quoteId?: string;
-  totalPrice?: number;
-  currency?: string;
-  breakdown?: Record<string, unknown>;
-  checkIn: string;
-  checkOut: string;
-  nights?: number;
-}
-
-export interface GuestyTokenCache {
-  access_token: string;
-  expires_at: number;
-}
+export type GuestyPublicDescription = { summary?: string; space?: string; access?: string; interaction?: string; neighborhood?: string; transit?: string; houseRules?: string };
+export type GuestyBookingQuoteParams = { listingId: string; checkIn: string; checkOut: string; guestsCount: number; source?: string };
+export type GuestyQuoteResult = { quoteId?: string; totalPrice?: number; currency?: string; breakdown?: Record<string, unknown>; checkIn: string; checkOut: string; nights?: number };
+export type GuestyTokenCache = { access_token: string; expires_at: number };
