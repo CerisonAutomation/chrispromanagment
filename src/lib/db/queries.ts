@@ -26,13 +26,14 @@ export async function getPageBySlug(slug: string) {
 }
 
 export async function createPage(data: Record<string, unknown>) {
-  const { data: result, error } = await supabase.from('cms_pages').insert(data).select();
+  const { data: result, error } = await supabase.from('cms_pages').insert(data as any).select();
   if (error) throw error;
   return result || [];
 }
 
 export async function updatePage(id: string, data: Record<string, unknown>) {
-  const { data: result, error } = await supabase.from('cms_pages').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id).select();
+  const updateData = { ...data, updated_at: new Date().toISOString() };
+  const { data: result, error } = await (supabase.from('cms_pages') as any).update(updateData).eq('id', id).select();
   if (error) throw error;
   return result || [];
 }
@@ -63,14 +64,15 @@ export async function getPropertyByGuestyId(guestyId: string) {
   return data || null;
 }
 
-export async function createProperty(data: any) {
-  const { data: result, error } = await supabase.from('properties').insert(data).select();
+export async function createProperty(data: Record<string, unknown>) {
+  const { data: result, error } = await supabase.from('properties').insert(data as any).select();
   if (error) throw error;
   return result || [];
 }
 
-export async function updateProperty(id: string, data: any) {
-  const { data: result, error } = await supabase.from('properties').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id).select();
+export async function updateProperty(id: string, data: Record<string, unknown>) {
+  const updateData = { ...data, updated_at: new Date().toISOString() };
+  const { data: result, error } = await (supabase.from('properties') as any).update(updateData).eq('id', id).select();
   if (error) throw error;
   return result || [];
 }
@@ -87,8 +89,8 @@ export async function getAllMedia(folder?: string) {
   return data || [];
 }
 
-export async function createMedia(data: any) {
-  const { data: result, error } = await supabase.from('media').insert(data).select();
+export async function createMedia(data: Record<string, unknown>) {
+  const { data: result, error } = await supabase.from('media').insert(data as any).select();
   if (error) throw error;
   return result || [];
 }

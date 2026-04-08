@@ -52,21 +52,28 @@ export async function middleware(request: NextRequest) {
     user = null;
   }
 
+  // Redirect /admin/login to /login to avoid admin layout redirect loop
+  if (pathname === '/admin/login' || pathname.startsWith('/admin/login/')) {
+    // If already logged in, redirect to admin dashboard
+    if (user) {
+      const dashboardUrl = request.nextUrl.clone();
+      dashboardUrl.pathname = '/admin';
+      return NextResponse.redirect(dashboardUrl);
+    }
+    // Not logged in - redirect to /login (outside admin layout)
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    return NextResponse.redirect(loginUrl);
+  }
+
   // Guard /admin routes — redirect to /admin/login if unauthenticated
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+  if (pathname.startsWith('/admin')) {
     if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/admin/login';
       loginUrl.searchParams.set('redirectTo', pathname);
       return NextResponse.redirect(loginUrl);
     }
-  }
-
-  // Redirect authenticated users away from login page
-  if (pathname === '/admin/login' && user) {
-    const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = '/admin';
-    return NextResponse.redirect(dashboardUrl);
   }
 
   return response;

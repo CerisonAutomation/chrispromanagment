@@ -4,7 +4,7 @@
 // =============================================================================
 
 import React from "react";
-import type { ComponentConfig } from "@/lib/canonical-puck-types";
+import type { ComponentConfig } from "@/types/puck";
 import { select, number } from "@/blocks/helpers";
 import { DropZone } from '@measured/puck';
 

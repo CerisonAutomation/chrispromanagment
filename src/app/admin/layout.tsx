@@ -6,6 +6,7 @@
  * https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import { getUser } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
@@ -23,6 +24,13 @@ const NAV_ITEMS = [
 ];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // Skip auth check for login page to prevent redirect loop
+  const headersList = await headers();
+  const pathname = headersList.get('x-invoke-path') || headersList.get('x-matched-path') || '';
+  if (pathname.includes('/admin/login')) {
+    return <>{children}</>;
+  }
+
   const user = await getUser();
   if (!user) redirect('/admin/login');
 

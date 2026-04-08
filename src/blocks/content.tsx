@@ -4,7 +4,7 @@
 // =============================================================================
 
 import React from "react";
-import type { ComponentConfig } from "@/lib/canonical-puck-types";
+import type { ComponentConfig } from "@/types/puck";
 import { text, textarea, select } from "@/blocks/helpers";
 import { Check, Clock, Shield, Sparkles, Star, Users, Zap } from 'lucide-react';
 
