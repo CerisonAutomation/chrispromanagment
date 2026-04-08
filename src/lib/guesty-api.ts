@@ -158,6 +158,23 @@ export async function getListingCalendar(
   return ok((data as { days?: GuestyCalendarDay[] }).days ?? []);
 }
 
+/** Get booking quote for a listing */
+export async function getBookingQuote(params: {
+  listingId: string;
+  checkIn: string;
+  checkOut: string;
+  guestsCount?: number;
+}): Promise<Result<Record<string, unknown>, Error>> {
+  const { listingId, checkIn, checkOut, guestsCount = 1 } = params;
+  if (!listingId) return err(new Error('[Guesty] getBookingQuote: listingId is required'));
+  const qs = new URLSearchParams({
+    checkInDate: checkIn,
+    checkOutDate: checkOut,
+    guests: String(guestsCount),
+  });
+  return guestyFetch<Record<string, unknown>>(`/listings/${encodeURIComponent(listingId)}/price-quote?${qs}`);
+}
+
 /** @internal — for unit-testing token cache invalidation only */
 export function _clearTokenCache(): void {
   _tokenCache = null;

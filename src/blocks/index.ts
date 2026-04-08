@@ -6,12 +6,9 @@
 
 // ─── Layout & Structure ───────────────────────────────────────────────────────────────────
 export * from './layout';
-export * from './divider';
-export * from './spacer';
 
 // ─── Content Blocks ────────────────────────────────────────────────────────────────────
 export * from './hero';
-export * from './hero-section';
 export * from './text-block';
 export * from './content';
 export * from './elements';

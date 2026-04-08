@@ -33,7 +33,7 @@ const TOOL_SCHEMAS = {
   }),
   generate_block: z.object({
     type: z.string(),
-    props: z.record(z.unknown()).optional().default({}),
+    props: z.record(z.string(), z.unknown()).optional().default({}),
   }),
   generate_page: z.object({
     slug: z.string().startsWith('/'),
@@ -41,17 +41,17 @@ const TOOL_SCHEMAS = {
     title: z.string().optional().default('New Page'),
     overrides: z.array(z.object({
       index: z.number().int().min(0),
-      props: z.record(z.unknown()),
+      props: z.record(z.string(), z.unknown()),
     })).optional().default([]),
   }),
   add_block_to_page: z.object({
     slug: z.string().startsWith('/'),
     type: z.string(),
-    props: z.record(z.unknown()).optional().default({}),
+    props: z.record(z.string(), z.unknown()).optional().default({}),
     index: z.number().int().min(0).optional(),
   }),
   validate_page_data: z.object({
-    data: z.record(z.unknown()),
+    data: z.record(z.string(), z.unknown()),
   }),
   get_page: z.object({
     slug: z.string().startsWith('/'),
@@ -70,7 +70,7 @@ const TOOL_SCHEMAS = {
     slug: z.string().startsWith('/'),
     blockId: z.string().optional(),
     index: z.number().int().min(0).optional(),
-    props: z.record(z.unknown()),
+    props: z.record(z.string(), z.unknown()),
   }),
   reorder_blocks: z.object({
     slug: z.string().startsWith('/'),
@@ -415,16 +415,16 @@ export async function POST(
 
   switch (tool as ToolName) {
     case 'audit_page':
-      result = await executeAuditPage(parseResult.data);
+      result = await executeAuditPage(parseResult.data as { slug: string; focus?: string[]; strictness?: 'strict' | 'normal' | 'lenient' });
       break;
     case 'critique_block':
-      result = await executeCritiqueBlock(parseResult.data);
+      result = await executeCritiqueBlock(parseResult.data as { pageSlug: string; blockId: string; focus?: string[] });
       break;
     case 'optimize_page':
-      result = await executeOptimizePage(parseResult.data);
+      result = await executeOptimizePage(parseResult.data as { slug: string; focus?: string[]; autoApply?: boolean });
       break;
     case 'generate_custom_block':
-      result = await executeGenerateCustomBlock(parseResult.data);
+      result = await executeGenerateCustomBlock(parseResult.data as { name: string; description: string; fields: Array<{ name: string; type: string; label?: string; required?: boolean }>; renderHint?: string });
       break;
     default:
       // Standard MCP tools - proxy to MCP server

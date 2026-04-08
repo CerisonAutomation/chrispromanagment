@@ -1,11 +1,13 @@
 /**
  * @fileoverview Puck editor route — /puck/* paths.
- * Server component shell: auth-gates, loads data, mounts PuckEditorPage.
+ * Server component shell: Supabase auth gate, loads page data, mounts PuckEditorPage.
+ * Auth unified to Supabase SSR (same as admin layout — no next-auth split).
  */
 import { notFound, redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 import { PuckEditorPage } from '@/components/puck';
+import { updatePageData } from '@/lib/actions/pages';
 import type { Data } from '@measured/puck';
 import type { Metadata } from 'next';
 
@@ -16,14 +18,34 @@ export const metadata: Metadata = {
 
 const EMPTY_PAGE: Data = {
   content: [],
-  root: { props: { title: 'New Page', description: '', theme: 'malta-gold' } },
+  root: { props: { title: 'New Page' } as Record<string, unknown> },
 };
+
+async function getSupabaseUser() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(cs) {
+          cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        },
+      },
+    }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
 
 async function getPageData(slug: string): Promise<Data> {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+      ?? process.env.NEXTAUTH_URL
+      ?? 'http://localhost:3000';
     const res = await fetch(`${baseUrl}/api/pages?slug=${encodeURIComponent(slug)}`, {
-      next: { revalidate: 0 },
+      cache: 'no-store',
     });
     if (!res.ok) return EMPTY_PAGE;
     const json = await res.json() as { data?: Data };
@@ -33,24 +55,13 @@ async function getPageData(slug: string): Promise<Data> {
   }
 }
 
-async function savePageData(slug: string, data: Data): Promise<void> {
-  'use server';
-  const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/pages`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ slug, data }),
-  });
-  if (!res.ok) throw new Error('Failed to save page');
-}
-
 interface PageProps {
   params: Promise<{ puckPath: string[] }>;
 }
 
 export default async function PuckEditorRoute({ params }: PageProps) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect('/api/auth/signin');
+  const user = await getSupabaseUser();
+  if (!user) redirect('/admin/login');
 
   const { puckPath } = await params;
   const slug = puckPath.join('/');
@@ -58,11 +69,17 @@ export default async function PuckEditorRoute({ params }: PageProps) {
 
   const initialData = await getPageData(slug);
 
+  // Server action bound to this slug
+  async function handleSave(data: Data): Promise<void> {
+    'use server';
+    await updatePageData(slug, data);
+  }
+
   return (
     <PuckEditorPage
       initialData={initialData}
       slug={slug}
-      onSave={savePageData.bind(null, slug)}
+      onSave={handleSave}
     />
   );
 }

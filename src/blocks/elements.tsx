@@ -74,58 +74,6 @@ export const HeadingBlock = {
   },
 };
 
-export const TextBlock = {
-  label: "Text Block",
-  fields: {
-    text: {
-      type: 'textarea',
-      label: 'Text Content',
-    },
-    align: {
-      type: 'select',
-      label: 'Alignment',
-      options: [
-        { label: 'Left', value: 'text-left' },
-        { label: 'Center', value: 'text-center' },
-        { label: 'Right', value: 'text-right' },
-      ],
-    },
-    size: {
-      type: 'select',
-      label: 'Text Size',
-      options: [
-        { label: 'Small', value: 'text-sm' },
-        { label: 'Base', value: 'text-base' },
-        { label: 'Large', value: 'text-lg' },
-        { label: 'Extra Large', value: 'text-xl' },
-      ],
-    },
-    color: {
-      type: 'select',
-      label: 'Color',
-      options: [
-        { label: 'Default', value: 'text-neutral-900' },
-        { label: 'Muted', value: 'text-neutral-600' },
-        { label: 'White', value: 'text-white' },
-        { label: 'Primary', value: 'text-primary' },
-      ],
-    },
-  },
-  defaultProps: {
-    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    align: 'text-left',
-    size: 'text-base',
-    color: 'text-neutral-600',
-  },
-  render: ({ text, align, size, color }: any) => {
-    return (
-      <div className={align}>
-        <p className={`${size} ${color} leading-relaxed`}>{text}</p>
-      </div>
-    );
-  },
-};
-
 export const RichTextBlock = {
   label: "Rich Text Block",
   fields: {

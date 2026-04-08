@@ -180,3 +180,6 @@ export const Hero: ComponentConfig<{
     );
   },
 };
+
+// Alias for backward compatibility
+export { Hero as HeroSection };

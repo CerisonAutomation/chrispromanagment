@@ -32,7 +32,7 @@ const PageAuditSchema = z.object({
   issues: z.array(AuditIssueSchema),
   summary: z.object({
     totalBlocks: z.number(),
-    blockTypeCounts: z.record(z.number()),
+    blockTypeCounts: z.record(z.string(), z.number()),
     hasHero: z.boolean(),
     hasCTA: z.boolean(),
     hasFooter: z.boolean(),
@@ -68,7 +68,7 @@ const CustomBlockSchema = z.object({
   blockType: z.string(),
   schema: z.object({
     label: z.string(),
-    fields: z.record(z.object({
+    fields: z.record(z.string(), z.object({
       type: z.enum(['text', 'textarea', 'select', 'array', 'number', 'boolean']),
       label: z.string().optional(),
       description: z.string().optional(),
@@ -152,7 +152,7 @@ ${JSON.stringify(pageData, null, 2)}
 Available block types: ${Object.keys(BLOCK_REGISTRY).join(', ')}
 
 Analyze the page and return a comprehensive audit result.`,
-    maxTokens: 4000,
+    maxOutputTokens: 4000,
   });
 
   return object;
@@ -217,7 +217,7 @@ Page Context (nearby blocks): ${pageContext.content.map(b => b.type).join(' → 
 Focus areas: ${focus.join(', ')}
 
 Provide a detailed critique with scores, feedback, and improvement suggestions.`,
-    maxTokens: 3000,
+    maxOutputTokens: 3000,
   });
 
   return object;
@@ -309,7 +309,7 @@ Generate:
 4. Recommended file path (src/blocks/[kebab-name].tsx)
 
 Return the complete generated code that can be dropped into the codebase.`,
-    maxTokens: 4000,
+    maxOutputTokens: 4000,
   });
 
   return {
@@ -394,7 +394,7 @@ Current page data:
 ${JSON.stringify(pageData, null, 2)}
 
 Identify optimization opportunities and return specific changes with suggested prop values.`,
-    maxTokens: 4000,
+    maxOutputTokens: 4000,
   });
 
   return {
@@ -459,7 +459,7 @@ ${fieldDescriptions}
 Default props reference: ${JSON.stringify(schema.defaultProps, null, 2)}
 
 Generate production-ready content that matches the field types and brand voice.`,
-    maxTokens: 2000,
+    maxOutputTokens: 2000,
   });
 
   return object;

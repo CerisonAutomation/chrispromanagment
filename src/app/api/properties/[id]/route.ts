@@ -11,6 +11,6 @@ export async function GET(_req: NextRequest, { params }: Ctx): Promise<NextRespo
   const { id } = await params;
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
   const result = await getListing(id);
-  if (result.error) return NextResponse.json({ error: result.error }, { status: 404 });
+  if (!result.success) return NextResponse.json({ error: result.error.message }, { status: 404 });
   return NextResponse.json(result.data);
 }

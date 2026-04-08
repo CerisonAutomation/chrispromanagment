@@ -108,7 +108,7 @@ export function GuestyPropertyDetail({
         <div className="mb-8">
           <div className="relative h-80 w-full overflow-hidden rounded-2xl sm:h-[500px]">
             <Image
-              src={images[activeImage]?.large ?? images[activeImage]?.thumbnail}
+              src={(images[activeImage]?.large ?? images[activeImage]?.thumbnail) || '/placeholder-property.jpg'}
               alt={listing.title}
               fill
               className="object-cover transition-all duration-500"
@@ -123,7 +123,7 @@ export function GuestyPropertyDetail({
                   className={cn('relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-all',
                     activeImage === i ? 'border-amber-500' : 'border-transparent hover:border-gray-300')}
                 >
-                  <Image src={img.thumbnail} alt={`Photo ${i + 1}`} fill className="object-cover" sizes="96px" />
+                  <Image src={img.thumbnail || '/placeholder-property.jpg'} alt={`Photo ${i + 1}`} fill className="object-cover" sizes="96px" />
                 </button>
               ))}
             </div>

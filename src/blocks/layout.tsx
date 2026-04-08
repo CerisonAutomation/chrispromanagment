@@ -157,7 +157,7 @@ export const Divider: ComponentConfig<{
       <div className="w-full py-8">
         <hr
           style={{
-            borderTopStyle: style,
+            borderTopStyle: style as React.CSSProperties['borderTopStyle'],
             borderTopWidth: thickness,
             borderTopColor: color,
             borderBottom: 'none',

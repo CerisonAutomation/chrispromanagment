@@ -14,7 +14,20 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function PropertiesPage() {
-  const { results } = await getListings({ limit: 20 });
+  const result = await getListings({ limit: 20 });
+  
+  if (!result.success) {
+    return (
+      <main className="min-h-screen bg-background">
+        <section className="max-w-7xl mx-auto px-4 py-16">
+          <h1 className="text-4xl font-bold font-playfair">Error loading properties</h1>
+          <p className="text-muted-foreground">{result.error.message}</p>
+        </section>
+      </main>
+    );
+  }
+  
+  const { results } = result.data;
 
   return (
     <main className="min-h-screen bg-background">

@@ -3,7 +3,7 @@
  * Used by Vercel, uptime monitors, and CI smoke tests.
  */
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { cmsPage } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export const revalidate = 0;
@@ -15,10 +15,10 @@ export async function GET() {
 
   try {
     const t = Date.now();
-    // Check database connection
-    const { data, error } = await db.from('cms_pages').select('count').limit(1).single();
+    // Check database connection using cmsPage helper
+    await cmsPage.findMany();
     dbLatencyMs = Date.now() - t;
-    dbOk = !error || error.code === 'PGRST116'; // PGRST116 = no rows, DB is fine
+    dbOk = true;
   } catch {
     dbOk = false;
   }

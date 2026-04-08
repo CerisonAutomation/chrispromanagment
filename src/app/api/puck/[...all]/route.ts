@@ -6,7 +6,7 @@
  * DELETE /api/puck/[slug] — delete page
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { cmsPage } from '@/lib/db';
 
 const EMPTY_DATA = { content: [], root: { props: { title: '', theme: 'malta-gold' } } };
 
@@ -23,11 +23,9 @@ function jsonErr(msg: string, status = 400): NextResponse {
 export async function GET(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const { data, error } = await db
-      .from('cms_pages').select('data').eq('slug', s).maybeSingle();
-    if (error) console.error(`[CMS GET /${s}]`, error.message);
-    const d = data?.data;
-    const safe = d && typeof d === 'object' && Array.isArray((d as Record<string,unknown>).content)
+    const page = await cmsPage.findUnique({ where: { slug: s } });
+    const d = page?.data as Record<string, unknown> | undefined;
+    const safe = d && typeof d === 'object' && Array.isArray(d.content)
       ? d : EMPTY_DATA;
     return NextResponse.json(safe, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
@@ -50,11 +48,13 @@ export async function POST(req: NextRequest, { params }: Ctx): Promise<NextRespo
     const theme = String(
       ((body?.root as Record<string,unknown>)?.props as Record<string,unknown>)?.theme ?? 'malta-gold'
     );
-    const { error } = await db.from('cms_pages').upsert(
-      { slug: s, title, data: body, theme, published: true, updated_at: new Date().toISOString() },
-      { onConflict: 'slug' }
-    );
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await cmsPage.upsert({
+      slug: s,
+      title,
+      data: JSON.stringify(body),
+      theme,
+      published: true,
+    });
     return NextResponse.json({ success: true, slug: s, title });
   } catch (e) {
     console.error('[CMS POST]', e);
@@ -66,11 +66,17 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
   try {
     const s = slug((await params).all);
     const body = await req.json().catch(() => ({})) as { published?: boolean };
-    const { error } = await db
-      .from('cms_pages')
-      .update({ published: Boolean(body.published), updated_at: new Date().toISOString() })
-      .eq('slug', s);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Note: cmsPage doesn't have a partial update method, using upsert with existing data
+    const existing = await cmsPage.findUnique({ where: { slug: s } });
+    if (existing) {
+      await cmsPage.upsert({
+        slug: s,
+        title: existing.title,
+        data: typeof existing.data === 'string' ? existing.data : JSON.stringify(existing.data),
+        theme: existing.theme ?? 'malta-gold',
+        published: Boolean(body.published),
+      });
+    }
     return NextResponse.json({ success: true, slug: s, published: body.published });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
@@ -80,8 +86,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
 export async function DELETE(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const s = slug((await params).all);
-    const { error } = await db.from('cms_pages').delete().eq('slug', s);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    await cmsPage.delete({ where: { slug: s } });
     return NextResponse.json({ success: true, slug: s });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

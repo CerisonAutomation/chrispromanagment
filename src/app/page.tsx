@@ -5,7 +5,7 @@
  */
 import { redirect } from 'next/navigation';
 import { getPageBySlug } from '@/lib/supabase';
-import { puckConfig } from '@/puck.config';
+import puckConfig from '@/puck.config';
 import { Render } from '@measured/puck';
 import type { Metadata } from 'next';
 import type { PuckData } from '@/types';
@@ -14,9 +14,11 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await getPageBySlug('home');
+  // Extract metadata from page data if available
+  const pageData = page?.data as { meta_title?: string; meta_description?: string } | undefined;
   return {
-    title: page?.meta_title ?? page?.title ?? 'Home',
-    description: page?.meta_description ?? undefined,
+    title: pageData?.meta_title ?? page?.title ?? 'Home',
+    description: pageData?.meta_description ?? undefined,
   };
 }
 
@@ -27,9 +29,14 @@ export default async function HomePage() {
     redirect('/properties');
   }
 
+  // Parse the page data from JSON string
+  const pageContent = typeof page.data === 'string' 
+    ? JSON.parse(page.data) 
+    : page.data;
+
   return (
     <main>
-      <Render config={puckConfig} data={page.content as PuckData} />
+      <Render config={puckConfig} data={pageContent} />
     </main>
   );
 }

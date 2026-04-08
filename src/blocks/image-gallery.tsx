@@ -83,14 +83,14 @@ function Lightbox({
         onClick={(e) => e.stopPropagation()}
       >
         <Image
-          src={img.src}
-          alt={img.alt}
+          src={img?.src || '/placeholder.jpg'}
+          alt={img?.alt || ''}
           width={1400}
           height={900}
           className="max-h-[80vh] w-auto rounded-lg object-contain shadow-2xl"
           priority
         />
-        {showCaptions && img.caption && (
+        {showCaptions && img?.caption && (
           <p className="mt-3 text-center text-sm text-white/70">{img.caption}</p>
         )}
         <p className="mt-1 text-center text-xs text-white/40">{current + 1} / {images.length}</p>
@@ -130,15 +130,15 @@ function Carousel({ images, showCaptions, enableLightbox, rounded }: {
           style={{ cursor: enableLightbox ? 'zoom-in' : 'default' }}
         >
           <Image
-            src={img.src}
-            alt={img.alt}
+            src={img?.src || '/placeholder.jpg'}
+            alt={img?.alt || ''}
             fill
             className="object-cover transition-all duration-500"
             sizes="100vw"
             priority={current === 0}
           />
         </div>
-        {showCaptions && img.caption && (
+        {showCaptions && img?.caption && (
           <p className="mt-2 text-center text-sm text-gray-500">{img.caption}</p>
         )}
       </div>

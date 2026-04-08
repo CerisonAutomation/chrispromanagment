@@ -5,7 +5,6 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getBookingQuote } from '@/lib/guesty-api';
-import { db } from '@/lib/db';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -31,18 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: result.error.message }, { status: 503 });
     }
     
-    // Store quote in database for analytics (fire-and-forget)
-    try {
-      await db.from('quotes').insert({
-        listing_id: listingId,
-        check_in: checkIn,
-        check_out: checkOut,
-        guests,
-        quote_data: result.data,
-      });
-    } catch (dbError) {
-      console.warn('[API] /api/quote: failed to store quote:', dbError);
-    }
+    // TODO: Store quote in database for analytics (requires quotes table helper in db.ts)
     
     return NextResponse.json(result.data);
   } catch (e) {

@@ -16,7 +16,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const listing = await getListing(id);
+    const result = await getListing(id);
+    if (!result.success) {
+      return { title: 'Property Not Found' };
+    }
+    const listing = result.data;
     return {
       title: listing.nickname ?? listing.title,
       description: listing.publicDescription?.summary ?? undefined,
@@ -37,13 +41,13 @@ export default async function PropertyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  let listing;
-  try {
-    listing = await getListing(id);
-  } catch {
+  const result = await getListing(id);
+  
+  if (!result.success) {
     notFound();
   }
-
+  
+  const listing = result.data;
   const images = listing.pictures ?? [];
   const firstImage = images[0];
 
@@ -53,7 +57,7 @@ export default async function PropertyDetailPage({
       {firstImage && (
         <div className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
           <Image
-            src={firstImage.original ?? firstImage.thumbnail}
+            src={(firstImage.original ?? firstImage.thumbnail) || '/placeholder-property.jpg'}
             alt={listing.nickname ?? listing.title ?? 'Property'}
             fill
             className="object-cover"
@@ -102,7 +106,7 @@ export default async function PropertyDetailPage({
               {images.slice(1, 7).map((img, i) => (
                 <div key={i} className="relative aspect-video rounded-xl overflow-hidden">
                   <Image
-                    src={img.thumbnail}
+                    src={img.thumbnail || '/placeholder-property.jpg'}
                     alt={`${listing.nickname ?? listing.title} photo ${i + 2}`}
                     fill
                     className="object-cover hover:scale-105 transition-transform duration-300"

@@ -26,6 +26,39 @@ export function safeHref(
 }
 
 // ============================================================
+// Puck Field Helpers — Standard field configurations
+// ============================================================
+export const text = (label: string, placeholder?: string) => ({
+  type: "text" as const,
+  label,
+  placeholder,
+});
+
+export const textarea = (label: string, placeholder?: string) => ({
+  type: "textarea" as const,
+  label,
+  placeholder,
+});
+
+export const select = (label: string, options: Array<{ label: string; value: string }>) => ({
+  type: "select" as const,
+  label,
+  options,
+});
+
+export const number = (label: string, min?: number, max?: number) => ({
+  type: "number" as const,
+  label,
+  min,
+  max,
+});
+
+export const checkbox = (label: string) => ({
+  type: "checkbox" as const,
+  label,
+});
+
+// ============================================================
 // Backward-compatible image aliases used throughout blocks
 // ============================================================
 export const PROP_1 = PROP_IMAGES.valletta2;
