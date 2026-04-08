@@ -5,7 +5,7 @@
  */
 'use client';
 
-import React, { type ReactNode } from 'react';
+import React from 'react';
 import type { Config } from '@measured/puck';
 import { BLOCK_SCHEMAS, CATEGORIES, type PuckBlockType, BLOCK_TYPES } from '@/blocks/schemas';
 import { AllCanonicalBlocks } from '@/blocks/canonical-blocks';
@@ -68,12 +68,6 @@ export const config: Config = {
       ]},
     },
     defaultProps: { title: 'Page', description: '', theme: 'malta-gold' },
-    render: ({ children, title, theme }) => (
-      <div data-theme={theme} className={`pm-theme-${theme}`}>
-        <title>{title}</title>
-        {children}
-      </div>
-    ),
   },
 };
 

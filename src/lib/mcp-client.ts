@@ -759,17 +759,6 @@ export class McpClientService {
     return this.http.get('/api/mcp/resources/quickstart', 'get_quickstart_guide');
   }
 
-  async getBlockCategories(): Promise<McpToolResult<{
-    readonly categories: Readonly<Record<string, readonly string[]>>;
-    readonly totalBlocks: number;
-  }>> {
-    return this.http.get('/api/mcp/resources/block-categories', 'get_block_categories');
-  }
-
-  async getQuickstartGuide(): Promise<McpToolResult<{ readonly content: string }>> {
-    return this.http.get('/api/mcp/resources/quickstart', 'get_quickstart_guide');
-  }
-
   // ═══════════════════════════════════════════════════════════════════════════════
   // UTILITY
   // ═══════════════════════════════════════════════════════════════════════════════

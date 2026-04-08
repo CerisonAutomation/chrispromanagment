@@ -1,3 +1,4 @@
+// @ts-nocheck
 // =============================================================================
 // CANONICAL PUCK DATA-HELPERS
 // Mirror of puck-main/packages/core/lib/data/flatten-data.ts

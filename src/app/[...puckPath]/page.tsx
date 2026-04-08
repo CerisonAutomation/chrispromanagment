@@ -3,19 +3,13 @@
  * Matches any slug path, renders published Puck data via ISR.
  */
 import { notFound } from 'next/navigation';
-import { getAllPages, getPageBySlug } from '@/lib/supabase';
-import config from '@/puck.config';
-import { Render } from '@measured/puck';
+import { getPageBySlug } from '@/lib/supabase';
+import Client from './client';
 import type { Metadata } from 'next';
 
 export const revalidate = 60;
-
-export async function generateStaticParams() {
-  const pages = await getAllPages();
-  return pages
-    .filter((p) => p.published && p.slug && p.slug !== 'home')
-    .map((p) => ({ puckPath: p.slug.split('/').filter(Boolean) }));
-}
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
 export async function generateMetadata({
   params,
@@ -46,8 +40,7 @@ export default async function CmsPage({
 
   return (
     <main>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge puck config types */}
-      <Render config={config as any} data={puckData} />
+      <Client data={puckData} />
     </main>
   );
 }

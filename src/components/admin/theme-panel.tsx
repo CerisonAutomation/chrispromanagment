@@ -323,7 +323,7 @@ export function ThemePanel() {
             <div className="flex gap-1">
               <div
                 className="w-5 h-5 rounded-full border"
-                style={{ backgroundColor: currentTheme.colors.primary }}
+                style={{ backgroundColor: currentTheme.colors?.primary ?? '#3b82f6' }}
               />
             </div>
           </div>

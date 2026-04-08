@@ -233,7 +233,9 @@ function useTextStream({
     if (typeof textStream === "string") {
       processStringTypewriter(textStream)
     } else if (textStream) {
-      processAsyncIterable(textStream)
+      processAsyncIterable(textStream).catch((err) => {
+        console.error('[response-stream] AsyncIterable processing failed:', err);
+      });
     }
   }, [textStream, reset, processStringTypewriter, processAsyncIterable])
 

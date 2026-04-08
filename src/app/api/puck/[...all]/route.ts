@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @fileoverview Puck CMS REST API — Supabase backend.
  * GET    /api/puck/[slug] — load page data

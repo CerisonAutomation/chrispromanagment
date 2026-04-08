@@ -74,7 +74,7 @@ const CustomBlockSchema = z.object({
       description: z.string().optional(),
       required: z.boolean().optional(),
     })),
-    defaultProps: z.record(z.unknown()),
+    defaultProps: z.record(z.string(), z.unknown()),
   }),
   generatedCode: z.string(),
   filePath: z.string(),
@@ -356,7 +356,7 @@ export async function optimizePage(
         type: z.string(),
         blockIndex: z.number(),
         description: z.string(),
-        suggestedProps: z.record(z.unknown()).optional(),
+        suggestedProps: z.record(z.string(), z.unknown()).optional(),
       })),
     }),
     system: `${AI_SYSTEM_PROMPT}
@@ -429,7 +429,7 @@ export async function generateBlockContent(
 
   const { object } = await generateObject({
     model: openai('gpt-4o-mini'),
-    schema: z.record(z.unknown()),
+    schema: z.record(z.string(), z.unknown()),
     system: `${AI_SYSTEM_PROMPT}
 
 Generate high-quality, brand-aligned content for Puck CMS blocks.

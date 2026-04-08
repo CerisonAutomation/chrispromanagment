@@ -51,7 +51,10 @@ export function PagesPanel() {
 
   // Load pages on mount
   useEffect(() => {
-    loadPages();
+    loadPages().catch((err) => {
+      console.error('[pages-panel] Failed to load pages:', err);
+      toast.error('Failed to load pages');
+    });
   }, [loadPages]);
 
   // Filter pages
@@ -218,7 +221,7 @@ export function PagesPanel() {
                     )}>
                       {page.title}
                     </span>
-                    {getStatusIcon(page.status)}
+                    {getStatusIcon(page.status ?? 'DRAFT')}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-neutral-500">
                     <span className="truncate">/{page.slug}</span>

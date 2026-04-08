@@ -170,7 +170,7 @@ export function GuestyPropertyGrid({
     }
   }, [limitResults, filterByTags]);
 
-  useEffect(() => { fetchListings(); }, [fetchListings]);
+  useEffect(() => { fetchListings().catch(console.error); }, [fetchListings]);
 
   const filtered = useMemo(() => {
     return listings.filter((l) => {

@@ -5,7 +5,7 @@
 
 import React from "react";
 import type { ComponentConfig } from "@/lib/canonical-puck-types";
-import { text, textarea, select, number, checkbox } from "@/blocks/helpers";
+import { text, textarea, select, number } from "@/blocks/helpers";
 
 export const Hero: ComponentConfig<{
   title: string;
@@ -24,8 +24,6 @@ export const Hero: ComponentConfig<{
   badgeText: string;
 }> = {
   label: "Hero",
-  category: "Content",
-  metadata: { description: "Full featured hero section with multiple layouts" },
   defaultProps: {
     title: "Build Stunning Websites",
     subtitle: "Without Code",
@@ -65,7 +63,10 @@ export const Hero: ComponentConfig<{
       { label: "Gradient", value: "bg-gradient-to-br from-primary to-primary-foreground" },
     ]),
     padding: number("Padding (px)", 40, 200),
-    showBadge: checkbox("Show Badge"),
+    showBadge: select("Show Badge", [
+      { label: "Yes", value: "true" },
+      { label: "No", value: "false" },
+    ]),
     badgeText: text("Badge Text", "Badge text..."),
   },
   render: ({

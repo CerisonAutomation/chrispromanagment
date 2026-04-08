@@ -289,7 +289,7 @@ export const MapSectionSchema = z.object({
   address: z.string().default(''),
   latitude: z.string().default(''),
   longitude: z.string().default(''),
-  zoom: z.enum(['12', '15', '18']).default('14'),
+  zoom: z.enum(['12', '14', '15', '18']).default('14'),
 });
 
 export const DividerSchema = z.object({
@@ -471,7 +471,7 @@ export function getBlockDefaults(blockType: PuckBlockType): Record<string, unkno
   
   try {
     const result = schema.safeParse({});
-    return result.success ? result.data : {};
+    return result.success ? (result.data as Record<string, unknown>) : {};
   } catch {
     return {};
   }

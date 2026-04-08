@@ -2,7 +2,7 @@
  * @fileoverview PropertyGrid — responsive property listing grid.
  */
 import { PropertyCard } from './PropertyCard';
-import type { GuestyListing } from '@/types';
+import type { GuestyListing } from '@/types/guesty';
 
 interface PropertyGridProps {
   properties: GuestyListing[];

@@ -128,6 +128,7 @@ export interface DescriptionOptions {
   amenities: string[];
   pricePerNight?: number;
   style?: 'luxury' | 'casual' | 'professional' | 'airbnb';
+  language?: 'en' | 'mt';
   maxLength?: number;
 }
 

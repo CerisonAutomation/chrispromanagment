@@ -52,8 +52,8 @@ export function GuestyBookingConfirmation({
         else setStatus('error');
       } catch { setStatus('error'); }
     };
-    poll();
-    const t = setInterval(poll, 5000);
+    poll().catch(console.error);
+    const t = setInterval(() => { poll().catch(console.error); }, 5000);
     return () => clearInterval(t);
   }, []);
 

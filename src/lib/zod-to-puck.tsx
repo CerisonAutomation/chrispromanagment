@@ -5,8 +5,19 @@
  * @note This file uses .tsx extension because generateStubRender returns JSX (React.ReactNode).
  */
 
-import type { z } from 'zod';
+import type { z, ZodRawShape } from 'zod';
 import type React from 'react';
+
+// Helper type for Zod internals - using type-safe access pattern
+interface ZodDef {
+  typeName: string;
+  innerType?: z.ZodTypeAny;
+  type?: z.ZodTypeAny;
+  checks?: Array<{ kind: string; value?: number }>;
+  values?: string[] | readonly string[] | Record<string, string>;
+  defaultValue?: () => unknown;
+  description?: string;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -34,11 +45,19 @@ export type PuckFields = Record<string, PuckField>;
  * Converts a Zod schema into Puck CMS field definitions.
  * Handles common Zod types: string, number, boolean, enum, array, object.
  */
+function getZodDef(schema: z.ZodTypeAny): ZodDef | undefined {
+  // Access internal _def through unknown to bypass strict type checking
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (schema as unknown as { _def?: ZodDef })._def;
+}
+
 export function zodToPuckFields(schema: z.ZodTypeAny): PuckFields {
   const fields: PuckFields = {};
+  const def = getZodDef(schema);
 
-  if (schema._def?.typeName === 'ZodObject') {
-    const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
+  if (def?.typeName === 'ZodObject') {
+    const zodObj = schema as z.ZodObject<ZodRawShape>;
+    const shape = zodObj.shape;
 
     for (const [key, fieldSchema] of Object.entries(shape)) {
       fields[key] = zodFieldToPuckField(key, fieldSchema as z.ZodTypeAny);
@@ -52,19 +71,28 @@ export function zodToPuckFields(schema: z.ZodTypeAny): PuckFields {
  * Converts a single Zod field to a Puck field definition.
  */
 function zodFieldToPuckField(name: string, schema: z.ZodTypeAny): PuckField {
-  const typeName = schema._def?.typeName;
-  const description = schema._def?.description;
+  const def = getZodDef(schema);
+  const typeName = def?.typeName;
+  const description = def?.description;
 
   if (typeName === 'ZodOptional' || typeName === 'ZodNullable') {
-    return zodFieldToPuckField(name, schema._def.innerType);
+    const inner = def?.innerType;
+    if (inner) {
+      return zodFieldToPuckField(name, inner);
+    }
   }
 
   if (typeName === 'ZodDefault') {
-    return zodFieldToPuckField(name, schema._def.innerType);
+    const inner = def?.innerType;
+    if (inner) {
+      return zodFieldToPuckField(name, inner);
+    }
   }
 
   if (typeName === 'ZodString') {
-    const maxLength = schema._def?.checks?.find((c: { kind: string }) => c.kind === 'max')?.value;
+    const checks = def?.checks || [];
+    const maxCheck = checks.find((c: { kind: string }) => c.kind === 'max');
+    const maxLength = maxCheck?.value;
     return {
       type: maxLength && maxLength > 200 ? 'textarea' : 'text',
       label: formatLabel(name),
@@ -73,8 +101,9 @@ function zodFieldToPuckField(name: string, schema: z.ZodTypeAny): PuckField {
   }
 
   if (typeName === 'ZodNumber') {
-    const min = schema._def?.checks?.find((c: { kind: string }) => c.kind === 'min')?.value;
-    const max = schema._def?.checks?.find((c: { kind: string }) => c.kind === 'max')?.value;
+    const checks = def?.checks || [];
+    const min = checks.find((c: { kind: string }) => c.kind === 'min')?.value;
+    const max = checks.find((c: { kind: string }) => c.kind === 'max')?.value;
     return {
       type: 'number',
       label: formatLabel(name),
@@ -95,11 +124,12 @@ function zodFieldToPuckField(name: string, schema: z.ZodTypeAny): PuckField {
   }
 
   if (typeName === 'ZodEnum' || typeName === 'ZodNativeEnum') {
-    const values = schema._def?.values || Object.values(schema._def?.values || {});
+    const values = def?.values || [];
+    const valuesArray = Array.isArray(values) ? values : Object.values(values);
     return {
       type: 'select',
       label: formatLabel(name),
-      options: (values as string[]).map((v: string) => ({
+      options: (valuesArray as string[]).map((v: string) => ({
         label: formatLabel(String(v)),
         value: v,
       })),
@@ -107,14 +137,15 @@ function zodFieldToPuckField(name: string, schema: z.ZodTypeAny): PuckField {
   }
 
   if (typeName === 'ZodArray') {
-    const itemSchema = schema._def.type;
-    const itemFields = zodToPuckFields(itemSchema);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const itemSchema = def?.innerType ?? (def as unknown as { type?: z.ZodTypeAny })?.type;
+    const itemFields = itemSchema ? zodToPuckFields(itemSchema) : {};
 
     return {
       type: 'array',
       label: formatLabel(name),
       arrayFields: itemFields,
-      defaultItemProps: extractDefaultProps(itemSchema),
+      defaultItemProps: itemSchema ? extractDefaultProps(itemSchema) : {},
       getItemSummary: (item: Record<string, unknown>) => {
         return String(item.title || item.name || item.label || item.question || 'Item');
       },
@@ -140,20 +171,24 @@ function zodFieldToPuckField(name: string, schema: z.ZodTypeAny): PuckField {
  */
 function extractDefaultProps(schema: z.ZodTypeAny): Record<string, unknown> {
   const defaults: Record<string, unknown> = {};
+  const def = getZodDef(schema);
 
-  if (schema._def?.typeName === 'ZodObject') {
-    const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
+  if (def?.typeName === 'ZodObject') {
+    const zodObj = schema as z.ZodObject<ZodRawShape>;
+    const shape = zodObj.shape;
 
     for (const [key, fieldSchema] of Object.entries(shape)) {
       const field = fieldSchema as z.ZodTypeAny;
+      const fieldDef = getZodDef(field);
 
-      if (field._def?.typeName === 'ZodDefault') {
-        defaults[key] = field._def.defaultValue();
-      } else if (field._def?.typeName === 'ZodString') {
+      if (fieldDef?.typeName === 'ZodDefault') {
+        const defaultFn = fieldDef.defaultValue;
+        defaults[key] = typeof defaultFn === 'function' ? defaultFn() : undefined;
+      } else if (fieldDef?.typeName === 'ZodString') {
         defaults[key] = '';
-      } else if (field._def?.typeName === 'ZodNumber') {
+      } else if (fieldDef?.typeName === 'ZodNumber') {
         defaults[key] = 0;
-      } else if (field._def?.typeName === 'ZodBoolean') {
+      } else if (fieldDef?.typeName === 'ZodBoolean') {
         defaults[key] = false;
       }
     }

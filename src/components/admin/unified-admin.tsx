@@ -110,8 +110,10 @@ export function useBlockAutosync(
       pendingChanges: pendingChangesRef.current.size,
     }));
 
-    syncTimeoutRef.current = setTimeout(async () => {
-      await performSync();
+    syncTimeoutRef.current = setTimeout(() => {
+      performSync().catch((err) => {
+        console.error('[unified-admin] Sync failed:', err);
+      });
     }, 1500); // 1.5s debounce
   }, []);
 

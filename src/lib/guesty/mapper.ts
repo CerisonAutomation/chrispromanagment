@@ -4,23 +4,23 @@
  * If Guesty field names change, update ONLY this file.
  */
 
-import type { GuestyListing, GuestyReservation, MappedListing, MappedReservation } from './types';
+import type { GuestyListing, GuestyReservation, MappedListing, MappedReservation } from './types.ts';
 
 export function mapListing(raw: GuestyListing): MappedListing {
   return {
-    guestyListingId: raw._id,
-    nickname: raw.nickname ?? raw.title ?? 'Unnamed',
-    title: raw.title ?? null,
-    active: raw.active !== false,
-    city: raw.address?.city ?? null,
-    country: raw.address?.country ?? null,
-    bedrooms: raw.bedrooms ?? null,
-    bathrooms: raw.bathrooms ?? null,
-    accommodates: raw.accommodates ?? null,
-    basePrice: raw.prices?.basePrice ?? null,
-    currency: raw.prices?.currency ?? null,
-    thumbnailUrl: raw.pictures?.[0]?.thumbnail ?? null,
+    id: raw._id,
+    title: raw.title ?? raw.nickname ?? 'Unnamed',
+    nickname: raw.nickname ?? undefined,
+    propertyType: raw.propertyType ?? undefined,
+    city: raw.address?.city ?? undefined,
+    country: raw.address?.country ?? undefined,
+    bedrooms: raw.bedrooms ?? undefined,
+    bathrooms: raw.bathrooms ?? undefined,
+    maxGuests: raw.accommodates ?? undefined,
+    basePrice: raw.prices?.basePrice ?? undefined,
+    currency: raw.prices?.currency ?? undefined,
     amenities: Array.isArray(raw.amenities) ? raw.amenities : [],
+    images: raw.pictures?.map(p => p.large || p.regular || p.thumbnail || '').filter(Boolean) ?? [],
   };
 }
 
@@ -32,21 +32,16 @@ export function mapReservation(raw: GuestyReservation): MappedReservation {
     Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / 86_400_000));
 
   return {
-    guestyReservationId: raw._id,
-    guestyListingId: raw.listingId ?? raw.listing?._id ?? '',
-    guestName: raw.guest?.fullName ?? raw.guestName ?? null,
-    guestEmail: raw.guest?.email ?? null,
+    id: raw._id,
+    confirmationCode: raw.confirmationCode ?? undefined,
+    listingId: raw.listingId ?? raw.listing?._id ?? '',
+    guestName: raw.guest?.firstName ? `${raw.guest.firstName} ${raw.guest.lastName ?? ''}`.trim() : raw.guestName ?? undefined,
+    guestEmail: raw.guest?.email ?? undefined,
     checkIn,
     checkOut,
-    nightsBooked,
-    staysBooked: 1,
-    bookingDate: raw.bookedAt ? new Date(raw.bookedAt) : null,
     status: raw.status ?? 'confirmed',
-    payoutAmount: extractPayout(raw.money ?? {}),
-    ownerPayoutAmount: raw.money?.ownerRevenue ?? null,
-    source: raw.source ?? null,
-    confirmationCode: raw.confirmationCode ?? null,
-    rawPayload: JSON.stringify(raw),
+    totalAmount: extractPayout(raw.money ?? {}),
+    currency: raw.money?.currency ?? undefined,
   };
 }
 

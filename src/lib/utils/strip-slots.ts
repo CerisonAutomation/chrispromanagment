@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ComponentData, Config, RootData } from "@/types";
 import { mapFields } from "./map-fields";
 

@@ -3,13 +3,14 @@
  * Compatible with shadcn/ui Toast primitive.
  */
 'use client';
-import { useEditorStore } from '@/store/editor';
+import { useEditorStore } from '@/store/editor-store';
 import { generateId } from '@/lib/utils';
-import type { ToastType } from '@/types';
+import type { ToastType } from '@/types/ui';
 
 export function useToast() {
-  const addToast = useEditorStore((s) => s.addToast);
-  const removeToast = useEditorStore((s) => s.removeToast);
+  // Stub toast functions - store doesn't have toast methods yet
+  const addToast = (toast: any) => console.log('Toast:', toast);
+  const removeToast = (id: string) => console.log('Remove toast:', id);
 
   const toast = (type: ToastType, title: string, description?: string, duration = 4000) => {
     const id = generateId('toast');

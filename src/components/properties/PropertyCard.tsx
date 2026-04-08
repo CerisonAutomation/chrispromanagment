@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
-import type { GuestyListing } from '@/types';
+import type { GuestyListing } from '@/types/guesty';
 
 interface PropertyCardProps {
   listing: GuestyListing;
@@ -25,7 +25,7 @@ export function PropertyCard({ listing }: PropertyCardProps) {
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {image ? (
           <Image
-            src={image.thumbnail}
+            src={image.thumbnail || '/placeholder-property.jpg'}
             alt={name}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"

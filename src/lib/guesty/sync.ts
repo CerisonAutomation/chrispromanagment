@@ -92,7 +92,8 @@ export async function syncListings(
   let errors = 0;
   for (const result of results) {
     if (result.status === 'fulfilled' && !result.value.error) {
-      synced += result.value.data?.length ?? 50;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      synced += ((result.value.data as unknown[] | null)?.length) ?? 50;
     } else {
       errors++;
       const msg = result.status === 'rejected'
@@ -147,7 +148,7 @@ export async function syncReservations(
       ...m,
       checkIn: m.checkIn.toISOString(),
       checkOut: m.checkOut.toISOString(),
-      bookingDate: m.bookingDate?.toISOString() ?? null,
+      bookingDate: m.bookingDate ? m.bookingDate.toISOString() : null,
       updated_at: new Date().toISOString(),
     };
   });
@@ -169,7 +170,8 @@ export async function syncReservations(
   let errors = 0;
   for (const result of results) {
     if (result.status === 'fulfilled' && !result.value.error) {
-      synced += result.value.data?.length ?? 50;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      synced += ((result.value.data as unknown[] | null)?.length) ?? 50;
     } else {
       errors++;
       const msg = result.status === 'rejected'

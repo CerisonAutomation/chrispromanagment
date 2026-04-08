@@ -108,7 +108,7 @@ export function LazyBlock({
       }
     };
 
-    loadComponent();
+    loadComponent().catch(console.error);
   }, [isVisible, blockType, minLoadTime, loadTime]);
 
   return (
@@ -217,7 +217,7 @@ export function useLazyComponent<T extends ComponentType<unknown>>(
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          load();
+          load().catch(console.error);
           observer.disconnect();
         }
       },
@@ -230,7 +230,7 @@ export function useLazyComponent<T extends ComponentType<unknown>>(
       observer.observe(element);
     } else {
       // No observer target, load immediately
-      load();
+      load().catch(console.error);
     }
 
     return () => observer.disconnect();

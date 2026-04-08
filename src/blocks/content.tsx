@@ -34,8 +34,6 @@ export const Features: ComponentConfig<{
   backgroundColor: string;
 }> = {
   label: "Features",
-  category: "Content",
-  metadata: { description: "Feature grid with multiple layout options and icons" },
   defaultProps: {
     title: "Everything You Need",
     subtitle: "Powerful features to help you succeed",
@@ -192,8 +190,6 @@ export const Testimonials: ComponentConfig<{
   backgroundColor: string;
 }> = {
   label: "Testimonials",
-  category: "Social Proof",
-  metadata: { description: "Customer testimonials and reviews" },
   defaultProps: {
     title: "Loved by Thousands",
     subtitle: "See what our customers have to say",

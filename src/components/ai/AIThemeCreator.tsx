@@ -66,11 +66,12 @@ export function AIThemeCreator({ onThemeApplied, className }: AIThemeCreatorProp
     startTransition(() => {
       // Apply tokens to :root for live preview
       const root = document.documentElement;
-      Object.entries(theme.tokens).forEach(([key, value]) => {
-        root.style.setProperty(key, value);
+      const tokens = theme.tokens ?? {};
+      Object.entries(tokens).forEach(([key, value]) => {
+        root.style.setProperty(key, value as string);
       });
       setAppliedTheme(theme.name);
-      onThemeApplied?.(theme.tokens, theme);
+      onThemeApplied?.(tokens, theme);
     });
   }, [onThemeApplied]);
 
@@ -107,7 +108,9 @@ export function AIThemeCreator({ onThemeApplied, className }: AIThemeCreatorProp
             key={preset.label}
             onClick={() => {
               setPrompt(preset.prompt);
-              void generate(preset.prompt);
+              generate(preset.prompt).catch((err) => {
+                console.error('[AIThemeCreator] Failed to generate theme:', err);
+              });
             }}
             disabled={isGenerating}
             className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border hover:border-violet-400 hover:bg-muted/50 transition-all text-xs font-medium disabled:opacity-50"
@@ -128,13 +131,17 @@ export function AIThemeCreator({ onThemeApplied, className }: AIThemeCreatorProp
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              void generate(prompt);
+              generate(prompt).catch((err) => {
+                console.error('[AIThemeCreator] Failed to generate theme:', err);
+              });
             }
           }}
         />
         <div className="flex gap-2">
           <Button
-            onClick={() => void generate(prompt)}
+            onClick={() => generate(prompt).catch((err) => {
+              console.error('[AIThemeCreator] Failed to generate theme:', err);
+            })}
             disabled={isGenerating || !prompt.trim()}
             size="sm"
             className="flex-1 bg-violet-600 hover:bg-violet-700"
@@ -173,8 +180,8 @@ export function AIThemeCreator({ onThemeApplied, className }: AIThemeCreatorProp
               <div
                 key={tok}
                 className="w-7 h-7 rounded-full border-2 border-background shadow-sm"
-                style={{ background: generatedTheme.tokens[tok] }}
-                title={`${tok}: ${generatedTheme.tokens[tok]}`}
+                style={{ background: generatedTheme.tokens?.[tok] ?? '#ccc' }}
+                title={`${tok}: ${generatedTheme.tokens?.[tok] ?? 'N/A'}`}
               />
             ))}
             <Badge variant="outline" className="text-xs">

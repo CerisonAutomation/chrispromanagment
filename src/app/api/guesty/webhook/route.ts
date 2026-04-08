@@ -16,7 +16,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { enqueueWebhookEvent } from '@/lib/qstash/client';
-import type { GuestyWebhookPayload } from '@/lib/guesty/types';
+import type { GuestyWebhookPayload } from '@/types/guesty';
 
 export const runtime = 'nodejs'; // crypto requires Node runtime
 export const dynamic = 'force-dynamic';

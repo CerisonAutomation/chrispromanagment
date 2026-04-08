@@ -607,7 +607,7 @@ export function useBulkAudit(): AIHookResult<BulkAuditInput, BulkAuditOutput> {
   const execute = useCallback(async (input: BulkAuditInput): Promise<BulkAuditOutput | null> => {
     setProgress((prev: { current: number; total: number }) => ({ ...prev, current: 0, total: input.slugs.length }));
 
-    const results: BulkAuditOutput['results'] = [];
+    const results: Array<{ slug: string; audit: any; error?: string }> = [];
 
     for (const slug of input.slugs) {
       const audit = await auditHook.execute({ slug });

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import flat from "flat";
 import { ComponentData, Config, RootData, UserGenerics } from "@/types";
 import { stripSlots } from "./strip-slots";

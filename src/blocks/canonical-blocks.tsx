@@ -31,7 +31,7 @@ import { FeatureGrid } from './feature-grid';
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Divider } from './divider';
-import { Spacer, Columns, Container, Divider as LayoutDivider } from './layout';
+import { Spacer, Columns, Container } from './layout';
 import { LogoBar } from './logo-bar';
 import { CtaBanner } from './cta-banner';
 import { StatsSection } from './stats-section';

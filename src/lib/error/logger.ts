@@ -167,7 +167,7 @@ function log(level: ErrorSeverity, message: string, context?: Record<string, unk
   }
   
   // Remote logging (async, non-blocking)
-  sendToRemote(entry);
+  sendToRemote(entry).catch(() => { /* Silent fail - remote logging should not crash app */ });
 }
 
 /**

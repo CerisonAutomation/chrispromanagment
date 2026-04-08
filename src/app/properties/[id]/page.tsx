@@ -6,6 +6,7 @@ import { getListing } from '@/lib/guesty-api';
 import { BookingWidget } from '@/components/booking/BookingWidget';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import type { GuestyPicture } from '@/types/guesty';
 
 export const revalidate = 300;
 
@@ -103,7 +104,7 @@ export default async function PropertyDetailPage({
           {/* Image gallery */}
           {images.length > 1 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {images.slice(1, 7).map((img, i) => (
+              {images.slice(1, 7).map((img: GuestyPicture, i: number) => (
                 <div key={i} className="relative aspect-video rounded-xl overflow-hidden">
                   <Image
                     src={img.thumbnail || '/placeholder-property.jpg'}

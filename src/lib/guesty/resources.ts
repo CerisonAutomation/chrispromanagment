@@ -22,6 +22,7 @@ import type {
   GuestyGuestProfile,
   GuestyGuestsResponse,
   GuestyQuote,
+  GuestyQuoteRaw,
   GuestyTask,
   GuestyTasksResponse,
   GuestyConversation,
@@ -30,7 +31,7 @@ import type {
   GuestyOwnersResponse,
   GuestyInvoice,
   GuestyInvoicesResponse,
-} from './types';
+} from './types.ts';
 
 // ─── Listings ──────────────────────────────────────────────────────────────────
 
@@ -179,22 +180,24 @@ export async function getQuote(opts: {
   checkIn: string;
   checkOut: string;
   guestsCount?: number;
-}): Promise<GuestyQuote> {
+}): Promise<GuestyQuoteRaw> {
   // Booking Engine API uses checkInDateLocalized / checkOutDateLocalized
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return beCreateQuote({
     listingId: opts.listingId,
     checkInDateLocalized: opts.checkIn,
     checkOutDateLocalized: opts.checkOut,
     guestsCount: opts.guestsCount ?? 1,
-  }) as Promise<GuestyQuote>;
+  }) as unknown as Promise<GuestyQuoteRaw>;
 }
 
 /**
  * Retrieve an existing quote by ID via the Guesty Booking Engine API.
  * Delegates to src/lib/guesty/booking-api.ts getQuote().
  */
-export async function getQuoteById(quoteId: string): Promise<GuestyQuote> {
-  return beGetQuote(quoteId) as Promise<GuestyQuote>;
+export async function getQuoteById(quoteId: string): Promise<GuestyQuoteRaw> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return beGetQuote(quoteId) as unknown as Promise<GuestyQuoteRaw>;
 }
 
 // ─── Tasks ───────────────────────────────────────────────────────────────────────

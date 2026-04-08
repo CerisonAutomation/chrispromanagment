@@ -5,10 +5,8 @@
  */
 import { redirect } from 'next/navigation';
 import { getPageBySlug } from '@/lib/supabase';
-import puckConfig from '@/puck.config';
-import { Render } from '@measured/puck';
+import { PuckClientRenderer } from '@/components/puck-client-renderer';
 import type { Metadata } from 'next';
-import type { PuckData } from '@/types';
 
 export const revalidate = 60;
 
@@ -36,7 +34,7 @@ export default async function HomePage() {
 
   return (
     <main>
-      <Render config={puckConfig} data={pageContent} />
+      <PuckClientRenderer data={pageContent} />
     </main>
   );
 }

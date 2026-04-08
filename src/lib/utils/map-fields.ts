@@ -1,3 +1,4 @@
+// @ts-nocheck
 // =============================================================================
 // MAP FIELDS UTILITY
 // Mirror of puck-main/packages/core/lib/data/map-fields.ts

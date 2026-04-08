@@ -178,7 +178,7 @@ export default function MediaLibrary({
       }
 
       // Refresh list after all uploads
-      fetchMedia();
+      fetchMedia().catch(() => { /* Silent fail - user sees stale list on error */ });
     },
     [fetchMedia]
   );
@@ -254,7 +254,9 @@ export default function MediaLibrary({
         return;
       }
       const droppedFiles = Array.from(e.dataTransfer.files);
-      if (droppedFiles.length) uploadFiles(droppedFiles);
+      if (droppedFiles.length) {
+        uploadFiles(droppedFiles).catch(() => { /* Silent fail - error shown in upload UI */ });
+      }
     },
     [uploadFiles]
   );
@@ -265,7 +267,9 @@ export default function MediaLibrary({
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
-      if (files.length) uploadFiles(files);
+      if (files.length) {
+        uploadFiles(files).catch(() => { /* Silent fail - error shown in upload UI */ });
+      }
       // Reset input so the same file can be re-selected
       e.target.value = "";
     },

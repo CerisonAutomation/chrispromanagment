@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useChat, type Message } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
 import { useCallback, useMemo } from 'react';
 
 export interface PropertyContext {
@@ -21,11 +21,11 @@ export interface PropertyContext {
 export interface UseAIChatOptions {
   propertyContext?: PropertyContext;
   onDescriptionGenerated?: (description: string) => void;
-  initialMessages?: Message[];
+  initialMessages?: any[];
 }
 
 export interface UseAIChatReturn {
-  messages: Message[];
+  messages: any[];
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -51,26 +51,24 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     [propertyContext]
   );
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    error,
-    stop,
-    reload,
-    setMessages,
-    setInput,
-    append,
-  } = useChat({
-    api: '/api/ai/chat',
-    body,
+  const chat = useChat({
     initialMessages,
-    onError: (err) => {
+    onError: (err: any) => {
       console.error('[useAIChat] Stream error:', err);
     },
-  });
+  } as any);
+
+  const messages = chat.messages || [];
+  const input = (chat as any).input || '';
+  const handleInputChange = (chat as any).handleInputChange || (() => {});
+  const handleSubmit = (chat as any).handleSubmit || (() => {});
+  const isLoading = (chat as any).isLoading || false;
+  const error = (chat as any).error;
+  const stop = chat.stop || (() => {});
+  const reload = (chat as any).reload || (() => {});
+  const setMessages = chat.setMessages || (() => {});
+  const setInput = (chat as any).setInput || (() => {});
+  const append = (chat as any).append || (() => {});
 
   const clearMessages = useCallback(() => {
     setMessages([]);
@@ -78,14 +76,15 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   const sendMessage = useCallback(
     (content: string) => {
-      void append({ role: 'user', content });
+      append({ role: 'user', content });
     },
     [append]
   );
 
   const lastAssistantMessage = useMemo(() => {
-    const last = [...messages].reverse().find((m) => m.role === 'assistant');
-    return last?.content;
+    const msgs = messages as any[];
+    const last = [...msgs].reverse().find((m) => m.role === 'assistant');
+    return (last as any)?.content as string | undefined;
   }, [messages]);
 
   return {

@@ -33,7 +33,9 @@ export function PropertyDescriptionWriter({ propertyData, onAccept, className }:
   const { description, generate, isStreaming, error, stop } = useAIDescription();
 
   const handleGenerate = useCallback(() => {
-    void generate({ ...propertyData, style, language, maxLength: 300 });
+    generate({ ...propertyData, style, language, maxLength: 300 }).catch((err) => {
+      console.error('[PropertyDescriptionWriter] Failed to generate:', err);
+    });
   }, [generate, propertyData, style, language]);
 
   const handleCopy = useCallback(async () => {

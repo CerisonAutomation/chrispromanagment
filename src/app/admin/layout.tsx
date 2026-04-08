@@ -1,35 +1,19 @@
 /**
  * @fileoverview Admin layout — Premium Malta Gold dark sidebar + Supabase auth gate.
  * 15/10 glassmorphism design with animated navigation.
+ * 
+ * OFFICIAL PATTERN: @supabase/ssr with canonical server client
+ * https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { getUser } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: { template: '%s | Christiano CMS', default: 'Admin' },
 };
-
-async function getUser() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cs) {
-          cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        },
-      },
-    }
-  );
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
-}
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: '⬛', exact: true },

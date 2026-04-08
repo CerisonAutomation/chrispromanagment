@@ -2,7 +2,7 @@
  * @fileoverview QuoteSummary — price breakdown component for the booking widget.
  */
 import { formatCurrency } from '@/lib/utils';
-import type { GuestyQuoteResult } from '@/types';
+import type { GuestyQuoteResult } from '@/types/guesty';
 
 interface QuoteSummaryProps {
   quote: GuestyQuoteResult;

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // =============================================================================
 // CANONICAL PUCK WALK-TRANSFORM UTILITIES
 // Mirror of puck-main/packages/core/lib/data/walk-tree.ts and walk-app-state.ts

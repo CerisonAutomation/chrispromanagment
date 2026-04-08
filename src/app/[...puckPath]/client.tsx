@@ -5,8 +5,8 @@
 
 "use client";
 
-import type {Data} from "@puckeditor/core";
-import {Render} from "@puckeditor/core";
+import type {Data} from "@measured/puck";
+import {Render} from "@measured/puck";
 import config from "@/puck.config";
 
 interface ClientProps {

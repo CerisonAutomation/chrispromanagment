@@ -15,8 +15,6 @@ export const Columns: ComponentConfig<{
   backgroundColor: string;
 }> = {
   label: "Columns",
-  category: "Layout",
-  metadata: { description: "Responsive grid columns layout with nested drop zones" },
   defaultProps: {
     columns: 2,
     gap: 32,
@@ -70,8 +68,6 @@ export const Container: ComponentConfig<{
   backgroundColor: string;
 }> = {
   label: "Container",
-  category: "Layout",
-  metadata: { description: "Constrained width container with single drop zone" },
   defaultProps: {
     maxWidth: "80rem",
     padding: 64,
@@ -112,8 +108,6 @@ export const Spacer: ComponentConfig<{
   height: number;
 }> = {
   label: "Spacer",
-  category: "Layout",
-  metadata: { description: "Vertical spacing element" },
   defaultProps: {
     height: 64,
   },
@@ -131,8 +125,6 @@ export const Divider: ComponentConfig<{
   thickness: number;
 }> = {
   label: "Divider",
-  category: "Layout",
-  metadata: { description: "Horizontal divider line" },
   defaultProps: {
     style: "solid",
     color: "#e5e5e5",

@@ -79,7 +79,7 @@ html {
 body {
   background: var(--pm-bg);
   color: var(--pm-text);
-  font-family: var(--pm-font);
+  font-family: var(--pm-font), system-ui, sans-serif;
   line-height: 1.6;
   min-height: 100dvh;
 }

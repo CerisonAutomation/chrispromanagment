@@ -5,7 +5,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
-import type { GuestyListing, GuestyListingsResult } from '@/types';
+import type { GuestyListing, GuestyListingsResult } from '@/types/guesty';
 
 async function fetchListings(limit = 20, skip = 0): Promise<GuestyListingsResult> {
   const res = await fetch(`/api/listings?limit=${limit}&skip=${skip}`);

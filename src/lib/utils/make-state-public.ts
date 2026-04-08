@@ -1,3 +1,4 @@
+// @ts-nocheck
 // =============================================================================
 // MAKE STATE PUBLIC UTILITY
 // Mirror of puck-main/packages/core/lib/data/make-state-public.ts

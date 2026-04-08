@@ -201,12 +201,12 @@ export function PuckAIPanel({
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  void handleGenerate();
+                  handleGenerate();
                 }
               }}
             />
             <Button
-              onClick={() => void handleGenerate()}
+              onClick={handleGenerate}
               disabled={isLoading || !prompt.trim()}
               size="sm"
               className={mode === 'blocks' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}

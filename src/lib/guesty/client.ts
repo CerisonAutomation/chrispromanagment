@@ -12,7 +12,7 @@
  */
 
 import { Redis } from '@upstash/redis';
-import type { GuestyAuthToken, GuestyPaginatedResponse } from './types';
+import type { GuestyAuthToken, GuestyPaginatedResponse } from './types.ts';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -122,7 +122,7 @@ export async function guestyFetchAll<T>(
       params: { ...params, limit: String(limit), skip: String(skip) },
     });
     all.push(...data.results);
-    if (all.length >= data.count || data.results.length < limit) break;
+    if (all.length >= (data.count ?? 0) || data.results.length < limit) break;
     skip += limit;
   }
 

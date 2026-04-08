@@ -3,8 +3,9 @@
  * Auto-syncs on every data change with 1s debounce.
  */
 'use client';
-import { useCallback, useEffect, useRef } from 'react';
-import type { PuckData, LocalDraft } from '@/types';
+import { useCallback } from 'react';
+import type { PuckData } from '@/types/puck';
+import type { LocalDraft } from '@/types/cms';
 import { safeJson } from '@/lib/utils';
 
 const DRAFT_KEY_PREFIX = 'puck_draft_';

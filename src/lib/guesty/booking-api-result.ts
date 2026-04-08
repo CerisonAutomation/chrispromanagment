@@ -14,6 +14,8 @@ import {
   getCities,
   getReviews,
   createQuote,
+  getQuote,
+  applyCoupon,
   type ListingsParams,
   type CreateQuoteParams,
   type GuestyListing,
@@ -104,6 +106,35 @@ export async function getReviewsResult(
 ): Promise<Result<unknown[]>> {
   try {
     return ok(await getReviews(listingId));
+  } catch (e) {
+    return err(e);
+  }
+}
+
+/**
+ * Result-wrapped getQuote().
+ * Route handler: src/app/api/guesty/quotes/[quoteId]/route.ts
+ */
+export async function getQuoteResult(
+  quoteId: string,
+): Promise<Result<GuestyQuote>> {
+  try {
+    return ok(await getQuote(quoteId));
+  } catch (e) {
+    return err(e);
+  }
+}
+
+/**
+ * Result-wrapped applyCoupon().
+ * Route handler: src/app/api/guesty/quotes/[quoteId]/apply-coupon/route.ts
+ */
+export async function applyCouponResult(
+  quoteId: string,
+  couponCode: string,
+): Promise<Result<GuestyQuote>> {
+  try {
+    return ok(await applyCoupon(quoteId, couponCode));
   } catch (e) {
     return err(e);
   }

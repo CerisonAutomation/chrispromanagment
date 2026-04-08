@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
-              "font-src 'self'",
+              "font-src 'self' https://r2cdn.perplexity.ai",
               "connect-src 'self' https://*.supabase.co https://*.guesty.com https://api.openai.com",
               "frame-ancestors 'none'",
             ].join('; '),
