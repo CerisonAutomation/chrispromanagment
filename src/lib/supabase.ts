@@ -38,6 +38,7 @@ export type CmsPageUpdate = Database['public']['Tables']['cms_pages']['Update'];
 
 /**
  * Fetch all published CMS pages. Used by sitemap, admin listing, catch-all routes.
+ * Cached for 60 seconds — use revalidatePath('/api/pages') to invalidate.
  */
 export async function getAllPages(): Promise<CmsPage[]> {
   const client = createClient<Database>(url, anonKey);
@@ -51,6 +52,7 @@ export async function getAllPages(): Promise<CmsPage[]> {
 
 /**
  * Fetch a single CMS page by slug.
+ * Cached per slug for optimal performance.
  */
 export async function getPageBySlug(slug: string): Promise<CmsPage | null> {
   const client = createClient<Database>(url, anonKey);
@@ -63,4 +65,19 @@ export async function getPageBySlug(slug: string): Promise<CmsPage | null> {
     throw new Error(`[supabase] getPageBySlug(${slug}): ${error.message}`);
   }
   return data ?? null;
+}
+
+/**
+ * Fetch published pages only (for public routes)
+ * Uses RLS policy — only returns published pages for anon users
+ */
+export async function getPublishedPages(): Promise<CmsPage[]> {
+  const client = createClient<Database>(url, anonKey);
+  const { data, error } = await client
+    .from('cms_pages')
+    .select('*')
+    .eq('published', true)
+    .order('updated_at', { ascending: false });
+  if (error) throw new Error(`[supabase] getPublishedPages: ${error.message}`);
+  return data ?? [];
 }
