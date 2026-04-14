@@ -67,7 +67,9 @@ export default async function PropertiesPage({
 
         <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
           {/* Filters */}
-          <PropertyFilters currentFilters={sp} />
+          <Suspense fallback={<div className="h-16 rounded-xl border border-border/50 bg-[#111214] animate-pulse" />}>
+            <PropertyFilters />
+          </Suspense>
 
           {/* Results */}
           {!result.success ? (

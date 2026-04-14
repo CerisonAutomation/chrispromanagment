@@ -1,24 +1,16 @@
 /**
  * @fileoverview PropertyFilters — URL-driven filter bar for the properties listing.
- * Client Component that updates search params on submit.
+ * Reads from and writes to URLSearchParams. State is always the URL — no drift.
  */
 'use client';
-import { useRouter } from 'next/navigation';
-import { type FormEvent, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface PropertyFiltersProps {
-  currentFilters: {
-    bedrooms?: string;
-    minPrice?: string;
-    maxPrice?: string;
-  };
-}
-
 const BEDROOM_OPTIONS = [
-  { value: '', label: 'Any bedrooms' },
+  { value: '__any', label: 'Any bedrooms' },
   { value: '1', label: '1 bedroom' },
   { value: '2', label: '2 bedrooms' },
   { value: '3', label: '3 bedrooms' },
@@ -26,7 +18,7 @@ const BEDROOM_OPTIONS = [
 ] as const;
 
 const MIN_PRICE_OPTIONS = [
-  { value: '', label: 'No min' },
+  { value: '__any', label: 'No min' },
   { value: '50', label: '€50 / night' },
   { value: '100', label: '€100 / night' },
   { value: '200', label: '€200 / night' },
@@ -34,38 +26,40 @@ const MIN_PRICE_OPTIONS = [
 ] as const;
 
 const MAX_PRICE_OPTIONS = [
-  { value: '', label: 'No max' },
+  { value: '__any', label: 'No max' },
   { value: '150', label: '€150 / night' },
   { value: '300', label: '€300 / night' },
   { value: '600', label: '€600 / night' },
   { value: '1200', label: '€1 200 / night' },
 ] as const;
 
-export function PropertyFilters({ currentFilters }: PropertyFiltersProps) {
+export function PropertyFilters() {
   const router = useRouter();
-  const bedroomsRef = useRef<string>(currentFilters.bedrooms ?? '');
-  const minPriceRef = useRef<string>(currentFilters.minPrice ?? '');
-  const maxPriceRef = useRef<string>(currentFilters.maxPrice ?? '');
+  const searchParams = useSearchParams();
 
-  function apply() {
-    const sp = new URLSearchParams();
-    if (bedroomsRef.current) sp.set('bedrooms', bedroomsRef.current);
-    if (minPriceRef.current) sp.set('minPrice', minPriceRef.current);
-    if (maxPriceRef.current) sp.set('maxPrice', maxPriceRef.current);
-    // Drop cursor on filter change to start from the first page
-    const qs = sp.toString();
-    router.push(`/properties${qs ? `?${qs}` : ''}`);
-  }
+  const bedrooms = searchParams.get('bedrooms') ?? '';
+  const minPrice = searchParams.get('minPrice') ?? '';
+  const maxPrice = searchParams.get('maxPrice') ?? '';
+  const hasFilters = !!(bedrooms || minPrice || maxPrice);
 
-  function reset(e: FormEvent) {
-    e.preventDefault();
-    bedroomsRef.current = '';
-    minPriceRef.current = '';
-    maxPriceRef.current = '';
+  const applyFilter = useCallback(
+    (key: string, value: string) => {
+      const sp = new URLSearchParams(searchParams.toString());
+      // Drop cursor so we always start at page 1 after a filter change
+      sp.delete('cursor');
+      if (value && value !== '__any') {
+        sp.set(key, value);
+      } else {
+        sp.delete(key);
+      }
+      router.push(`/properties${sp.toString() ? `?${sp.toString()}` : ''}`);
+    },
+    [router, searchParams],
+  );
+
+  function clearFilters() {
     router.push('/properties');
   }
-
-  const hasFilters = !!(currentFilters.bedrooms || currentFilters.minPrice || currentFilters.maxPrice);
 
   return (
     <div className="flex flex-wrap items-end gap-4 py-4 px-5 rounded-xl border border-border/50 bg-[#111214]">
@@ -73,18 +67,15 @@ export function PropertyFilters({ currentFilters }: PropertyFiltersProps) {
       <div className="space-y-1 min-w-[160px]">
         <Label className="text-xs text-[rgba(232,228,220,0.5)]">Bedrooms</Label>
         <Select
-          defaultValue={currentFilters.bedrooms ?? ''}
-          onValueChange={(v) => {
-            bedroomsRef.current = v;
-            apply();
-          }}
+          value={bedrooms || '__any'}
+          onValueChange={(v) => applyFilter('bedrooms', v)}
         >
           <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="Any bedrooms" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {BEDROOM_OPTIONS.map(({ value, label }) => (
-              <SelectItem key={value || 'any'} value={value}>
+              <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
             ))}
@@ -96,18 +87,15 @@ export function PropertyFilters({ currentFilters }: PropertyFiltersProps) {
       <div className="space-y-1 min-w-[160px]">
         <Label className="text-xs text-[rgba(232,228,220,0.5)]">Min price</Label>
         <Select
-          defaultValue={currentFilters.minPrice ?? ''}
-          onValueChange={(v) => {
-            minPriceRef.current = v;
-            apply();
-          }}
+          value={minPrice || '__any'}
+          onValueChange={(v) => applyFilter('minPrice', v)}
         >
           <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="No min" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {MIN_PRICE_OPTIONS.map(({ value, label }) => (
-              <SelectItem key={value || 'nomin'} value={value}>
+              <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
             ))}
@@ -119,18 +107,15 @@ export function PropertyFilters({ currentFilters }: PropertyFiltersProps) {
       <div className="space-y-1 min-w-[160px]">
         <Label className="text-xs text-[rgba(232,228,220,0.5)]">Max price</Label>
         <Select
-          defaultValue={currentFilters.maxPrice ?? ''}
-          onValueChange={(v) => {
-            maxPriceRef.current = v;
-            apply();
-          }}
+          value={maxPrice || '__any'}
+          onValueChange={(v) => applyFilter('maxPrice', v)}
         >
           <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder="No max" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {MAX_PRICE_OPTIONS.map(({ value, label }) => (
-              <SelectItem key={value || 'nomax'} value={value}>
+              <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
             ))}
@@ -143,7 +128,7 @@ export function PropertyFilters({ currentFilters }: PropertyFiltersProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={reset}
+          onClick={clearFilters}
           className="text-xs text-[rgba(232,228,220,0.4)] hover:text-[#c8a96a] self-end"
         >
           Clear filters ✕
