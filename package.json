@@ -10,7 +10,14 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "dev:booking": "pnpm --filter @cpm/booking dev",
+    "dev:enterprise": "pnpm --filter @cpm/enterprise dev",
+    "dev:website": "pnpm --filter @cpm/website dev",
+    "dev:all": "turbo dev",
+    "build:all": "turbo build",
+    "lint:all": "turbo lint",
+    "type-check:all": "turbo type-check"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.52",
@@ -96,6 +103,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "turbo": "^2.5.4",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/object-hash": "^3.0.6",
     "@types/react": "^19.2.14",

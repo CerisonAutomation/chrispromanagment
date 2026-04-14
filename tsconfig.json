@@ -26,7 +26,10 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@cpm/shared-types": ["./packages/shared-types/src/index.ts"],
+      "@cpm/shared-utils": ["./packages/shared-utils/src/index.ts"],
+      "@cpm/ui-components": ["./packages/ui-components/src/index.ts"]
     }
   },
   "include": [
@@ -41,6 +44,8 @@
     "skills",
     "puck-builder-mcp",
     "docs",
-    "scripts"
+    "scripts",
+    "apps",
+    "packages"
   ]
 }
