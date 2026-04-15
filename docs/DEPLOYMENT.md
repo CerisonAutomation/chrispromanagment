@@ -142,6 +142,9 @@ After deployment, verify:
 ### TypeScript build errors
 
 ```bash
-# Run type check locally
+# Run type check via pnpm turbo (recommended — respects workspace configs)
+pnpm turbo type-check
+
+# Or run on root CMS app only
 npx tsc --noEmit
 ```
