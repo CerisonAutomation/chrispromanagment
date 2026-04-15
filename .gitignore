@@ -37,11 +37,11 @@ yarn-debug.log*
 pnpm-debug.log*
 bun-debug.log*
 
-# ─── Lock Files — keep only package-lock.json (npm) ─────────────────────────
+# ─── Lock Files — pnpm is the workspace package manager ─────────────────────
 bun.lock
 bun.lockb
 yarn.lock
-pnpm-lock.yaml
+package-lock.json
 
 # ─── Root-level Junk / Scaffold / Port Artifacts ─────────────────────────────
 3001
