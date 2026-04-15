@@ -1,0 +1,1 @@
+export { baseNextConfig } from './next';
