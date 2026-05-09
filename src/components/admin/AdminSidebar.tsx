@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, Settings, Plug, LogOut, Eye, FileText, ChevronRight,
-  Palette, Layers, Image, LayoutTemplate, Activity, ChevronLeft, Menu
+  Palette, Layers, Image, LayoutTemplate, Activity, ChevronLeft, Menu, MonitorSmartphone
 } from "lucide-react";
 import type { CmsContent } from "@/hooks/use-cms";
 import { motion, AnimatePresence } from "framer-motion";
