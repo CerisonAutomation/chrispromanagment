@@ -97,8 +97,15 @@ export default function Admin() {
         sections={sections || []}
         onLogout={() => supabase.auth.signOut()}
       />
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
+      <main className={`flex-1 overflow-y-auto ${activeTab === "mirror" ? "p-6" : "p-6 lg:p-8"}`}>
+        <div className={activeTab === "mirror" ? "w-full" : "max-w-5xl mx-auto"}>
+          {activeTab === "mirror" && (
+            <MirrorCanvas
+              sections={sections || []}
+              onSave={handleSaveContent}
+              isSaving={updateContent.isPending}
+            />
+          )}
           {activeTab === "dashboard" && (
             <AdminDashboard
               sections={sections || []}
