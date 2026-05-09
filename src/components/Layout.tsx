@@ -2,11 +2,12 @@
  * Shared Layout — wraps every public page with the same Navbar + Footer.
  * Wizard state lives here so any page can open it via context.
  */
-import { useState, createContext, useContext, type ReactNode } from "react";
+import { useState, createContext, useContext, useEffect, type ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import WizardModal from "./WizardModal";
 import FloatingCTA from "./FloatingCTA";
+import { useCmsRealtime } from "@/hooks/use-cms-realtime";
 
 interface WizardCtx {
   openWizard: () => void;
