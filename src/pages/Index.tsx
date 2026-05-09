@@ -16,31 +16,31 @@ function IndexContent() {
 
   return (
     <>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="hero">
         <Hero onOpenWizard={openWizard} />
       </ScrollSection>
-      <ScrollSection>
+      <ScrollSection sectionKey="proofStrip">
         <ProofStrip />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="process">
         <ProcessSection onOpenWizard={openWizard} />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="portfolio">
         <PortfolioSection />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="pricing">
         <PricingSection onOpenWizard={openWizard} />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="testimonials">
         <TestimonialsSection />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="about">
         <AboutSection onOpenWizard={openWizard} />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="ctaBanner">
         <CTABanner onOpenWizard={openWizard} />
       </ScrollSection>
-      <ScrollSection fitScreen>
+      <ScrollSection fitScreen sectionKey="faq">
         <FAQSection />
       </ScrollSection>
     </>

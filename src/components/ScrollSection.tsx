@@ -6,9 +6,11 @@ interface ScrollSectionProps {
   className?: string;
   /** If true, section tries to fill viewport height */
   fitScreen?: boolean;
+  /** CMS section key for admin mirror targeting */
+  sectionKey?: string;
 }
 
-export default function ScrollSection({ children, className = "", fitScreen = false }: ScrollSectionProps) {
+export default function ScrollSection({ children, className = "", fitScreen = false, sectionKey }: ScrollSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -22,12 +24,13 @@ export default function ScrollSection({ children, className = "", fitScreen = fa
   const fitClass = fitScreen ? "min-h-[100dvh] flex flex-col justify-center" : "";
 
   if (prefersReduced) {
-    return <div className={`${fitClass} ${className}`}>{children}</div>;
+    return <div data-section-key={sectionKey} className={`${fitClass} ${className}`}>{children}</div>;
   }
 
   return (
-    <motion.div ref={ref} style={{ opacity, y }} className={`${fitClass} ${className}`}>
+    <motion.div ref={ref} data-section-key={sectionKey} style={{ opacity, y }} className={`${fitClass} ${className}`}>
       {children}
     </motion.div>
   );
 }
+

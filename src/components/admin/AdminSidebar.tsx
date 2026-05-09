@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, Settings, Plug, LogOut, Eye, FileText, ChevronRight,
-  Palette, Layers, Image, LayoutTemplate, Activity, ChevronLeft, Menu
+  Palette, Layers, Image, LayoutTemplate, Activity, ChevronLeft, Menu, MonitorSmartphone
 } from "lucide-react";
 import type { CmsContent } from "@/hooks/use-cms";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, activeSection, s
   const [collapsed, setCollapsed] = useState(false);
 
   const tabs = [
+    { key: "mirror", label: "Live Mirror", icon: MonitorSmartphone },
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "sections", label: "Content", icon: FileText },
     { key: "page-builder", label: "Page Builder", icon: Layers },

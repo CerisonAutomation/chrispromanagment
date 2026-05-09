@@ -67,7 +67,7 @@ export function useUpdateCmsContent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ sectionKey, content, isVisible }: { sectionKey: string; content: Json; isVisible?: boolean }) => {
-      const update: Record<string, Json | boolean> = { content };
+      const update: { content: Json; is_visible?: boolean } = { content };
       if (isVisible !== undefined) update.is_visible = isVisible;
       const { error } = await supabase
         .from("cms_content")

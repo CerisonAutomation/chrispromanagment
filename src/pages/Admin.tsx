@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCmsRealtime } from "@/hooks/use-cms-realtime";
 import { useCmsContent, useCmsSettings, useUpdateCmsContent, useUpdateCmsSetting } from "@/hooks/use-cms";
 import type { Json } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,7 @@ import MediaManager from "@/components/admin/MediaManager";
 import ComponentLibrary from "@/components/admin/ComponentLibrary";
 import TemplatesManager from "@/components/admin/TemplatesManager";
 import ActivityFeed from "@/components/admin/ActivityFeed";
+import MirrorCanvas from "@/components/admin/MirrorCanvas";
 import type { Session } from "@supabase/supabase-js";
 
 function PageBuilderWrapper({ onSave, isSaving }: { onSave: (key: string, content: Json) => Promise<void>; isSaving: boolean }) {
@@ -36,9 +38,10 @@ function PageBuilderWrapper({ onSave, isSaving }: { onSave: (key: string, conten
 export default function Admin() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [activeTab, setActiveTab] = useState<string>("mirror");
   const [activeSection, setActiveSection] = useState<string>("hero");
   const { toast } = useToast();
+  useCmsRealtime();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -96,8 +99,15 @@ export default function Admin() {
         sections={sections || []}
         onLogout={() => supabase.auth.signOut()}
       />
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
+      <main className={`flex-1 overflow-y-auto ${activeTab === "mirror" ? "p-6" : "p-6 lg:p-8"}`}>
+        <div className={activeTab === "mirror" ? "w-full" : "max-w-5xl mx-auto"}>
+          {activeTab === "mirror" && (
+            <MirrorCanvas
+              sections={sections || []}
+              onSave={handleSaveContent}
+              isSaving={updateContent.isPending}
+            />
+          )}
           {activeTab === "dashboard" && (
             <AdminDashboard
               sections={sections || []}
