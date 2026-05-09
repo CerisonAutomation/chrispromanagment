@@ -19,6 +19,7 @@ export default function AdminSidebar({ activeTab, setActiveTab, activeSection, s
   const [collapsed, setCollapsed] = useState(false);
 
   const tabs = [
+    { key: "mirror", label: "Live Mirror", icon: MonitorSmartphone },
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "sections", label: "Content", icon: FileText },
     { key: "page-builder", label: "Page Builder", icon: Layers },
