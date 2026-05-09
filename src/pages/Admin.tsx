@@ -41,6 +41,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<string>("mirror");
   const [activeSection, setActiveSection] = useState<string>("hero");
   const { toast } = useToast();
+  useCmsRealtime();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
