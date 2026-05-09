@@ -14,9 +14,13 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/admin` },
+        });
         if (error) throw error;
-        toast({ title: "Check your email", description: "A confirmation link has been sent." });
+        toast({ title: "Account ready", description: "You're signed in." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
