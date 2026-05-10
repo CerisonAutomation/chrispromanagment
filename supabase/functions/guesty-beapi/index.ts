@@ -1,7 +1,10 @@
 // Guesty Booking Engine API BFF
 // OAuth2 client_credentials with cached token + proxied endpoints.
 // Docs: base = https://booking.guesty.com/api  | token = https://booking.guesty.com/oauth2/token
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const TOKEN_URL = "https://open-api.guesty.com/oauth2/token";
 const BEAPI_BASE = "https://booking.guesty.com/api";
