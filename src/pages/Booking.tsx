@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import ScrollSection from "@/components/ScrollSection";
 import bookingHeroBg from "@/assets/booking-hero.jpg";
 import { siteBlueprint } from "@/lib/site-blueprint";
+import GuestyLiveListings from "@/components/GuestyLiveListings";
 import portfolio1 from "@/assets/portfolio-1.jpg";
 import portfolio2 from "@/assets/portfolio-2.jpg";
 import portfolio3 from "@/assets/portfolio-3.jpg";
@@ -331,6 +332,9 @@ export default function Booking() {
   return (
     <Layout mode="guest" hideFloatingCTA>
       <BookingHero />
+      <ScrollSection fitScreen>
+        <GuestyLiveListings />
+      </ScrollSection>
       <ScrollSection fitScreen>
         <PropertyCollection />
       </ScrollSection>
