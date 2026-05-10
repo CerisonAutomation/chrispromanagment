@@ -6,7 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const TOKEN_URL = "https://open-api.guesty.com/oauth2/token";
+const TOKEN_URLS = [
+  "https://booking.guesty.com/oauth2/token",
+  "https://open-api.guesty.com/oauth2/token",
+];
 const BEAPI_BASE = "https://booking.guesty.com/api";
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
@@ -22,23 +25,36 @@ async function getToken(): Promise<string> {
   if (!clientId || !clientSecret) throw new Error("Guesty credentials not configured");
 
   inflight = (async () => {
-    const body = new URLSearchParams({
-      grant_type: "client_credentials",
-      scope: "booking_engine:api",
-      client_id: clientId,
-      client_secret: clientSecret,
-    });
-    const res = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body,
-    });
-    const text = await res.text();
-    if (!res.ok) throw new Error(`Token error ${res.status}: ${text}`);
-    const json = JSON.parse(text);
-    const expiresIn = (json.expires_in ?? 86400) * 1000;
-    cachedToken = { value: json.access_token, expiresAt: Date.now() + expiresIn };
-    return cachedToken.value;
+    const attempts: Array<{ url: string; scope?: string }> = [
+      { url: TOKEN_URLS[0], scope: "booking_engine:api" },
+      { url: TOKEN_URLS[0] },
+      { url: TOKEN_URLS[1], scope: "open-api" },
+      { url: TOKEN_URLS[1] },
+    ];
+    let lastErr = "";
+    for (const a of attempts) {
+      const body = new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret,
+        ...(a.scope ? { scope: a.scope } : {}),
+      });
+      const res = await fetch(a.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+        body,
+      });
+      const text = await res.text();
+      if (res.ok) {
+        const json = JSON.parse(text);
+        const expiresIn = (json.expires_in ?? 86400) * 1000;
+        cachedToken = { value: json.access_token, expiresAt: Date.now() + expiresIn };
+        console.log(`[guesty] token via ${a.url} scope=${a.scope ?? "(none)"}`);
+        return cachedToken.value;
+      }
+      lastErr = `${a.url} ${res.status}: ${text}`;
+    }
+    throw new Error(`Token error — ${lastErr}`);
   })();
 
   try {
