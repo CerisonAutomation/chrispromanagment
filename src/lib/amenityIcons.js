@@ -33,7 +33,7 @@ import {
   Signal, SignalHigh, SignalLow, SignalZero, Bluetooth, Nfc, Airplay,
   Cast, ScreenShare, PictureInPicture, Fullscreen, SplitSquareVertical,
   Layers, LayoutDashboard, PanelLeft, PanelRight, PanelTop, PanelBottom,
-  Table, TableProperties, FormInput, ToggleLeft, ToggleRight, Slider,
+  Table, TableProperties, FormInput, ToggleLeft, ToggleRight, SlidersHorizontal as Slider,
   CircleDot, Square, Circle, Triangle, Hexagon, Octagon, Pentagon,
   Heart as HeartIcon, Star as StarIcon, Bookmark as BookmarkIcon,
   Flag as FlagIcon, Pin, MapPinOff, Route, Signpost, Milestone,
