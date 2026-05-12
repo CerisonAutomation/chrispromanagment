@@ -1,5 +1,4 @@
-// CRA -> Vite shim: map process.env.REACT_APP_* to import.meta.env equivalents
-// Must run before any other imports below it.
+// CRA -> Vite shim: process.env.REACT_APP_* keys (Vite `define` also handles these).
 const env = (import.meta as any).env || {};
 (globalThis as any).process = (globalThis as any).process || {
   env: {
@@ -10,9 +9,13 @@ const env = (import.meta as any).env || {};
   },
 };
 
+// Route all /api/* axios + fetch calls to Lovable Cloud (Supabase + edge fns).
+import "./lib/api-adapter.js";
+
 import { createRoot } from "react-dom/client";
 import "./index.css";
 // @ts-ignore - JSX entry from ported CRA app
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")!).render(<App />);
+
