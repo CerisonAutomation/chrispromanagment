@@ -1,0 +1,42 @@
+{
+  "name": "Christiano Vincenti Property Management",
+  "short_name": "CV PM Malta",
+  "description": "Malta's Premier Property Management - Full-service short-let management across Malta & Gozo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F10",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "travel", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Browse Properties",
+      "short_name": "Properties",
+      "description": "View all available properties",
+      "url": "/properties",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "For Property Owners",
+      "short_name": "Owners",
+      "description": "Information for property owners",
+      "url": "/owners",
+      "icons": [{ "src": "/logo192.png", "sizes": "192x192" }]
+    }
+  ]
+}
