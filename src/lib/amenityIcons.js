@@ -39,7 +39,7 @@ import {
   Flag as FlagIcon, Pin, MapPinOff, Route, Signpost, Milestone,
   Tent, Caravan, Landmark, Castle, Church, School, Store, Factory,
   Warehouse, Hospital, Library, GraduationCap, Briefcase as BriefcaseIcon,
-  Hammer, Wrench, Wrench as Screwdriver, Paintbrush, Palette, Scissors,
+  Hammer, Wrench, Wrench as ScrewdriverIcon, Paintbrush, Palette, Scissors,
   Ruler, Pencil, Eraser, Highlighter, PenTool, Type, AlignLeft,
   AlignCenter, AlignRight, AlignJustify, List as ListIcon, ListOrdered,
   Quote, Code, Terminal, FileCode, Bug, GitBranch, GitCommit,
