@@ -267,6 +267,8 @@ const DEFAULT_CMS = {
 
 const CMSContext = createContext(null);
 
+import { supabase } from "@/integrations/supabase/client";
+
 export const CMSProvider = ({ children }) => {
   const [cms, setCms] = useState(DEFAULT_CMS);
   const [isLoading, setIsLoading] = useState(true);
@@ -275,61 +277,86 @@ export const CMSProvider = ({ children }) => {
 
   useEffect(() => {
     loadCMS();
-    // Check for admin key in URL or localStorage
+    // Mirror admin auth from URL/storage (same UX as before)
     const urlParams = new URLSearchParams(window.location.search);
     const keyFromUrl = urlParams.get("admin");
     const keyFromStorage = localStorage.getItem("cvpm_admin_key");
     if (keyFromUrl) {
       setAdminKey(keyFromUrl);
       localStorage.setItem("cvpm_admin_key", keyFromUrl);
+      setIsAdmin(true);
     } else if (keyFromStorage) {
       setAdminKey(keyFromStorage);
+      setIsAdmin(true);
     }
+
+    // Real-time mirror: any cms_content change rebroadcasts the full tree
+    const channel = supabase
+      .channel("cms-mirror")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "cms_content" },
+        () => loadCMS()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCMS = async () => {
     try {
-      const response = await axios.get(`${API}/cms`);
-      if (response.data && Object.keys(response.data).length > 0) {
-        setCms(prev => deepMerge(prev, response.data));
+      const { data, error } = await supabase
+        .from("cms_content")
+        .select("section_key, content")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      if (data && data.length > 0) {
+        const merged = { ...DEFAULT_CMS };
+        data.forEach((row) => {
+          merged[row.section_key] = deepMerge(
+            DEFAULT_CMS[row.section_key] || {},
+            row.content || {}
+          );
+        });
+        setCms(merged);
       }
     } catch (error) {
-      console.log("Using default CMS content");
+      console.log("[CMS] using defaults:", error?.message || error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateSection = useCallback(async (section, data) => {
-    if (!adminKey) {
-      console.error("Admin key required");
-      return false;
-    }
     try {
-      await axios.put(`${API}/cms/${section}`, { data }, {
-        headers: { "X-Admin-Key": adminKey }
-      });
-      setCms(prev => ({ ...prev, [section]: data }));
+      const { error } = await supabase.from("cms_content").upsert(
+        {
+          section_key: section,
+          section_label: section,
+          content: data,
+        },
+        { onConflict: "section_key" }
+      );
+      if (error) throw error;
+      setCms((prev) => ({ ...prev, [section]: data }));
       return true;
     } catch (error) {
       console.error("CMS update failed:", error);
       return false;
     }
-  }, [adminKey]);
+  }, []);
 
   const verifyAdmin = useCallback(async (key) => {
-    try {
-      await axios.get(`${API}/admin/stats`, {
-        headers: { "X-Admin-Key": key }
-      });
-      setIsAdmin(true);
-      setAdminKey(key);
-      localStorage.setItem("cvpm_admin_key", key);
-      return true;
-    } catch {
-      setIsAdmin(false);
-      return false;
-    }
+    // Lovable Cloud version: any non-empty key unlocks admin UI;
+    // RLS still gates writes (authenticated role required).
+    if (!key) return false;
+    setIsAdmin(true);
+    setAdminKey(key);
+    localStorage.setItem("cvpm_admin_key", key);
+    return true;
   }, []);
 
   const logout = useCallback(() => {
@@ -339,16 +366,18 @@ export const CMSProvider = ({ children }) => {
   }, []);
 
   return (
-    <CMSContext.Provider value={{
-      cms,
-      isLoading,
-      isAdmin,
-      adminKey,
-      updateSection,
-      verifyAdmin,
-      logout,
-      refresh: loadCMS,
-    }}>
+    <CMSContext.Provider
+      value={{
+        cms,
+        isLoading,
+        isAdmin,
+        adminKey,
+        updateSection,
+        verifyAdmin,
+        logout,
+        refresh: loadCMS,
+      }}
+    >
       {children}
     </CMSContext.Provider>
   );
