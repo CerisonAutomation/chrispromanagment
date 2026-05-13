@@ -127,6 +127,47 @@ export default function EditModeBridge() {
     };
   }, []);
 
+  // Load + apply persisted overlays for the current URL
+  useEffect(() => {
+    if (!isInsideAdminFrame()) return;
+    let cancelled = false;
+    const apply = async () => {
+      try {
+        const { data } = await supabase
+          .from("cms_content")
+          .select("content")
+          .eq("section_key", "live_overlays")
+          .maybeSingle();
+        if (cancelled) return;
+        const items = data?.content?.items || [];
+        const path = window.location.pathname;
+        const matches = items.filter(o => o.url === path);
+        if (!matches.length) return;
+        // Wait briefly for DOM
+        const tryApply = (attempt = 0) => {
+          if (attempt > 8) return;
+          let appliedAny = false;
+          for (const m of matches) {
+            const candidates = document.querySelectorAll("h1,h2,h3,h4,h5,h6,p,span,li,blockquote,caption,label,strong,em");
+            for (const el of candidates) {
+              if (buildSelector(el) === m.selector) {
+                if (el.innerText !== m.text) el.innerText = m.text;
+                appliedAny = true;
+                break;
+              }
+            }
+          }
+          if (!appliedAny) setTimeout(() => tryApply(attempt + 1), 250);
+        };
+        setTimeout(() => tryApply(), 200);
+      } catch {}
+    };
+    apply();
+    const onPop = () => apply();
+    window.addEventListener("popstate", onPop);
+    return () => { cancelled = true; window.removeEventListener("popstate", onPop); };
+  }, []);
+
   // Inject highlight CSS + scan editable nodes when active
   useEffect(() => {
     if (!isInsideAdminFrame()) return;
