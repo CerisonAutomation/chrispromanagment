@@ -26,6 +26,7 @@ import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
 // Context
 import { ModalProvider } from "@/context/ModalContext";
 import { CMSProvider } from "@/context/CMSContext";
+import EditModeBridge from "@/components/EditModeBridge";
 
 // Simple SEO that doesn't break
 function AppSEO() {
@@ -65,6 +66,7 @@ function ScrollToHash() {
 function AppContent() {
   return (
     <>
+      <EditModeBridge />
       <AppSEO />
       <ScrollToHash />
       <Header />

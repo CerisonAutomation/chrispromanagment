@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SCHEMAS, CATEGORIES } from "@/lib/blocks";
 import { BlockErrorBoundary } from "@/components/BlockErrorBoundary";
+import { LiveNavigateMode } from "@/components/admin/LiveNavigateMode";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
   LiveHero, LiveOwnersSection, LiveAbout, LiveProperties, LiveStats, LiveFeatures,
@@ -1871,6 +1872,9 @@ export default function AdminPage() {
           <button onClick={() => setMode("studio")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "studio" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
             <Layout className="w-3 h-3 inline mr-1" />Studio
           </button>
+          <button onClick={() => setMode("live")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "live" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
+            <Eye className="w-3 h-3 inline mr-1" />Live
+          </button>
           <button onClick={() => setMode("dashboard")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "dashboard" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
             <ChartBar className="w-3 h-3 inline mr-1" />Dashboard
           </button>
@@ -1934,6 +1938,13 @@ export default function AdminPage() {
       {mode === "dashboard" && (
         <div className="flex-1 overflow-hidden">
           <AdminDashboard adminKey={localStorage.getItem("cvpm_admin_key") || ""} />
+        </div>
+      )}
+
+      {/* Live Navigate Mode */}
+      {mode === "live" && (
+        <div className="flex-1 overflow-hidden">
+          <LiveNavigateMode initialUrl="/" />
         </div>
       )}
 
