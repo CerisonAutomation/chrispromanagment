@@ -85,6 +85,22 @@ export default function EditModeBridge() {
       if (d.type === "cvpm:request-url") {
         try { window.parent.postMessage({ type: "cvpm:url", url: window.location.pathname + window.location.search + window.location.hash }, "*"); } catch {}
       }
+      if (d.type === "cvpm:edit-push" && d.selector) {
+        // Find element matching saved selector and update its text content
+        try {
+          const targets = document.querySelectorAll("[data-cvpm-edit-target]");
+          for (const el of targets) {
+            if (buildSelector(el) === d.selector) {
+              if (el !== focusedRef.current) {
+                el.innerText = d.text;
+              } else if (document.activeElement !== el) {
+                el.innerText = d.text;
+              }
+              break;
+            }
+          }
+        } catch {}
+      }
     };
     window.addEventListener("message", onMsg);
 
