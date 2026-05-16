@@ -272,25 +272,30 @@ import { supabase } from "@/integrations/supabase/client";
 export const CMSProvider = ({ children }) => {
   const [cms, setCms] = useState(DEFAULT_CMS);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminKey, setAdminKey] = useState("");
+  const [session, setSession] = useState(null);
+  const [roles, setRoles] = useState([]);
+
+  const isAdmin = roles.includes("admin");
+  const isEditor = isAdmin || roles.includes("editor");
 
   useEffect(() => {
     loadCMS();
-    // Mirror admin auth from URL/storage (same UX as before)
-    const urlParams = new URLSearchParams(window.location.search);
-    const keyFromUrl = urlParams.get("admin");
-    const keyFromStorage = localStorage.getItem("cvpm_admin_key");
-    if (keyFromUrl) {
-      setAdminKey(keyFromUrl);
-      localStorage.setItem("cvpm_admin_key", keyFromUrl);
-      setIsAdmin(true);
-    } else if (keyFromStorage) {
-      setAdminKey(keyFromStorage);
-      setIsAdmin(true);
-    }
 
-    // Real-time mirror: any cms_content change rebroadcasts the full tree
+    // Auth state — sync listener first, then initial fetch
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => {
+      setSession(sess);
+      if (sess?.user) {
+        setTimeout(() => loadRoles(sess.user.id), 0);
+      } else {
+        setRoles([]);
+      }
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session?.user) loadRoles(data.session.user.id);
+    });
+
+    // Real-time mirror
     const channel = supabase
       .channel("cms-mirror")
       .on(
@@ -301,10 +306,19 @@ export const CMSProvider = ({ children }) => {
       .subscribe();
 
     return () => {
+      sub.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadRoles = async (userId) => {
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    if (!error) setRoles((data || []).map((r) => r.role));
+  };
 
   const loadCMS = async () => {
     try {
@@ -349,20 +363,12 @@ export const CMSProvider = ({ children }) => {
     }
   }, []);
 
-  const verifyAdmin = useCallback(async (key) => {
-    // Lovable Cloud version: any non-empty key unlocks admin UI;
-    // RLS still gates writes (authenticated role required).
-    if (!key) return false;
-    setIsAdmin(true);
-    setAdminKey(key);
-    localStorage.setItem("cvpm_admin_key", key);
-    return true;
-  }, []);
+  // Deprecated — kept for back-compat. Real auth happens via /auth page.
+  const verifyAdmin = useCallback(async () => false, []);
 
-  const logout = useCallback(() => {
-    setIsAdmin(false);
-    setAdminKey("");
-    localStorage.removeItem("cvpm_admin_key");
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setRoles([]);
   }, []);
 
   return (
@@ -370,8 +376,12 @@ export const CMSProvider = ({ children }) => {
       value={{
         cms,
         isLoading,
+        session,
+        user: session?.user ?? null,
+        roles,
         isAdmin,
-        adminKey,
+        isEditor,
+        adminKey: "", // legacy
         updateSection,
         verifyAdmin,
         logout,
