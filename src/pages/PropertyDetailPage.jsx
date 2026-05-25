@@ -67,8 +67,8 @@ export const PropertyDetailPage = () => {
   const [couponLoading, setCouponLoading] = useState(false);
 
   // Gallery state
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // gallery state lives inside <PropertyGallery />
+
 
   useEffect(() => {
     fetchListing();
