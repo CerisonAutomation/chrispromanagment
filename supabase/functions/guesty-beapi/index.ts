@@ -383,32 +383,34 @@ Deno.serve(async (req) => {
 
       case "listings": {
         const qs = buildQuery(url, LISTINGS_KEYS);
-        return proxyJson(await beapi(`/listings${qs ? `?${qs}` : ""}`));
+        return cachedCall("listings", url, () => beapi(`/listings${qs ? `?${qs}` : ""}`));
       }
 
       case "search": {
         const hasDates = !!url.searchParams.get("checkIn") && !!url.searchParams.get("checkOut");
         const qs = buildQuery(url, hasDates ? AVAILABILITY_KEYS : LISTINGS_KEYS);
         const endpoint = hasDates ? "/listings/availability" : "/listings";
-        return proxyJson(await beapi(`${endpoint}${qs ? `?${qs}` : ""}`));
+        return cachedCall("search", url, () => beapi(`${endpoint}${qs ? `?${qs}` : ""}`));
       }
 
       case "listing": {
         const id = sanitizeId(url.searchParams.get("id"), "listing id");
         const fields = url.searchParams.get("fields");
-        return proxyJson(await beapi(`/listings/${id}${fields ? `?fields=${encodeURIComponent(fields)}` : ""}`));
+        return cachedCall("listing", url, () =>
+          beapi(`/listings/${id}${fields ? `?fields=${encodeURIComponent(fields)}` : ""}`));
       }
 
       case "calendar": {
         const id = sanitizeId(url.searchParams.get("id"), "listing id");
         const from = encodeURIComponent(requireParam(url, "from"));
         const to = encodeURIComponent(requireParam(url, "to"));
-        return proxyJson(await beapi(`/listings/${id}/calendar?from=${from}&to=${to}`));
+        return cachedCall("calendar", url, () =>
+          beapi(`/listings/${id}/calendar?from=${from}&to=${to}`));
       }
 
       case "cities": {
         const qs = buildQuery(url, ["skip", "limit", "searchText"]);
-        return proxyJson(await beapi(`/listings/cities${qs ? `?${qs}` : ""}`));
+        return cachedCall("cities", url, () => beapi(`/listings/cities${qs ? `?${qs}` : ""}`));
       }
 
       case "reservation-money": {
