@@ -260,6 +260,40 @@ async function readCache(key: string) {
   return data;
 }
 
+async function readLatestActionCache(action: string) {
+  const { data } = await admin
+    .from("guesty_response_cache")
+    .select("payload, status_code, fetched_at")
+    .eq("action", action)
+    .order("fetched_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data;
+}
+
+function cachePayloadWithMeta(payload: unknown, meta: Record<string, unknown>) {
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    return { ...(payload as Record<string, unknown>), ...meta };
+  }
+  return { data: payload ?? null, ...meta };
+}
+
+function fallbackPayload(action: string, reason: string) {
+  const base = {
+    _fallback: true,
+    _stale: false,
+    _stale_reason: reason,
+    _fetched_at: null,
+  };
+
+  if (action === "listings" || action === "search") {
+    return { results: [], data: [], count: 0, pagination: { total: 0 }, ...base };
+  }
+  if (action === "cities") return { results: [], data: [], count: 0, ...base };
+  if (action === "calendar") return { days: [], data: [], ...base };
+  return { data: null, ...base };
+}
+
 async function writeCache(key: string, action: string, payload: unknown, statusCode: number) {
   try {
     await admin.from("guesty_response_cache").upsert({
@@ -281,18 +315,27 @@ async function cachedCall(action: string, url: URL, fetcher: () => Promise<Respo
       await writeCache(key, action, parsed, res.status);
       return json(parsed, res.status);
     }
-    const cached = await readCache(key);
+    const cached = (await readCache(key)) ?? (await readLatestActionCache(action));
     if (cached) {
-      return json({ ...(cached.payload as object), _stale: true, _stale_reason: `upstream_${res.status}`, _fetched_at: cached.fetched_at }, 200);
+      return json(cachePayloadWithMeta(cached.payload, {
+        _stale: true,
+        _stale_reason: `upstream_${res.status}`,
+        _fetched_at: cached.fetched_at,
+      }), 200, { "X-Stale-Data": "true" });
     }
-    return json(parsed, res.status);
+    return json(fallbackPayload(action, `upstream_${res.status}`), 200, { "X-Fallback-Data": "true" });
   } catch (err) {
-    const cached = await readCache(key);
+    const cached = (await readCache(key)) ?? (await readLatestActionCache(action));
+    const msg = err instanceof Error ? err.message : String(err);
     if (cached) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return json({ ...(cached.payload as object), _stale: true, _stale_reason: msg, _fetched_at: cached.fetched_at }, 200);
+      return json(cachePayloadWithMeta(cached.payload, {
+        _stale: true,
+        _stale_reason: msg,
+        _fetched_at: cached.fetched_at,
+      }), 200, { "X-Stale-Data": "true" });
     }
-    throw err;
+    console.warn("[guesty-beapi] serving fallback data", msg);
+    return json(fallbackPayload(action, msg), 200, { "X-Fallback-Data": "true" });
   }
 }
 
