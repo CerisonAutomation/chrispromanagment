@@ -8,6 +8,7 @@ import { useModal } from "@/context/ModalContext";
 import { useCMS } from "@/context/CMSContext";
 import { toast } from "sonner";
 import axios from "axios";
+import { gmail } from "@/lib/gmail";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -52,17 +53,35 @@ export const ContactModal = () => {
 
     setIsSubmitting(true);
     try {
-      await axios.post(`${API}/contact`, {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        subject: form.subject || "General Inquiry",
-        message: form.message,
+      const subject = form.subject || "General Inquiry";
+      // 1. Log the inquiry (CMS sync log, non-blocking)
+      axios.post(`${API}/contact`, {
+        name: form.name, email: form.email, phone: form.phone, subject, message: form.message,
+      }).catch(() => {});
+
+      // 2. Send the actual email to the admin inbox via Gmail
+      const adminTo = cms?.contact?.email || "info@example.com";
+      const body = [
+        `New website inquiry — ${subject}`,
+        ``,
+        `From: ${form.name} <${form.email}>`,
+        form.phone ? `Phone: ${form.phone}` : null,
+        ``,
+        `Message:`,
+        form.message,
+      ].filter(Boolean).join("\n");
+
+      await gmail.send({
+        to: adminTo,
+        subject: `[Website] ${subject} — ${form.name}`,
+        text: body,
+        replyTo: form.email,
       });
+
       setIsSuccess(true);
       toast.success("Message sent successfully!");
     } catch (error) {
-      toast.error("Failed to send message. Please try again.");
+      toast.error(error?.message || "Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
