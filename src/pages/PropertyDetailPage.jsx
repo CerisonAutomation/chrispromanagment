@@ -83,9 +83,7 @@ export const PropertyDetailPage = () => {
   const fetchListing = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API}/listings/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch listing");
-      const data = await response.json();
+      const data = await guesty.listing(id);
       setListing(data);
     } catch (error) {
       console.error("Error fetching listing:", error);
@@ -100,22 +98,14 @@ export const PropertyDetailPage = () => {
       const today = new Date();
       const futureDate = new Date();
       futureDate.setMonth(futureDate.getMonth() + 6);
-      
-      const params = new URLSearchParams({
-        startDate: format(today, "yyyy-MM-dd"),
-        endDate: format(futureDate, "yyyy-MM-dd")
-      });
-      
-      const response = await fetch(`${API}/listings/${id}/calendar?${params.toString()}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCalendarData(data);
-      } else {
-        console.warn("Calendar unavailable for this listing");
-      }
+      const data = await guesty.calendar(
+        id,
+        format(today, "yyyy-MM-dd"),
+        format(futureDate, "yyyy-MM-dd")
+      );
+      setCalendarData(data);
     } catch (error) {
-      console.error("Error fetching calendar:", error);
+      console.warn("Calendar unavailable for this listing:", error?.message);
     }
   };
 
@@ -133,43 +123,23 @@ export const PropertyDetailPage = () => {
 
   const fetchQuote = async () => {
     if (!listing || !checkIn || !checkOut) return;
-    
     setIsQuoteLoading(true);
     try {
-      const response = await fetch(`${API}/quotes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing._id,
-          checkInDateLocalized: format(checkIn, "yyyy-MM-dd"),
-          checkOutDateLocalized: format(checkOut, "yyyy-MM-dd"),
-          guestsCount: guests,
-        }),
+      const data = await guesty.createQuote({
+        listingId: listing._id,
+        checkInDateLocalized: format(checkIn, "yyyy-MM-dd"),
+        checkOutDateLocalized: format(checkOut, "yyyy-MM-dd"),
+        guestsCount: guests,
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorDetail = errorData?.detail;
-        
-        // Show user-friendly error message from backend
-        if (errorDetail?.message) {
-          toast.error(errorDetail.message);
-        } else if (response.status === 422) {
-          toast.error("Selected dates are not available");
-        } else if (response.status === 400) {
-          toast.error("These dates are unavailable for this property");
-        } else {
-          toast.error("Failed to get pricing. Please try different dates.");
-        }
-        setQuote(null);
-        return;
-      }
-      
-      const data = await response.json();
       setQuote(data);
     } catch (error) {
       console.error("Error fetching quote:", error);
-      toast.error("Failed to get pricing. Please try again.");
+      const msg = error?.message || "";
+      if (msg.toLowerCase().includes("unavail") || msg.includes("422") || msg.includes("400")) {
+        toast.error("Selected dates are not available");
+      } else {
+        toast.error("Failed to get pricing. Please try different dates.");
+      }
       setQuote(null);
     } finally {
       setIsQuoteLoading(false);
