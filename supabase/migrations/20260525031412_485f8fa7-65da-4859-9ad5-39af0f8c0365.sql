@@ -1,0 +1,1 @@
+UPDATE public.guesty_token_vault SET expires_at = now() - interval '1 hour' WHERE id = 1;
