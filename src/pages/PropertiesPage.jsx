@@ -11,8 +11,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Checkbox } from "@/components/ui/checkbox";
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchWidget } from "@/components/SearchWidget";
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { guesty } from "@/lib/guesty";
 
 // Malta locations for filtering
 const MALTA_CITIES = [
