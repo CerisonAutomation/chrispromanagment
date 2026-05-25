@@ -36,7 +36,7 @@ export default function ContractSigning({ propertyId, checkIn, checkOut, price, 
 
       onSuccess(txHash);
     } catch (err: Error) {
-      console.error(err);
+      
     } finally {
       setLoading(false);
     }

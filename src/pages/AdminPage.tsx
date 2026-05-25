@@ -1186,7 +1186,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                 {properties.map((p, i) => (
                   <div key={i} className="bg-[#111318] border border-[#1a1a1e] rounded-lg overflow-hidden hover:border-[#D4AF37]/30 transition-all">
                     {p.picture?.thumbnail && (
-                      <img src={p.picture.thumbnail} alt={p.title} className="w-full h-36 object-cover" />
+                      <OptimizedImage src={p.picture.thumbnail} alt="p.title" className="" objectFit="cover" loading="lazy" />
                     )}
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
@@ -1472,7 +1472,7 @@ const AdminDashboard = memo(({ adminKey }) => {
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {mediaData.pictures?.map((pic, i) => (
                   <div key={i} className="group relative bg-[#111318] rounded overflow-hidden border border-[#1a1a1e] hover:border-[#D4AF37]/30 transition-all">
-                    <img src={pic.thumbnail || pic.original} alt={`Photo ${i + 1}`} className="w-full aspect-video object-cover" />
+                    <OptimizedImage src={pic.thumbnail || pic.original} alt="`Photo ${i + 1" className="" objectFit="cover" loading="lazy" />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <a href={pic.original} target="_blank" rel="noreferrer" className="p-2 bg-white/10 rounded hover:bg-white/20">
                         <ExternalLink className="w-4 h-4 text-white" />
@@ -1845,7 +1845,7 @@ export default function AdminPage() {
         toast.error(publishData.detail || "Publish failed");
       }
     } catch (e) {
-      console.error("Publish error:", e);
+      
       toast.error(`Save failed: ${e.message}`);
     }
     setSaving(false);

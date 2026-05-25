@@ -41,7 +41,7 @@ export const ConfirmationPage = () => {
       
       return false; // Continue polling
     } catch (error) {
-      console.error("Error checking payment status:", error);
+      
       // Try to get transaction details even if status check fails
       try {
         const txResponse = await axios.get(`${API}/transaction/${sessionId}`);
@@ -53,7 +53,7 @@ export const ConfirmationPage = () => {
           }
         }
       } catch (txError) {
-        console.error("Error fetching transaction:", txError);
+        
       }
       return false;
     }

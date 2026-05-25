@@ -12,7 +12,7 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
       const address = await connectWallet();
       onConnect(address);
     } catch (err: Error) {
-      console.error(err);
+      
     }
   };
 

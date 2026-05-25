@@ -187,11 +187,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
               className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0] pr-20"
             />
             {fieldValue && (
-              <img 
-                src={fieldValue} 
-                alt="Preview" 
-                className="mt-2 h-20 w-auto object-cover rounded border border-white/10"
-              />
+              <OptimizedImage src={fieldValue} alt="Image" className="" objectFit="cover" loading="lazy" />
             )}
           </div>
         ) : (

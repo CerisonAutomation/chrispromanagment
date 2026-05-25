@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[ErrorBoundary]", error, info?.componentStack);
+    
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/client-errors`;
       apiFetch(url, {
@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }).catch(() => {});
     } catch (catchError) {
       const appError = handleError(catchError);
-      console.error("ErrorBoundary log failed:", appError.message);
+      
     }
   }
 

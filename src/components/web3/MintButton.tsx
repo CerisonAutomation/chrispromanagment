@@ -22,7 +22,7 @@ export default function MintButton({ contractAddress, tokenURI, onMint }: MintBu
       const txHash = await mintPropertyNFT(contractAddress, tokenURI, signer);
       onMint(txHash);
     } catch (err: Error) {
-      console.error(err);
+      
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,7 @@ export default function PricingEnginePage() {
       const data = await pricingEngine.generateForecast(propertyId);
       setForecast(data);
     } catch (err) {
-      console.error(err);
+      
     } finally {
       setLoading(false);
     }

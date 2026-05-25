@@ -79,7 +79,7 @@ export function useGuestyQuote() {
     setLoading(true);
     try {
       // TODO: implement coupon application
-      console.log("Applying coupon:", couponCode);
+      
     } finally {
       setLoading(false);
     }
@@ -97,7 +97,7 @@ export function useGuestyTokenStatus() {
     setLoading(true);
     try {
       // TODO: implement token status check
-      console.log("Refreshing token status");
+      
     } finally {
       setLoading(false);
     }

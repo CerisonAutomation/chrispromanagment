@@ -29,7 +29,7 @@ export default function AnalyticsDashboardPage() {
         setBookingsData(bookings);
         setTopProperties(topProps);
       } catch (err) {
-        console.error(err);
+        
       } finally {
         setLoading(false);
       }
