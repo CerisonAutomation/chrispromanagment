@@ -20,6 +20,7 @@ import { LiveNavigateMode } from "@/components/admin/LiveNavigateMode";
 import CacheDebugPanel from "@/components/admin/CacheDebugPanel";
 import SeoOverridesPanel from "@/components/admin/SeoOverridesPanel";
 import GmailInboxPanel from "@/components/admin/GmailInboxPanel";
+import VersionHistoryPanel from "@/components/admin/VersionHistoryPanel";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
   LiveHero, LiveOwnersSection, LiveAbout, LiveProperties, LiveStats, LiveFeatures,
@@ -1576,6 +1577,11 @@ const AdminDashboard = memo(({ adminKey }) => {
             {/* Gmail inbox (admin) */}
             <div className="mt-8">
               <GmailInboxPanel />
+            </div>
+
+            {/* CMS publish history & version control */}
+            <div className="mt-8">
+              <VersionHistoryPanel />
             </div>
           </div>
         )}
