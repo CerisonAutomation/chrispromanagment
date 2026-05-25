@@ -1,0 +1,47 @@
+{
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Ħassar",
+    "edit": "Edit",
+    "loading": "Qed jitħalla..."
+  },
+  "property": {
+    "title": "Proprjetà",
+    "titlePlural": "Proprjetajiet",
+    "price": "Prezz",
+    "location": "Post",
+    "bedrooms": "Kmamar tas-sodda",
+    "bathrooms": "Kmamar tal-banju",
+    "amenities": "Servizzi",
+    "description": "Deskrizzjoni",
+    "bookNow": "Riżerva Issa",
+    "checkAvailability": "Ħares id-disponibbiltà"
+  },
+  "chat": {
+    "title": "Messaġġi",
+    "typeMessage": "Kirja messaġġ...",
+    "send": "Ibgħat",
+    "noConversations": "L-ebda konversazzjonijiet ma nstabu"
+  },
+  "pricing": {
+    "title": "Magna tal-Prezz",
+    "forecast": "Tbassir tal-Prezz",
+    "occupancy": "Probabbiltà ta' Okkupazzjoni",
+    "generateForecast": "Ġenera Tbassir"
+  },
+  "analytics": {
+    "title": "Dashboard Analitika",
+    "revenue": "Dħul",
+    "occupancyRate": "Rata ta' Okkupazzjoni",
+    "bookings": "Riżervi"
+  },
+  "navigation": {
+    "home": "Id-Dar",
+    "properties": "Proprjetajiet",
+    "chat": "Messaġġi",
+    "pricing": "Prezz",
+    "analytics": "Analisi",
+    "settings": "Impostazzjonijiet"
+  }
+}

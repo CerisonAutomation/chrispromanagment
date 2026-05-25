@@ -1,0 +1,52 @@
+{
+  "common": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "loading": "Caricamento...",
+    "search": "Cerca",
+    "submit": "Invia",
+    "back": "Indietro",
+    "next": "Avanti",
+    "previous": "Precedente"
+  },
+  "property": {
+    "title": "Proprietà",
+    "titlePlural": "Proprietà",
+    "price": "Prezzo",
+    "location": "Posizione",
+    "bedrooms": "Camere da letto",
+    "bathrooms": "Bagni",
+    "amenities": "Servizi",
+    "description": "Descrizione",
+    "bookNow": "Prenota Ora",
+    "checkAvailability": "Controlla Disponibilità"
+  },
+  "chat": {
+    "title": "Messaggi",
+    "typeMessage": "Scrivi un messaggio...",
+    "send": "Invia",
+    "noConversations": "Nessuna conversazione trovata"
+  },
+  "pricing": {
+    "title": "Motore Prezzi",
+    "forecast": "Previsione Prezzi",
+    "occupancy": "Probabilità Occupazione",
+    "generateForecast": "Genera Previsione"
+  },
+  "analytics": {
+    "title": "Dashboard Analitica",
+    "revenue": "Ricavi",
+    "occupancyRate": "Tasso di Occupazione",
+    "bookings": "Prenotazioni"
+  },
+  "navigation": {
+    "home": "Home",
+    "properties": "Proprietà",
+    "chat": "Messaggi",
+    "pricing": "Prezzi",
+    "analytics": "Analisi",
+    "settings": "Impostazioni"
+  }
+}

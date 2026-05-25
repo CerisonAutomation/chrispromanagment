@@ -77,7 +77,7 @@ Only return tokens you want to change.`;
 
     const tokens: Record<string, string> = {};
     for (const [k, v] of Object.entries(raw)) {
-      if (ALLOWED_TOKENS.includes(k as any) && isValid(v)) tokens[k] = v;
+      if (ALLOWED_TOKENS.includes(k) && isValid(v)) tokens[k] = v;
     }
 
     return json({ tokens, rationale: args.rationale ?? "" });

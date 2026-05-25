@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { CMSProvider } from '@/context/CMSContext';
-import { ModalProvider } from '@/context/ModalContext';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CMSProvider } from '@/context/cmscontext';
+import { ModalProvider } from '@/context/modalcontext';
+import { ErrorBoundary } from '@/components/error/boundary';
 
 function AllProviders({ children }) {
   return (

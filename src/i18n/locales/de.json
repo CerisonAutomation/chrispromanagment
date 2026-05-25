@@ -1,0 +1,52 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "loading": "Laden...",
+    "search": "Suchen",
+    "submit": "Senden",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Zurück"
+  },
+  "property": {
+    "title": "Immobilie",
+    "titlePlural": "Immobilien",
+    "price": "Preis",
+    "location": "Ort",
+    "bedrooms": "Schlafzimmer",
+    "bathrooms": "Badezimmer",
+    "amenities": "Ausstattung",
+    "description": "Beschreibung",
+    "bookNow": "Jetzt Buchen",
+    "checkAvailability": "Verfügbarkeit Prüfen"
+  },
+  "chat": {
+    "title": "Nachrichten",
+    "typeMessage": "Nachricht eingeben...",
+    "send": "Senden",
+    "noConversations": "Keine Konversationen gefunden"
+  },
+  "pricing": {
+    "title": "Preismotor",
+    "forecast": "Preisprognose",
+    "occupancy": "Belegungswahrscheinlichkeit",
+    "generateForecast": "Prognose Generieren"
+  },
+  "analytics": {
+    "title": "Analyse-Dashboard",
+    "revenue": "Umsatz",
+    "occupancyRate": "Belegungsrate",
+    "bookings": "Buchungen"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "properties": "Immobilien",
+    "chat": "Nachrichten",
+    "pricing": "Preise",
+    "analytics": "Analysen",
+    "settings": "Einstellungen"
+  }
+}

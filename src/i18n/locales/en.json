@@ -1,0 +1,52 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "search": "Search",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "property": {
+    "title": "Property",
+    "titlePlural": "Properties",
+    "price": "Price",
+    "location": "Location",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "amenities": "Amenities",
+    "description": "Description",
+    "bookNow": "Book Now",
+    "checkAvailability": "Check Availability"
+  },
+  "chat": {
+    "title": "Messages",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "noConversations": "No conversations found"
+  },
+  "pricing": {
+    "title": "Pricing Engine",
+    "forecast": "Price Forecast",
+    "occupancy": "Occupancy Probability",
+    "generateForecast": "Generate Forecast"
+  },
+  "analytics": {
+    "title": "Analytics Dashboard",
+    "revenue": "Revenue",
+    "occupancyRate": "Occupancy Rate",
+    "bookings": "Bookings"
+  },
+  "navigation": {
+    "home": "Home",
+    "properties": "Properties",
+    "chat": "Messages",
+    "pricing": "Pricing",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  }
+}

@@ -185,7 +185,7 @@ for (const [typeId, raw] of Object.entries(SCHEMAS)) {
     }
   } catch (e) {
     // surface but don't crash boot
-    // eslint-disable-next-line no-console
+     
     console.warn(`[blockRegistry] failed to register ${typeId}:`, e);
   }
 }

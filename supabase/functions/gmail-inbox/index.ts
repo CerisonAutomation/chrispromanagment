@@ -89,11 +89,11 @@ Deno.serve(async (req) => {
       // Hydrate with metadata so the UI can show subject/from/snippet
       const ids = (listData.messages || []).slice(0, 15);
       const metas = await Promise.all(
-        ids.map(async (m: any) => {
+        ids.map(async (m: { id: string }) => {
           const r = await gw(`/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`);
           if (!r.ok) return { id: m.id, error: r.status };
           const d = await r.json();
-          const headers = Object.fromEntries((d.payload?.headers || []).map((h: any) => [h.name, h.value]));
+          const headers = Object.fromEntries((d.payload?.headers || []).map((h: { name: string; value: string }) => [h.name, h.value]));
           return {
             id: d.id,
             threadId: d.threadId,

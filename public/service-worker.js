@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals */
+ 
 // Service Worker for PWA with offline-first strategy
 const CACHE_NAME = 'cvpm-v1';
 const urlsToCache = [

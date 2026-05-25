@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     if (!Array.isArray(catalog) || catalog.length === 0)
       return json({ error: "catalog required" }, 400);
 
-    const allowedTypes = catalog.map((b: any) => b.type);
+    const allowedTypes = catalog.map((b: { type: string }) => b.type);
 
     const sys =
       "You are a UX strategist for a luxury property-management website. Given a page's existing blocks and a catalog of available block types, suggest the 1-3 most valuable blocks to add next. Each suggestion must reference a block type from the catalog (verbatim), include a one-sentence rationale, and provide example seed content. Return ONLY the tool call.";
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       pageSlug,
       goal: context.goal,
       siteName: context.siteName,
-      currentBlocks: currentBlocks.map((b: any) => ({ type: b.type, summary: summarize(b.content) })),
+      currentBlocks: currentBlocks.map((b: { type: string; content: string }) => ({ type: b.type, summary: summarize(b.content) })),
       catalog,
     });
 
@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
     }
 
     const raw = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    let parsed: any = {};
+    let parsed: Record<string, unknown> = {};
     try {
       parsed = typeof raw === "string" ? JSON.parse(raw) : raw || {};
     } catch {
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
     }
 
     // hard filter to enforce allowed types
-    const suggestions = (parsed.suggestions || []).filter((s: any) => allowedTypes.includes(s.type));
+    const suggestions = (parsed.suggestions || []).filter((s: { type: string }) => allowedTypes.includes(s.type));
     return json({ suggestions });
   } catch (e) {
     console.error("[block-ai-suggest]", e);

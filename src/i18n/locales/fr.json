@@ -1,0 +1,52 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent"
+  },
+  "property": {
+    "title": "Propriété",
+    "titlePlural": "Propriétés",
+    "price": "Prix",
+    "location": "Emplacement",
+    "bedrooms": "Chambres",
+    "bathrooms": "Salles de bain",
+    "amenities": "Équipements",
+    "description": "Description",
+    "bookNow": "Réserver Maintenant",
+    "checkAvailability": "Vérifier la Disponibilité"
+  },
+  "chat": {
+    "title": "Messages",
+    "typeMessage": "Tapez un message...",
+    "send": "Envoyer",
+    "noConversations": "Aucune conversation trouvée"
+  },
+  "pricing": {
+    "title": "Moteur de Tarification",
+    "forecast": "Prévision des Prix",
+    "occupancy": "Probabilité d'Occupation",
+    "generateForecast": "Générer une Prévision"
+  },
+  "analytics": {
+    "title": "Tableau de Bord Analytique",
+    "revenue": "Revenu",
+    "occupancyRate": "Taux d'Occupation",
+    "bookings": "Réservations"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "properties": "Propriétés",
+    "chat": "Messages",
+    "pricing": "Tarification",
+    "analytics": "Analyses",
+    "settings": "Paramètres"
+  }
+}

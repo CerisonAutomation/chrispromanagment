@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -52,9 +53,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        luxuryGold: "hsl(var(--luxury-gold))",
-        "gold-light": "hsl(var(--luxury-gold-light))",
-        "gold-dark": "hsl(var(--luxury-gold-dark))",
+        luxuryGold: "var(--gold)",
+        "gold-light": "var(--gold-light)",
+        "gold-dark": "var(--gold-dark)",
+        backgroundDark: "var(--bg-dark)",
+        backgroundDarker: "var(--bg-darker)",
+        backgroundCard: "var(--bg-card)",
+        backgroundElevated: "var(--bg-elevated)",
+        textPrimary: "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted: "var(--text-muted)",
+        borderSubtle: "var(--border-subtle)",
+        borderDefault: "var(--border-default)",
+        borderStrong: "var(--border-strong)",
+        success: "var(--success)",
+        error: "var(--error)",
+        warning: "var(--warning)",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -87,5 +101,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;
