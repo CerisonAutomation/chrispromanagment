@@ -513,6 +513,13 @@ export const CheckoutPage = () => {
                   </label>
                 </div>
 
+                {/* Coupon + payment provider info (uses canonical Guesty hooks) */}
+                <CheckoutExtrasPanel
+                  quoteId={quoteId}
+                  listingId={quote?.listingId}
+                  onQuoteUpdate={(q) => { setQuote(q); setQuoteExpiry(q?.expiresAt); }}
+                />
+
                 {/* Canonical Stripe Elements payment — inline, no redirect */}
                 {acceptTerms ? (
                   <StripeInlinePayment
