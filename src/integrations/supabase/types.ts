@@ -181,6 +181,57 @@ export type Database = {
         }
         Relationships: []
       }
+      guesty_token_refresh_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          expires_at: string | null
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          expires_at?: string | null
+          id?: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      guesty_token_vault: {
+        Row: {
+          access_token: string
+          expires_at: string
+          id: number
+          last_refreshed_at: string
+          refresh_count: number
+          scope: string | null
+        }
+        Insert: {
+          access_token: string
+          expires_at: string
+          id?: number
+          last_refreshed_at?: string
+          refresh_count?: number
+          scope?: string | null
+        }
+        Update: {
+          access_token?: string
+          expires_at?: string
+          id?: number
+          last_refreshed_at?: string
+          refresh_count?: number
+          scope?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
