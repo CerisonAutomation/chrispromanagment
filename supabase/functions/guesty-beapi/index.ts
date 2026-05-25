@@ -1,8 +1,14 @@
 // Guesty Booking Engine API BFF — vault-backed token management.
-// Reads the cached access token from `guesty_token_vault` (refreshed by
-// pg_cron every 6h via the guesty-token-refresh function). Falls back to
-// an inline OAuth fetch + vault upsert if the cached token is missing or
-// expires within the safety window.
+//
+// IMPORTANT: Booking Engine API ONLY (booking.guesty.com). We do NOT call
+// open-api.guesty.com — it's a different Guesty product with separate
+// rate limits and previously caused 429 ban-loops.
+//
+// Token lifecycle:
+//   - pg_cron refreshes the vault every 6h via `guesty-token-refresh`
+//   - On miss/expiry, we refresh inline (single attempt, no scope fallback)
+//   - Circuit breaker: if the most recent refresh log entry is a 429 within
+//     the last 60s, we fast-fail with 503 instead of hammering Guesty.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -11,62 +17,86 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const TOKEN_URLS = [
-  "https://booking.guesty.com/oauth2/token",
-  "https://open-api.guesty.com/oauth2/token",
-];
+const TOKEN_URL = "https://booking.guesty.com/oauth2/token";
 const BEAPI_BASE = "https://booking.guesty.com/api";
+const SCOPE = "booking_engine:api";
 const SAFETY_WINDOW_MS = 5 * 60 * 1000; // refresh if <5min left
+const CIRCUIT_COOLDOWN_MS = 60 * 1000;  // 60s after a 429
 
 const supaUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const admin = createClient(supaUrl, serviceKey, { auth: { persistSession: false } });
 
-// In-memory cache (per cold start) on top of the vault.
 let memToken: { value: string; expiresAt: number } | null = null;
 let inflight: Promise<string> | null = null;
+
+async function isCircuitOpen(): Promise<{ open: boolean; retryAfterMs: number; reason?: string }> {
+  const { data } = await admin
+    .from("guesty_token_refresh_log")
+    .select("status, error, created_at")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data || data.status !== "error") return { open: false, retryAfterMs: 0 };
+  const is429 = (data.error || "").includes("429") || (data.error || "").toLowerCase().includes("too many");
+  if (!is429) return { open: false, retryAfterMs: 0 };
+  const age = Date.now() - new Date(data.created_at).getTime();
+  if (age >= CIRCUIT_COOLDOWN_MS) return { open: false, retryAfterMs: 0 };
+  return { open: true, retryAfterMs: CIRCUIT_COOLDOWN_MS - age, reason: data.error };
+}
 
 async function fetchFreshTokenAndStore(): Promise<{ token: string; expiresAt: Date }> {
   const clientId = Deno.env.get("GUESTY_CLIENT_ID");
   const clientSecret = Deno.env.get("GUESTY_CLIENT_SECRET");
   if (!clientId || !clientSecret) throw new Error("Guesty credentials not configured");
 
-  const attempts = [
-    { url: TOKEN_URLS[0], scope: "booking_engine:api" },
-    { url: TOKEN_URLS[0] },
-    { url: TOKEN_URLS[1], scope: "open-api" },
-    { url: TOKEN_URLS[1] },
-  ];
-  let lastErr = "";
-  for (const a of attempts) {
-    const body = new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: clientId,
-      client_secret: clientSecret,
-      ...(a.scope ? { scope: a.scope } : {}),
-    });
-    const res = await fetch(a.url, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body,
-    });
-    const text = await res.text();
-    if (res.ok) {
-      const j = JSON.parse(text);
-      const expiresMs = (j.expires_in ?? 86400) * 1000;
-      const expiresAt = new Date(Date.now() + expiresMs);
-      await admin.from("guesty_token_vault").upsert({
-        id: 1,
-        access_token: j.access_token,
-        expires_at: expiresAt.toISOString(),
-        scope: a.scope ?? null,
-        last_refreshed_at: new Date().toISOString(),
-      });
-      return { token: j.access_token, expiresAt };
-    }
-    lastErr = `${a.url} ${res.status}: ${text.slice(0, 200)}`;
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: clientId,
+    client_secret: clientSecret,
+    scope: SCOPE,
+  });
+
+  const res = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body,
+  });
+  const text = await res.text();
+
+  if (!res.ok) {
+    const errMsg = `Booking Engine token ${res.status}: ${text.slice(0, 300)}`;
+    try {
+      await admin.from("guesty_token_refresh_log").insert({ status: "error", error: errMsg });
+    } catch (_) {}
+    throw new Error(errMsg);
   }
-  throw new Error(`Token fetch failed — ${lastErr}`);
+
+  const j = JSON.parse(text);
+  const expiresMs = (j.expires_in ?? 86400) * 1000;
+  const expiresAt = new Date(Date.now() + expiresMs);
+
+  const { data: cur } = await admin
+    .from("guesty_token_vault")
+    .select("refresh_count")
+    .eq("id", 1)
+    .maybeSingle();
+
+  await admin.from("guesty_token_vault").upsert({
+    id: 1,
+    access_token: j.access_token,
+    expires_at: expiresAt.toISOString(),
+    scope: SCOPE,
+    refresh_count: (cur?.refresh_count ?? 0) + 1,
+    last_refreshed_at: new Date().toISOString(),
+  });
+  try {
+    await admin
+      .from("guesty_token_refresh_log")
+      .insert({ status: "success", expires_at: expiresAt.toISOString() });
+  } catch (_) {}
+
+  return { token: j.access_token, expiresAt };
 }
 
 async function getToken(): Promise<string> {
@@ -75,7 +105,6 @@ async function getToken(): Promise<string> {
   if (inflight) return inflight;
 
   inflight = (async () => {
-    // Try vault first
     const { data: vault } = await admin
       .from("guesty_token_vault")
       .select("access_token, expires_at")
@@ -90,7 +119,14 @@ async function getToken(): Promise<string> {
       }
     }
 
-    // Vault stale or empty — refresh inline and persist
+    // Vault stale/empty → check circuit before hitting Guesty
+    const circuit = await isCircuitOpen();
+    if (circuit.open) {
+      throw new Error(
+        `Guesty token endpoint rate-limited. Retry in ${Math.ceil(circuit.retryAfterMs / 1000)}s.`,
+      );
+    }
+
     const { token, expiresAt } = await fetchFreshTokenAndStore();
     memToken = { value: token, expiresAt: expiresAt.getTime() };
     return token;
@@ -126,10 +162,10 @@ async function beapi(path: string, init: RequestInit = {}, attempt = 0): Promise
   return res;
 }
 
-function json(data: unknown, status = 200) {
+function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json", ...extraHeaders },
   });
 }
 
@@ -139,15 +175,19 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const action = url.searchParams.get("action") ?? "listings";
-    const body = req.method !== "GET" && req.method !== "HEAD" ? await req.json().catch(() => ({})) : {};
+    const body =
+      req.method !== "GET" && req.method !== "HEAD"
+        ? await req.json().catch(() => ({}))
+        : {};
 
     switch (action) {
       case "token-status": {
         const { data } = await admin
           .from("guesty_token_vault")
-          .select("expires_at, last_refreshed_at, refresh_count, scope")
+          .select("access_token, expires_at, last_refreshed_at, refresh_count, scope")
           .eq("id", 1)
           .maybeSingle();
+        const circuit = await isCircuitOpen();
         const now = Date.now();
         const expiresAtMs = data?.expires_at ? new Date(data.expires_at).getTime() : null;
         return json({
@@ -158,6 +198,9 @@ Deno.serve(async (req) => {
           refresh_count: data?.refresh_count ?? 0,
           memory_cached: !!memToken,
           scope: data?.scope ?? null,
+          circuit_open: circuit.open,
+          retry_after_seconds: circuit.open ? Math.ceil(circuit.retryAfterMs / 1000) : 0,
+          circuit_reason: circuit.reason ?? null,
         });
       }
       case "ping-token": {
@@ -259,6 +302,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[guesty-beapi]", msg);
-    return json({ error: msg }, 500);
+    const status = msg.includes("rate-limited") ? 503 : 500;
+    return json({ error: msg }, status);
   }
 });
