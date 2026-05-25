@@ -7,34 +7,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/context/ModalContext";
+import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const PROPERTY_TYPES = [
-  "Apartment",
-  "Villa",
-  "Penthouse",
-  "Townhouse",
-  "Studio",
-  "Palazzo/Historic",
-  "Other",
+const FALLBACK_PROPERTY_TYPES = [
+  "Apartment","Villa","Penthouse","Townhouse","Studio","Palazzo/Historic","Other",
 ];
 
-const LOCATIONS = [
-  "St. Julian's",
-  "Sliema",
-  "Valletta",
-  "St. Paul's Bay",
-  "Mellieha",
-  "Gozo",
-  "Mdina/Rabat",
-  "Other",
+const FALLBACK_LOCATIONS = [
+  "St. Julian's","Sliema","Valletta","St. Paul's Bay","Mellieha","Gozo","Mdina/Rabat","Other",
 ];
 
-const SERVICES_INTERESTED = [
+const FALLBACK_SERVICES = [
   { id: "fullManagement", label: "Full Property Management" },
   { id: "guestCommunication", label: "Guest Communication Only" },
   { id: "cleaning", label: "Cleaning & Turnover" },
@@ -46,6 +34,13 @@ const SERVICES_INTERESTED = [
 
 export const PropertyOwnerModal = () => {
   const { ownerModalOpen, closeOwnerModal, ownerModalStep, setOwnerModalStep, ownerPreFill } = useModal();
+  const { content: copy } = useBlock("ownerModal");
+  const PROPERTY_TYPES = (copy?.propertyTypes?.length ? copy.propertyTypes : FALLBACK_PROPERTY_TYPES.map((label) => ({ label })))
+    .map((p) => (typeof p === "string" ? p : p?.label)).filter(Boolean);
+  const LOCATIONS = (copy?.locations?.length ? copy.locations : FALLBACK_LOCATIONS.map((label) => ({ label })))
+    .map((l) => (typeof l === "string" ? l : l?.label)).filter(Boolean);
+  const SERVICES_INTERESTED = (copy?.services?.length ? copy.services : FALLBACK_SERVICES)
+    .filter((s) => s && s.id && s.label);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
