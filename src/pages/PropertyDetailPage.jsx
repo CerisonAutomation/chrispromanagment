@@ -27,6 +27,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { guesty } from "@/lib/guesty";
+import PropertyGallery from "@/components/media/PropertyGallery";
 
 // Fix default marker icons for Leaflet under bundlers
 const DEFAULT_ICON = L.icon({
