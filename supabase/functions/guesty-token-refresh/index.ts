@@ -48,15 +48,15 @@ async function assertTokenCircuitClosed(admin: ReturnType<typeof createClient>) 
     .from("guesty_token_refresh_log")
     .select("status, error, created_at")
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (!data || data.status !== "error") return;
-  const message = data.error || "";
+    .limit(10);
+  const row = data?.find((entry) => entry.status === "error" && !(entry.error || "").includes("token circuit open"));
+  if (!row) return;
+  const message = row.error || "";
   const is429 = message.includes("429") || message.toLowerCase().includes("too many");
   if (!is429) return;
   const retryMatch = message.match(/retry_after_ms=(\d+)/);
   const cooldownMs = retryMatch ? Number(retryMatch[1]) : TOKEN_CIRCUIT_COOLDOWN_MS;
-  const ageMs = Date.now() - new Date(data.created_at).getTime();
+  const ageMs = Date.now() - new Date(row.created_at).getTime();
   if (ageMs < cooldownMs) {
     throw new Error(`Booking Engine token circuit open: retry_after_ms=${cooldownMs - ageMs}; ${message}`);
   }
