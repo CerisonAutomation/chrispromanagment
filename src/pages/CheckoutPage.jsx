@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/guestyPricing";
 import { StripeInlinePayment } from "@/components/StripeInlinePayment";
+import CheckoutExtrasPanel from "@/components/CheckoutExtrasPanel";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -511,6 +512,13 @@ export const CheckoutPage = () => {
                     . I understand my booking is subject to the property's cancellation policy.
                   </label>
                 </div>
+
+                {/* Coupon + payment provider info (uses canonical Guesty hooks) */}
+                <CheckoutExtrasPanel
+                  quoteId={quoteId}
+                  listingId={quote?.listingId}
+                  onQuoteUpdate={(q) => { setQuote(q); setQuoteExpiry(q?.expiresAt); }}
+                />
 
                 {/* Canonical Stripe Elements payment — inline, no redirect */}
                 {acceptTerms ? (

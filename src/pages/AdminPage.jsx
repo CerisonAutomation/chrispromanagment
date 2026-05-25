@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { SCHEMAS, CATEGORIES } from "@/lib/blocks";
 import { BlockErrorBoundary } from "@/components/BlockErrorBoundary";
 import { LiveNavigateMode } from "@/components/admin/LiveNavigateMode";
+import CacheDebugPanel from "@/components/admin/CacheDebugPanel";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
   LiveHero, LiveOwnersSection, LiveAbout, LiveProperties, LiveStats, LiveFeatures,
@@ -1559,6 +1560,11 @@ const AdminDashboard = memo(({ adminKey }) => {
                 </div>
               </div>
             )}
+
+            {/* Live perf cache stats + Guesty token vault */}
+            <div className="mt-8">
+              <CacheDebugPanel />
+            </div>
           </div>
         )}
       </div>
