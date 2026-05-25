@@ -1,11 +1,19 @@
 import { useState } from "react";
 import { 
   Palette, Sun, Moon, Type, Check, RefreshCw, Save,
-  PaintBucket, Contrast, Pipette
+  PaintBucket, Contrast, Pipette, Sparkles, RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import {
+  THEME_TOKEN_ALLOWLIST,
+  applyThemeTokens,
+  saveThemeTokens,
+  resetThemeTokens,
+  generateThemeWithAI,
+} from "@/lib/themeTokens";
 
 // Preset color palettes
 const COLOR_PRESETS = [
