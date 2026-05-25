@@ -101,7 +101,7 @@ const ListingCard = ({ listing }) => {
   return (
     <a href={`/property/${listing._id}`} className="group bg-[#161618] border border-white/5 hover:border-[#D4AF37]/30 transition-all overflow-hidden block">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={image} alt={listing.title || listing.nickname || "Property"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onError={e => { e.target.src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"; }} />
+         <OptimizedImage src={image} alt="Image" className="" objectFit="cover" loading="lazy" onError={(e) => { if (e.target) (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"; }} />
         {price > 0 && <span className="absolute top-3 right-3 bg-[#D4AF37] text-[#0F0F10] text-[11px] font-bold px-3 py-1 leading-none">from {formatMoney(price, currency)}/night</span>}
       </div>
       <div className="p-5">
@@ -157,11 +157,7 @@ export const InlineText = memo(({ value, onChange, tag: Tag = "span", className 
 export const LiveHero = memo(({ d, onEdit }) => (
   <section className="relative min-h-[540px] flex items-center overflow-hidden bg-[#0F0F10]">
     <div className="absolute inset-0">
-      <img
-        src={d.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"}
-        alt=""
-        className="w-full h-[120%] object-cover"
-      />
+      <OptimizedImage src={d.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"} alt="Image" objectFit="cover" loading="lazy" />
     </div>
     <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F10] via-[#0F0F10]/50 to-transparent" />
     <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F10]/60 to-transparent" />
@@ -329,11 +325,7 @@ export const LiveAbout = memo(({ d, onEdit }) => (
         </div>
         <div className="order-1 lg:order-2 relative">
           <div className="aspect-[4/3] overflow-hidden bg-[#161618]">
-            <img
-              src={d.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"}
-              alt=""
-              className="w-full h-full object-cover"
-            />
+            <OptimizedImage src={d.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"} alt="Image" objectFit="cover" loading="lazy" />
           </div>
           <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#D4AF37]/30 hidden lg:block" />
         </div>
@@ -783,7 +775,7 @@ export const LiveLogos = memo(({ d, onEdit }) => (
         {(d.items || [{name:"Airbnb"},{name:"Booking.com"},{name:"Vrbo"},{name:"MTA"}]).map((item, i) => (
           <div key={i} className="flex items-center justify-center">
             {item.logo
-              ? <img src={item.logo} alt={item.name} className="h-8 object-contain opacity-40 grayscale hover:opacity-70 transition-opacity" />
+              ? <OptimizedImage src={item.logo} alt="item.name" objectFit="cover" loading="lazy" />
               : <span className="text-[#A1A1AA] font-semibold text-sm uppercase tracking-widest opacity-50">{item.name}</span>
             }
           </div>
@@ -804,7 +796,7 @@ export const LiveTeam = memo(({ d, onEdit }) => (
         {(d.items || [{initials:"CV",name:"Christiano Vincenti",role:"Founder & Director",bio:"Twenty years in Maltese hospitality."}]).map((m, i) => (
           <div key={i} className="bg-[#161618] border border-white/5 p-6 text-center hover:border-[#D4AF37]/20 transition-all">
             <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-[#D4AF37]">
-              {m.image ? <img src={m.image} alt={m.name} className="w-full h-full rounded-full object-cover" /> : (m.initials || "?")}
+              {m.image ? <OptimizedImage src={m.image} alt="m.name" objectFit="cover" loading="lazy" /> : (m.initials || "?")}
             </div>
             <h3 className="text-[#F5F5F0] font-semibold mb-1">{m.name}</h3>
             <p className="text-[#D4AF37] text-xs uppercase tracking-wider mb-3">{m.role}</p>
@@ -941,7 +933,7 @@ export const LiveTextImage = memo(({ d, onEdit }) => {
           <div className={imageRight ? "lg:order-2" : "lg:order-1"}>
             <div className="aspect-[4/3] overflow-hidden bg-[#161618]">
               {d.image
-                ? <img src={d.image} alt={d.imageAlt || ""} className="w-full h-full object-cover" />
+                ? <OptimizedImage src={d.image} alt="Image" objectFit="cover" loading="lazy" />
                 : <div className="w-full h-full flex items-center justify-center text-[#A1A1AA]"><span className="text-sm">Add image URL in editor →</span></div>
               }
             </div>
@@ -1051,7 +1043,7 @@ export const LivePropertySlider = memo(({ d, onEdit }) => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {(listings || []).slice(0, d.count || 6).map((p, i) => (
               <div key={p?._id || i} className="rounded-xl overflow-hidden bg-[#1A1A1B] border border-white/5">
-                {p?.picture?.regular && <img src={p.picture.regular} alt={p.title || ""} className="w-full h-48 object-cover" loading="lazy" />}
+                {p?.picture?.regular && <OptimizedImage src={p.picture.regular} alt="Image" objectFit="cover" loading="lazy" />}
                 <div className="p-4">
                   <div className="font-semibold text-[#F5F5F0]">{p?.title || p?.nickname || "Property"}</div>
                   <div className="text-xs text-[#9A9A92] mt-1">{p?.address?.city || ""}</div>
@@ -1155,7 +1147,7 @@ export const LiveImageGallery = memo(({ d, onEdit }) => (
       <div className={`grid gap-3 ${d.columns === "3" ? "grid-cols-3" : d.columns === "4" ? "grid-cols-4" : "grid-cols-2 md:grid-cols-3"}`}>
         {(d.images || []).slice(0, parseInt(d.columns || "3") * 2).map((img, i) => (
           <div key={i} className="aspect-video overflow-hidden bg-[#161618] group cursor-pointer">
-            <img src={img.url || img} alt={img.alt || `Photo ${i+1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <OptimizedImage src={img.url || img} alt="img.alt || `Photo ${i+1" objectFit="cover" loading="lazy" />
           </div>
         ))}
         {(!d.images || d.images.length === 0) && [...Array(6)].map((_, i) => (
@@ -1178,7 +1170,7 @@ export const LiveVideo = memo(({ d, onEdit }) => (
         </div>
       )}
       <div className="relative aspect-video bg-[#161618] border border-white/5 overflow-hidden group cursor-pointer">
-        {d.thumbnail && <img src={d.thumbnail} alt="Video" className="w-full h-full object-cover" />}
+        {d.thumbnail && <OptimizedImage src={d.thumbnail} alt="Image" objectFit="cover" loading="lazy" />}
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-[#D4AF37] flex items-center justify-center group-hover:bg-[#E5C158] transition-colors shadow-lg">
             <Play className="w-6 h-6 text-[#0F0F10] ml-1" fill="currentColor" />
