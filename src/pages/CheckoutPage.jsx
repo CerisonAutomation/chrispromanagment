@@ -86,16 +86,16 @@ export const CheckoutPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const quoteResponse = await fetch(`${API}/quotes/${quoteId}`);
-      if (!quoteResponse.ok) throw new Error("Quote not found");
-      const quoteData = await quoteResponse.json();
+      const quoteData = await guesty.getQuote(quoteId);
       setQuote(quoteData);
-      setQuoteExpiry(quoteData.expiresAt);
+      setQuoteExpiry(quoteData?.expiresAt);
 
-      if (quoteData.listingId) {
-        const listingResponse = await fetch(`${API}/listings/${quoteData.listingId}`);
-        if (listingResponse.ok) {
-          setListing(await listingResponse.json());
+      if (quoteData?.listingId) {
+        try {
+          const listingData = await guesty.listing(quoteData.listingId);
+          setListing(listingData);
+        } catch (e) {
+          console.warn("Listing fetch failed:", e?.message);
         }
       }
     } catch (err) {
