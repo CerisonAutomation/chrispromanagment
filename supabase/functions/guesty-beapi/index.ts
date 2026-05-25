@@ -100,7 +100,15 @@ async function isTokenCircuitOpen(): Promise<TokenCircuit> {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const row = data?.find((entry) => entry.status === "error" && !(entry.error || "").includes("token circuit open"));
+  // Newest-first scan: a fresher success closes the circuit even if older 429s exist.
+  let row: { status: string; error: string | null; created_at: string } | null = null;
+  for (const entry of data ?? []) {
+    if (entry.status === "success") return { open: false, retryAfterMs: 0 };
+    if (entry.status === "error" && !(entry.error || "").includes("token circuit open")) {
+      row = entry as typeof row;
+      break;
+    }
+  }
   if (!row) return { open: false, retryAfterMs: 0 };
   const error = row.error || "";
   const is429 = error.includes("429") || error.toLowerCase().includes("too many");
