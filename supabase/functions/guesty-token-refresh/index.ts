@@ -17,6 +17,7 @@ const corsHeaders = {
 const TOKEN_URL = "https://booking.guesty.com/oauth2/token";
 const SCOPE = "booking_engine:api";
 const SAFETY_WINDOW_MS = 5 * 60 * 1000;
+const TOKEN_CIRCUIT_COOLDOWN_MS = 2 * 60 * 1000;
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -39,6 +40,25 @@ async function logRefresh(admin: ReturnType<typeof createClient>, status: "succe
     await admin.from("guesty_token_refresh_log").insert({ status, ...payload });
   } catch (_) {
     // Logging failures must not hide the actual token result.
+  }
+}
+
+async function assertTokenCircuitClosed(admin: ReturnType<typeof createClient>) {
+  const { data } = await admin
+    .from("guesty_token_refresh_log")
+    .select("status, error, created_at")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data || data.status !== "error") return;
+  const message = data.error || "";
+  const is429 = message.includes("429") || message.toLowerCase().includes("too many");
+  if (!is429) return;
+  const retryMatch = message.match(/retry_after_ms=(\d+)/);
+  const cooldownMs = retryMatch ? Number(retryMatch[1]) : TOKEN_CIRCUIT_COOLDOWN_MS;
+  const ageMs = Date.now() - new Date(data.created_at).getTime();
+  if (ageMs < cooldownMs) {
+    throw new Error(`Booking Engine token circuit open: retry_after_ms=${cooldownMs - ageMs}; ${message}`);
   }
 }
 
@@ -103,6 +123,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    await assertTokenCircuitClosed(admin);
     const { token, expiresAt: safeExpiresAt, scope } = await fetchFreshToken();
 
     const { error: upErr } = await admin.from("guesty_token_vault").upsert({
