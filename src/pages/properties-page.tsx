@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PropertyCard } from "@/components/property/card";
-import { SearchWidget } from "@/components/search/widget";
+import { PropertyCard } from "@/components/PropertyCard";
+import { SearchWidget } from "@/components/SearchWidget";
 import { guesty } from "@/lib/guesty";
 
 // Malta locations for filtering

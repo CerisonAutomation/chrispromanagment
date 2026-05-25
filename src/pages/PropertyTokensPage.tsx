@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
+
+export default function PropertyTokensPage() {
   const [walletAddress, setWalletAddress] = useState('');
   const [propertyId, setPropertyId] = useState('');
   const [tokenURI, setTokenURI] = useState('');
@@ -33,13 +35,11 @@ import { supabase } from '@/lib/supabase';
       const ethersProvider = new (await import('ethers')).BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
 
-      //假设的NFT合约地址，实际应从环境变量获取
       const contractAddress = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
       if (!contractAddress) throw new Error('NFT contract address not configured');
 
       const txHash = await mintPropertyNFT(contractAddress, tokenURI, signer);
 
-      // 保存到Supabase
       await supabase.from('property_tokens').insert({
         property_id: propertyId,
         wallet_address: walletAddress,

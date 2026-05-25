@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Phone, MessageCircle, X, ChevronUp, Building, Calendar, Home, Users, ArrowRight, Star } from "lucide-react";
-import { useModal } from "@/context/modalcontext";
+import { useModal } from "@/context/modal-context";
 import { Button } from "@/components/ui/button";
 
 export const StickyCallToAction = () => {
