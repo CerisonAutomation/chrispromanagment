@@ -98,17 +98,17 @@ async function isTokenCircuitOpen(): Promise<TokenCircuit> {
     .from("guesty_token_refresh_log")
     .select("status, error, created_at")
     .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(10);
 
-  if (!data || data.status !== "error") return { open: false, retryAfterMs: 0 };
-  const error = data.error || "";
+  const row = data?.find((entry) => entry.status === "error" && !(entry.error || "").includes("token circuit open"));
+  if (!row) return { open: false, retryAfterMs: 0 };
+  const error = row.error || "";
   const is429 = error.includes("429") || error.toLowerCase().includes("too many");
   if (!is429) return { open: false, retryAfterMs: 0 };
 
   const retryMatch = error.match(/retry_after_ms=(\d+)/);
   const configuredCooldown = retryMatch ? Number(retryMatch[1]) : TOKEN_CIRCUIT_COOLDOWN_MS;
-  const ageMs = Date.now() - new Date(data.created_at).getTime();
+  const ageMs = Date.now() - new Date(row.created_at).getTime();
   if (ageMs >= configuredCooldown) return { open: false, retryAfterMs: 0 };
   return { open: true, retryAfterMs: configuredCooldown - ageMs, reason: error };
 }
@@ -219,7 +219,7 @@ async function beapi(path: string, init: RequestInit = {}, attempt = 0): Promise
   if ((res.status === 401 || res.status === 403) && attempt === 0) {
     memToken = null;
     await getToken(true);
-    return beapi(path, { ...init, forceTokenRefresh: true } as RequestInit, 1);
+    return beapi(path, init, 1);
   }
 
   if (res.status === 429 && attempt < MAX_RETRIES) {
