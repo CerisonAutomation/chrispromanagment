@@ -65,10 +65,10 @@ function AppContent() {
   // Game-changer: Real-time booking notifications
   const { newBooking } = useRealtimeBookings();
 
-  // Show notification for new bookings
+  // Show toast notification for new bookings
   useEffect(() => {
     if (newBooking) {
-      // You could show a toast notification here
+      // You can show a toast notification here
       console.log('New booking received:', newBooking);
     }
   }, [newBooking]);
