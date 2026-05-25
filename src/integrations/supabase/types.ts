@@ -181,6 +181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_versions: {
+        Row: {
+          content_count: number
+          created_at: string
+          created_by: string | null
+          id: string
+          image_count: number
+          label: string
+          note: string | null
+          published_at: string | null
+          setting_count: number
+          snapshot: Json
+          status: string
+        }
+        Insert: {
+          content_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_count?: number
+          label?: string
+          note?: string | null
+          published_at?: string | null
+          setting_count?: number
+          snapshot: Json
+          status?: string
+        }
+        Update: {
+          content_count?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_count?: number
+          label?: string
+          note?: string | null
+          published_at?: string | null
+          setting_count?: number
+          snapshot?: Json
+          status?: string
+        }
+        Relationships: []
+      }
       guesty_response_cache: {
         Row: {
           action: string
