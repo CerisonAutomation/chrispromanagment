@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+// Dialog removed — lightbox lives inside <PropertyGallery />
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { getAmenityIcon, AMENITY_CATEGORIES, getAmenitiesByCategory, HIGHLIGHT_AMENITIES } from "@/lib/amenityIcons";
@@ -27,6 +27,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { guesty } from "@/lib/guesty";
+import PropertyGallery from "@/components/media/PropertyGallery";
 
 // Fix default marker icons for Leaflet under bundlers
 const DEFAULT_ICON = L.icon({
@@ -66,8 +67,8 @@ export const PropertyDetailPage = () => {
   const [couponLoading, setCouponLoading] = useState(false);
 
   // Gallery state
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // gallery state lives inside <PropertyGallery />
+
 
   useEffect(() => {
     fetchListing();
@@ -188,18 +189,8 @@ export const PropertyDetailPage = () => {
 
   const activeCoupons = quote?.coupons || quote?.rates?.coupons || [];
 
-  // Gallery navigation
-  const nextImage = () => {
-    if (listing?.pictures) {
-      setCurrentImageIndex((prev) => (prev + 1) % listing.pictures.length);
-    }
-  };
+  // Gallery navigation moved into <PropertyGallery />
 
-  const prevImage = () => {
-    if (listing?.pictures) {
-      setCurrentImageIndex((prev) => (prev - 1 + listing.pictures.length) % listing.pictures.length);
-    }
-  };
 
   // Format price
   const formatPrice = (price, currency = "EUR") => {
@@ -251,122 +242,9 @@ export const PropertyDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0F0F10] pt-20 md:pt-24">
-      {/* Gallery */}
-      <section className="relative" data-testid="property-gallery">
-        <div className="gallery-grid max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-6">
-          {images.slice(0, 5).map((img, index) => (
-            <button
-              key={index}
-              onClick={() => { setCurrentImageIndex(index); setGalleryOpen(true); }}
-              className={index === 0 ? "gallery-main" : ""}
-              data-testid={`gallery-image-${index}`}
-            >
-              <img
-                src={img.large || img.original || img.regular || img.thumbnail}
-                alt={img.caption || `${listing.title} photo ${index + 1}`}
-                onError={(e) => {
-                  const srcs = [img.original, img.regular, img.thumbnail].filter(Boolean);
-                  const i = srcs.indexOf(e.target.src);
-                  if (i >= 0 && i < srcs.length - 1) e.target.src = srcs[i + 1];
-                }}
-              />
-              {index === 4 && images.length > 5 && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 pointer-events-none">
-                  <span className="text-white font-semibold text-xl">+{images.length - 5} photos</span>
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-        {/* View all photos button */}
-        {images.length > 1 && (
-          <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pb-2">
-            <button
-              onClick={() => { setCurrentImageIndex(0); setGalleryOpen(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 text-[#F5F5F0] text-sm hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all"
-              data-testid="view-all-photos-btn"
-            >
-              <ChevronRight className="w-4 h-4" />
-              View all {images.length} photos
-            </button>
-          </div>
-        )}
-      </section>
+      {/* Gallery — responsive, lazy-loaded, with lightbox */}
+      <PropertyGallery images={images} title={listing.title} />
 
-      {/* Lightbox — full-screen gallery viewer */}
-      <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
-        <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen bg-black border-none p-0 rounded-none">
-          <div className="flex flex-col w-full h-full">
-            {/* Top bar */}
-            <div className="flex items-center justify-between px-6 py-3 bg-black/80 shrink-0">
-              <span className="text-white/60 text-sm font-medium">{listing.title}</span>
-              <span className="text-white/60 text-sm">{currentImageIndex + 1} / {images.length}</span>
-            </div>
-
-            {/* Main image area */}
-            <div className="flex-1 relative flex items-center justify-center bg-black overflow-hidden min-h-0">
-              <img
-                key={currentImageIndex}
-                src={images[currentImageIndex]?.original || images[currentImageIndex]?.large || images[currentImageIndex]?.regular}
-                alt={images[currentImageIndex]?.caption || `${listing.title} ${currentImageIndex + 1}`}
-                style={{
-                  maxWidth: "calc(100vw - 120px)",
-                  maxHeight: "calc(100vh - 200px)",
-                  width: "auto",
-                  height: "auto",
-                  objectFit: "contain",
-                  display: "block",
-                }}
-              />
-
-              {/* Caption */}
-              {images[currentImageIndex]?.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-8 py-4">
-                  <p className="text-white/80 text-sm text-center italic">{images[currentImageIndex].caption}</p>
-                </div>
-              )}
-
-              {/* Nav arrows */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={prevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 text-white rounded-full border border-white/10"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={nextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/60 hover:bg-black/80 text-white rounded-full border border-white/10"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </Button>
-            </div>
-
-            {/* Thumbnail strip */}
-            <div className="shrink-0 bg-black/90 border-t border-white/10 px-4 py-3">
-              <div className="flex gap-2 overflow-x-auto justify-center" style={{ scrollbarWidth: "none" }}>
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentImageIndex(i)}
-                    className={`flex-shrink-0 rounded overflow-hidden border-2 transition-all ${i === currentImageIndex ? "border-[#D4AF37] opacity-100" : "border-transparent opacity-50 hover:opacity-80"}`}
-                    style={{ width: 56, height: 40 }}
-                  >
-                    <img
-                      src={img.thumbnail || img.regular || img.original}
-                      alt=""
-                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-                    />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-8 md:py-12">
