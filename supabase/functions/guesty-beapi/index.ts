@@ -242,6 +242,60 @@ async function proxyJson(response: Response) {
   }
 }
 
+function cacheKeyFor(action: string, url: URL) {
+  const params = [...url.searchParams.entries()]
+    .filter(([k]) => k !== "action")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+  return `${action}?${params}`;
+}
+
+async function readCache(key: string) {
+  const { data } = await admin
+    .from("guesty_response_cache")
+    .select("payload, status_code, fetched_at")
+    .eq("cache_key", key)
+    .maybeSingle();
+  return data;
+}
+
+async function writeCache(key: string, action: string, payload: unknown, statusCode: number) {
+  try {
+    await admin.from("guesty_response_cache").upsert({
+      cache_key: key, action, payload: payload as object,
+      status_code: statusCode, fetched_at: new Date().toISOString(),
+    });
+  } catch (_) { /* cache writes must never break a request */ }
+}
+
+/** Run an upstream Booking Engine call with stale-while-error fallback. */
+async function cachedCall(action: string, url: URL, fetcher: () => Promise<Response>) {
+  const key = cacheKeyFor(action, url);
+  try {
+    const res = await fetcher();
+    const text = await res.text();
+    let parsed: unknown = {};
+    if (text) { try { parsed = JSON.parse(text); } catch (_) { parsed = { error: text }; } }
+    if (res.ok) {
+      await writeCache(key, action, parsed, res.status);
+      return json(parsed, res.status);
+    }
+    const cached = await readCache(key);
+    if (cached) {
+      return json({ ...(cached.payload as object), _stale: true, _stale_reason: `upstream_${res.status}`, _fetched_at: cached.fetched_at }, 200);
+    }
+    return json(parsed, res.status);
+  } catch (err) {
+    const cached = await readCache(key);
+    if (cached) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return json({ ...(cached.payload as object), _stale: true, _stale_reason: msg, _fetched_at: cached.fetched_at }, 200);
+    }
+    throw err;
+  }
+}
+
 const LISTINGS_KEYS = [
   "minOccupancy",
   "numberOfBedrooms",
@@ -329,32 +383,34 @@ Deno.serve(async (req) => {
 
       case "listings": {
         const qs = buildQuery(url, LISTINGS_KEYS);
-        return proxyJson(await beapi(`/listings${qs ? `?${qs}` : ""}`));
+        return cachedCall("listings", url, () => beapi(`/listings${qs ? `?${qs}` : ""}`));
       }
 
       case "search": {
         const hasDates = !!url.searchParams.get("checkIn") && !!url.searchParams.get("checkOut");
         const qs = buildQuery(url, hasDates ? AVAILABILITY_KEYS : LISTINGS_KEYS);
         const endpoint = hasDates ? "/listings/availability" : "/listings";
-        return proxyJson(await beapi(`${endpoint}${qs ? `?${qs}` : ""}`));
+        return cachedCall("search", url, () => beapi(`${endpoint}${qs ? `?${qs}` : ""}`));
       }
 
       case "listing": {
         const id = sanitizeId(url.searchParams.get("id"), "listing id");
         const fields = url.searchParams.get("fields");
-        return proxyJson(await beapi(`/listings/${id}${fields ? `?fields=${encodeURIComponent(fields)}` : ""}`));
+        return cachedCall("listing", url, () =>
+          beapi(`/listings/${id}${fields ? `?fields=${encodeURIComponent(fields)}` : ""}`));
       }
 
       case "calendar": {
         const id = sanitizeId(url.searchParams.get("id"), "listing id");
         const from = encodeURIComponent(requireParam(url, "from"));
         const to = encodeURIComponent(requireParam(url, "to"));
-        return proxyJson(await beapi(`/listings/${id}/calendar?from=${from}&to=${to}`));
+        return cachedCall("calendar", url, () =>
+          beapi(`/listings/${id}/calendar?from=${from}&to=${to}`));
       }
 
       case "cities": {
         const qs = buildQuery(url, ["skip", "limit", "searchText"]);
-        return proxyJson(await beapi(`/listings/cities${qs ? `?${qs}` : ""}`));
+        return cachedCall("cities", url, () => beapi(`/listings/cities${qs ? `?${qs}` : ""}`));
       }
 
       case "reservation-money": {

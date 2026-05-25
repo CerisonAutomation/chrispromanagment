@@ -181,6 +181,30 @@ export type Database = {
         }
         Relationships: []
       }
+      guesty_response_cache: {
+        Row: {
+          action: string
+          cache_key: string
+          fetched_at: string
+          payload: Json
+          status_code: number
+        }
+        Insert: {
+          action: string
+          cache_key: string
+          fetched_at?: string
+          payload: Json
+          status_code?: number
+        }
+        Update: {
+          action?: string
+          cache_key?: string
+          fetched_at?: string
+          payload?: Json
+          status_code?: number
+        }
+        Relationships: []
+      }
       guesty_token_refresh_log: {
         Row: {
           created_at: string
