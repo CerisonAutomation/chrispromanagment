@@ -20,11 +20,15 @@ describe("blockRegistry", () => {
     expect(result?.success).toBe(true);
   });
 
-  it("validates content against schema (rejects bad type)", () => {
-    const features = getBlock("features");
-    // sticky is boolean if present — passing a number for a known numeric field should still parse
-    // but passing wrong type to a known string field fails
-    const result = features?.validate({ heading: 123 });
+  it("validates content against schema (rejects wrong type on a known string field)", () => {
+    const hero = getBlock("hero");
+    // Find any text-typed field on hero and pass a number for it
+    const textField = Object.entries(hero?.editorFields || {}).find(
+      ([, f]) => f?.type === "text" || f?.type === "textarea",
+    );
+    expect(textField).toBeTruthy();
+    const [key] = textField;
+    const result = hero?.validate({ ...hero.defaults(), [key]: 123 });
     expect(result?.success).toBe(false);
   });
 
