@@ -247,6 +247,9 @@ export const Header = memo(function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
+            {/* Voice Search - Game-changer! */}
+            <VoiceSearchButton onTranscript={(text) => console.log('Voice search:', text)} />
+            
             <a
               href={`tel:${cms.contact?.phone || '+35679790202'}`}
               className="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-[#F5F5F0] transition-colors"
