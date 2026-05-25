@@ -54,6 +54,7 @@ export const PropertiesPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("recommended");
   const [totalCount, setTotalCount] = useState(0);
+  const [degraded, setDegraded] = useState(null); // { stale, fallback, reason }
   
   // Filters from URL
   const [filters, setFilters] = useState({
