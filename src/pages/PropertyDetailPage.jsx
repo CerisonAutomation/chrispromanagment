@@ -26,6 +26,7 @@ import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/g
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { guesty } from "@/lib/guesty";
 
 // Fix default marker icons for Leaflet under bundlers
 const DEFAULT_ICON = L.icon({
@@ -37,9 +38,6 @@ const DEFAULT_ICON = L.icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 export const PropertyDetailPage = () => {
   const { id } = useParams();
