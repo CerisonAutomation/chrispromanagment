@@ -17,8 +17,8 @@ import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
 import { PropertyOwnersPage } from "@/pages/property-owners-page";
 import { StickyCallToAction } from "@/components/StickyCallToAction";
 import { Toaster } from "@/components/ui/sonner";
-import AdminPage from "@/pages/admin-page";
-import AuthPage from "@/pages/auth-page";
+import AdminPage from "@/pages/AdminPage";
+import AuthPage from "@/pages/AuthPage";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
