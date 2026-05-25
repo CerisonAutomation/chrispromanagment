@@ -108,6 +108,7 @@ Sample Open API reference endpoints, not active in runtime:
 - `supabase/functions/guesty-beapi/index.ts` — Booking Engine BFF for the web app.
 - `supabase/functions/guesty-token-refresh/index.ts` — proactive token cache warmer.
 - `src/lib/guesty.js` — frontend client wrapper.
+- `docs/guesty/reference/booking_engine_token_example.mjs` — canonical Node reference: token cache + 5-minute safety window + `withRetry` (exponential backoff + `Retry-After`) + `scheduleRequest` per-second pacing queue. The edge functions implement the same pattern server-side, backed by `guesty_token_vault` instead of a local file.
 
 ## Audit conclusion
 
