@@ -1,7 +1,5 @@
 import "@/App.css";
-import { useEffect } from "react";
-import { CheckoutPage } from "@/pages/checkout-page";
-import { ConfirmationPage } from "@/pages/confirmation-page";
+import { useEffect, lazy, Suspense } from "react";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { CMSProvider } from "@/context/cmscontext";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -23,6 +21,18 @@ import { HelmetProvider, Helmet } from "react-helmet-async";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { app } from "@/lib/utils";
 import { modalContext } from "@/context/modal-context";
+
+// Lazy load page components for better performance
+const CheckoutPage = lazy(() => import('@/pages/checkout-page'));
+const ConfirmationPage = lazy(() => import('@/pages/confirmation-page'));
+const LandingPage = lazy(() => import('@/pages/landing-page'));
+const MapPage = lazy(() => import('@/pages/map-page-leaflet'));
+const PropertiesPage = lazy(() => import('@/pages/properties-page'));
+const PropertyDetailPage = lazy(() => import('@/pages/property-detail-page'));
+const PropertyOwnersPage = lazy(() => import('@/pages/PropertyOwnersPage'));
+const AdminPage = lazy(() => import('@/pages/AdminPage'));
+const AuthPage = lazy(() => import('@/pages/AuthPage'));
+const PropertyOwnerModal = lazy(() => import('@/components/modals/PropertyOwnerModal'));
 
 // Simple SEO that doesn't break
 function AppSEO() {

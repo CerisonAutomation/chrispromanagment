@@ -1,7 +1,7 @@
 import { memo, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Users, Bed, Bath, MapPin, Star } from "lucide-react";
-import { OptimizedImage } from "@/components/optimized/image";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { cn } from '@/lib/utils';
 
 const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80";

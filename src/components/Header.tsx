@@ -285,7 +285,7 @@ export const Header = memo(function Header() {
             <SheetContent side="right" className="bg-[#0F0F10] border-l border-white/10 w-full sm:max-w-sm p-0">
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-white/5">
-                  <img src={WHITE_LOGO} alt={cms.brand?.name} className="h-12 w-auto" />
+                  <OptimizedImage src={WHITE_LOGO} alt={cms.brand?.name} className="h-12 w-auto" objectFit="contain" />
                 </div>
 
                 <nav className="flex-1 p-6 overflow-y-auto" aria-label="Mobile navigation">

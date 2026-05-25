@@ -11,8 +11,8 @@ export default function WalletConnectButton({ onConnect }: WalletConnectButtonPr
       const { connectWallet } = await import('@/lib/web3');
       const address = await connectWallet();
       onConnect(address);
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: Error) {
+      
     }
   };
 

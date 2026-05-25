@@ -6,9 +6,9 @@ import {
   Award, TrendingUp, HeartHandshake, Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SearchWidget } from "@/components/search/widget";
-import { PropertyCard } from "@/components/property/card";
-import { useModal } from "@/context/modalcontext";
+import { SearchWidget } from "@/components/SearchWidget";
+import { PropertyCard } from "@/components/PropertyCard";
+import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -52,7 +52,7 @@ export const LandingPage = () => {
       const data = await response.json();
       setListings(data.results || []);
     } catch (error) {
-      console.error("Error fetching listings:", error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -73,18 +73,19 @@ export const LandingPage = () => {
         className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden" 
         data-testid="hero-section"
       >
-        {/* Parallax Background */}
-        <div 
-          className="absolute inset-0 will-change-transform"
-          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
-        >
-          <img 
-            src={cms.hero?.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"}
-            alt="Luxury villa Malta" 
-            className="w-full h-[120%] object-cover"
-            loading="eager"
-            fetchpriority="high"
-          />
+         {/* Parallax Background */}
+         <div 
+           className="absolute inset-0 will-change-transform"
+           style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+         >
+           <OptimizedImage 
+             src={cms.hero?.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"}
+             alt="Luxury villa Malta" 
+             className="w-full h-[120%]"
+             objectFit="cover"
+             loading="eager"
+             onLoad={() => {}}
+           />
         </div>
         
         {/* Gradient Overlays */}
@@ -279,12 +280,7 @@ export const LandingPage = () => {
             {/* Image */}
             <div className="order-1 lg:order-2 relative">
               <div className="aspect-[4/3] overflow-hidden bg-[#161618]">
-                <img
-                  src={cms.about?.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"}
-                  alt="Christiano Property Management"
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                <OptimizedImage src={cms.about?.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"} alt="Image" className="" objectFit="cover" loading="lazy" />
               </div>
               {/* Decorative element */}
               <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#D4AF37]/30 hidden lg:block" />

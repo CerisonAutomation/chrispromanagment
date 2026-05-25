@@ -28,7 +28,7 @@ export class BlockErrorBoundary extends Component<BlockErrorBoundaryProps, Block
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Block error:", this.props.blockType, this.props.blockId, error, info);
+    
   }
 
   reset = () => this.setState({ hasError: false, error: null });

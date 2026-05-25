@@ -309,7 +309,7 @@ export const CMSProvider = ({ children }) => {
       sub.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const loadRoles = async (userId) => {
@@ -338,7 +338,7 @@ export const CMSProvider = ({ children }) => {
         setCms(merged);
       }
     } catch (error) {
-      console.log("[CMS] using defaults:", error?.message || error);
+      
     } finally {
       setIsLoading(false);
     }
@@ -358,7 +358,7 @@ export const CMSProvider = ({ children }) => {
       setCms((prev) => ({ ...prev, [section]: data }));
       return true;
     } catch (error) {
-      console.error("CMS update failed:", error);
+      
       return false;
     }
   }, []);

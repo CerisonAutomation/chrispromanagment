@@ -85,7 +85,7 @@ export default function EditModeBridge() {
       if (!d || typeof d !== "object") return;
       if (d.type === "cvpm:edit-mode") setActive(!!d.on);
       if (d.type === "cvpm:request-url") {
-        try { window.parent.postMessage({ type: "cvpm:url", url: window.location.pathname + window.location.search + window.location.hash }, "*"); } catch {}
+        try { window.parent.postMessage({ type: "cvpm:url", url: window.location.pathname + window.location.search + window.location.hash }, "*"); } catch { /* empty */ }
       }
       if (d.type === "cvpm:edit-push" && d.selector) {
         // Find element matching saved selector and update its text content
@@ -101,22 +101,25 @@ export default function EditModeBridge() {
               break;
             }
           }
-        } catch {}
+// eslint-disable-next-line no-empty
+      } catch {}
       }
     };
     window.addEventListener("message", onMsg);
 
     // Tell parent we're mounted and what URL we're on
     const ping = () => {
-      try { window.parent.postMessage({ type: "cvpm:ready", url: window.location.pathname + window.location.search }, "*"); } catch {}
+      try { window.parent.postMessage({ type: "cvpm:ready", url: window.location.pathname + window.location.search }, "*"); } catch { /* empty */ }
     };
     ping();
 
     // Detect SPA route changes
     const origPush = window.history.pushState;
     const origReplace = window.history.replaceState;
-    window.history.pushState = function () { const r = origPush.apply(this, arguments); ping(); return r; };
-    window.history.replaceState = function () { const r = origReplace.apply(this, arguments); ping(); return r; };
+ 
+    window.history.pushState = function (...args) { const r = origPush.apply(this, args); ping(); return r; };
+     
+    window.history.replaceState = function (...args) { const r = origReplace.apply(this, args); ping(); return r; };
     window.addEventListener("popstate", ping);
 
     return () => {
@@ -160,8 +163,10 @@ export default function EditModeBridge() {
           if (!appliedAny) setTimeout(() => tryApply(attempt + 1), 250);
         };
         setTimeout(() => tryApply(), 200);
+// eslint-disable-next-line no-empty
       } catch {}
     };
+     
     apply();
     const onPop = () => apply();
     window.addEventListener("popstate", onPop);

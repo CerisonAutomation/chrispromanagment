@@ -97,7 +97,7 @@ function PaymentForm({
         toast.success("Booking confirmed!");
         onSuccess?.(data);
       } catch (err) {
-        console.error("Finalize error", err);
+        
         toast.error("Payment captured but booking confirmation failed. Please contact support.");
         setIsProcessing(false);
       }

@@ -9,7 +9,7 @@
 //   const subjects = useEditableList("contactModal", "subjects");
 // ============================================================
 import { useMemo } from "react";
-import { useCMS } from "@/context/CMSContext";
+import { useCMS } from "@/context/cmscontext";
 import { getBlock, migrateContent } from "@/lib/blockRegistry";
 
 function deepMerge(base, override) {

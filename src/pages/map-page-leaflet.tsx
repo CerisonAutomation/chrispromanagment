@@ -73,7 +73,7 @@ export const MapPage = () => {
         const data = await response.json();
         setListings(data.results || []);
       } catch (error) {
-        console.error("Error fetching listings:", error);
+        
       } finally {
         setLoading(false);
       }
@@ -116,11 +116,7 @@ export const MapPage = () => {
           {/* Image */}
           <div className="w-32 h-24 flex-shrink-0">
             {imageUrl ? (
-              <img 
-                src={imageUrl} 
-                alt={listing.title} 
-                className="w-full h-full object-cover"
-              />
+              <OptimizedImage src={imageUrl} alt="listing.title" className="" objectFit="cover" loading="lazy" />
             ) : (
               <div className="w-full h-full bg-[#0F0F10] flex items-center justify-center">
                 <Home className="w-8 h-8 text-[#71717A]" />
@@ -289,11 +285,7 @@ export const MapPage = () => {
                       <Popup className="custom-popup">
                         <div className="min-w-[200px]">
                           {listing.picture?.thumbnail && (
-                            <img 
-                              src={listing.picture.thumbnail} 
-                              alt={listing.title}
-                              className="w-full h-32 object-cover mb-2"
-                            />
+                            <OptimizedImage src={listing.picture.thumbnail} alt="listing.title" className="" objectFit="cover" loading="lazy" />
                           )}
                           <h4 className="font-semibold text-sm mb-1">{listing.title}</h4>
                           <p className="text-xs text-gray-600 mb-2">

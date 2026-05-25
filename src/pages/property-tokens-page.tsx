@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
+
+export default function PropertyTokensPage() {
   const [walletAddress, setWalletAddress] = useState('');
   const [propertyId, setPropertyId] = useState('');
   const [tokenURI, setTokenURI] = useState('');
@@ -14,7 +16,7 @@ import { supabase } from '@/lib/supabase';
     try {
       const address = await connectWallet();
       setWalletAddress(address);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message);
     }
   };
@@ -29,17 +31,15 @@ import { supabase } from '@/lib/supabase';
     setError('');
 
     try {
-      const provider = new (window as any).ethereum;
-      const ethersProvider = new (await import('ethers')).BrowserProvider(provider);
+      const ethers = await import('ethers');
+      const ethersProvider = new ethers.BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
 
-      //假设的NFT合约地址，实际应从环境变量获取
       const contractAddress = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
       if (!contractAddress) throw new Error('NFT contract address not configured');
 
       const txHash = await mintPropertyNFT(contractAddress, tokenURI, signer);
 
-      // 保存到Supabase
       await supabase.from('property_tokens').insert({
         property_id: propertyId,
         wallet_address: walletAddress,
@@ -48,7 +48,7 @@ import { supabase } from '@/lib/supabase';
       });
 
       alert(`NFT minted successfully! Tx: ${txHash}`);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message);
     } finally {
       setLoading(false);

@@ -7,7 +7,11 @@ import es from '@/i18n/locales/es.json';
 
 export type Locale = 'en' | 'mt' | 'it' | 'fr' | 'de' | 'es';
 
-export const locales: Record<Locale, any> = {
+interface LocaleMessages {
+  [key: string]: string | LocaleMessages;
+}
+
+export const locales: Record<Locale, LocaleMessages> = {
   en,
   mt,
   it,
@@ -52,6 +56,6 @@ export function getBrowserLocale(): Locale {
   return Object.keys(locales).includes(browserLang) ? browserLang : defaultLocale;
 }
 
-export function loadLocale(locale: Locale): any {
+export function loadLocale(locale: Locale): LocaleMessages {
   return locales[locale] || locales[defaultLocale];
 }

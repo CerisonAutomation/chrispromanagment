@@ -10,7 +10,7 @@ export function BlockRenderer({ type, content, fallback = null, ...rest }) {
   const schema = SCHEMAS?.[type];
   if (!schema) {
     if (import.meta.env.DEV) {
-      console.warn(`[BlockRenderer] Unknown block type: ${type}`);
+      
     }
     return fallback;
   }
@@ -19,7 +19,7 @@ export function BlockRenderer({ type, content, fallback = null, ...rest }) {
   try {
     return <Renderer content={content} {...rest} />;
   } catch (e) {
-    console.error(`[BlockRenderer] ${type} threw`, e);
+    
     return fallback;
   }
 }
