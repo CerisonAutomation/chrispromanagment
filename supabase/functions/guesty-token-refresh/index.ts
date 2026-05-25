@@ -100,6 +100,9 @@ export async function fetchFreshToken(): Promise<{ token: string; expiresAt: Dat
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const url = new URL(req.url);
+  const force = url.searchParams.get("force") === "1" || url.searchParams.get("force") === "true";
+
   const supaUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const admin = createClient(supaUrl, serviceKey, { auth: { persistSession: false } });
@@ -112,7 +115,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     const expiresAt = vault?.expires_at ? new Date(vault.expires_at).getTime() : 0;
-    if (vault?.access_token && expiresAt > Date.now()) {
+    if (!force && vault?.access_token && expiresAt > Date.now()) {
       return json({
         ok: true,
         cached: true,
@@ -123,7 +126,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    await assertTokenCircuitClosed(admin);
+    if (!force) await assertTokenCircuitClosed(admin);
     const { token, expiresAt: safeExpiresAt, scope } = await fetchFreshToken();
 
     const { error: upErr } = await admin.from("guesty_token_vault").upsert({
