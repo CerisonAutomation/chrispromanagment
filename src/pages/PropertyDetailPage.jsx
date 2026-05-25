@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+// Dialog removed — lightbox lives inside <PropertyGallery />
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { getAmenityIcon, AMENITY_CATEGORIES, getAmenitiesByCategory, HIGHLIGHT_AMENITIES } from "@/lib/amenityIcons";
