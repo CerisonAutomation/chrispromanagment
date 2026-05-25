@@ -142,7 +142,9 @@ Deno.serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[guesty-token-refresh] failed:", msg);
-    await logRefresh(admin, "error", { error: msg });
+    if (!msg.includes("token circuit open")) {
+      await logRefresh(admin, "error", { error: msg });
+    }
     return json({ ok: false, error: msg }, msg.includes("429") ? 503 : 500);
   }
 });
