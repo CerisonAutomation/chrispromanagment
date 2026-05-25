@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Grid3x3, ChevronLeft, ChevronRight } from "lucide-react";
-import SmartImage from "./SmartImage";
-import Lightbox from "./Lightbox";
+import SmartImage from "./smart-image";
+import Lightbox from "./lightbox";
 
 /**
  * PropertyGallery — Airbnb-style responsive gallery.

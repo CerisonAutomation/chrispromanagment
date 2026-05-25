@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: "esnext",
-    minify: "terser",
+    minify: "oxc",
     rollupOptions: {
       output: {
         manualChunks: (id) => {

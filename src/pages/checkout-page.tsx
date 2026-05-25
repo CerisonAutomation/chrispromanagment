@@ -10,8 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/guestyPricing";
-import { StripeInlinePayment } from "@/components/stripeinline/payment";
-import CheckoutExtrasPanel from "@/components/checkoutextras/panel";
+import { StripeInlinePayment } from "@/components/StripeInlinePayment";
+import CheckoutExtrasPanel from "@/components/CheckoutExtrasPanel";
 import { guesty } from "@/lib/guesty";
 
 export const CheckoutPage = () => {

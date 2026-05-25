@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   objectFit?: 'cover' | 'contain' | 'fill';
   loading?: 'lazy' | 'eager';
   onLoad?: () => void;
+  onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
 export const OptimizedImage = ({
@@ -22,6 +23,7 @@ export const OptimizedImage = ({
   objectFit = 'cover',
   loading = 'lazy',
   onLoad,
+  onError,
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -59,7 +61,10 @@ export const OptimizedImage = ({
             setIsLoaded(true);
             onLoad?.();
           }}
-          onError={() => setHasError(true)}
+          onError={(e) => {
+            setHasError(true);
+            onError?.(e);
+          }}
         />
       )}
     </div>

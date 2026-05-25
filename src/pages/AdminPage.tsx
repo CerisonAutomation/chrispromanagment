@@ -15,12 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SCHEMAS, CATEGORIES } from "@/lib/blocks";
-import { BlockErrorBoundary } from "@/components/blockerror/boundary";
-import { LiveNavigateMode } from "@/components/admin/LiveNavigateMode";
-import CacheDebugPanel from "@/components/admin/CacheDebugPanel";
-import SeoOverridesPanel from "@/components/admin/SeoOverridesPanel";
-import GmailInboxPanel from "@/components/admin/GmailInboxPanel";
-import VersionHistoryPanel from "@/components/admin/VersionHistoryPanel";
+import { BlockErrorBoundary } from "@/components/BlockErrorBoundary";
+import { LiveNavigateMode } from "@/components/admin/live-navigate-mode";
+import CacheDebugPanel from "@/components/admin/cache-debug-panel";
+import SeoOverridesPanel from "@/components/admin/seo-overrides-panel";
+import GmailInboxPanel from "@/components/admin/gmail-inbox-panel";
+import VersionHistoryPanel from "@/components/admin/version-history-panel";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
   LiveHero, LiveOwnersSection, LiveAbout, LiveProperties, LiveStats, LiveFeatures,
@@ -30,7 +30,7 @@ import {
   LiveReviewsLive, LivePropertySlider, LiveNumbers, LiveMap, LiveImageGallery,
   LiveVideo, LiveTimeline, LiveNewsletter, LiveTwoCol, LiveIconRow, LiveComparison,
   LiveGuestyListings, LiveGuestyBook,
-} from "@/components/admin/LiveBlocks";
+} from "@/components/admin/live-blocks";
 
 const API = process.env.REACT_APP_BACKEND_URL + "/api";
 
@@ -88,7 +88,7 @@ const JSONEditor = memo(({ block, onUpdate }) => {
 
   useEffect(() => {
     if (block) setDraft(JSON.stringify(block.data, null, 2));
-  }, [block?.id]);
+  }, [block]);
 
   const handleChange = (val) => {
     setDraft(val);
@@ -818,7 +818,7 @@ const AdminDashboard = memo(({ adminKey }) => {
 
   const headers = { "X-Admin-Key": adminKey };
 
-  const fetchData = async (key, url) => {
+  const fetchData = useCallback(async (key, url) => {
     setLoading(l => ({ ...l, [key]: true }));
     setError(e => ({ ...e, [key]: null }));
     try {
@@ -831,7 +831,7 @@ const AdminDashboard = memo(({ adminKey }) => {
     } finally {
       setLoading(l => ({ ...l, [key]: false }));
     }
-  };
+  }, [API, headers]);
 
   useEffect(() => {
     fetchData("stats", "/admin/stats");
@@ -943,22 +943,26 @@ const AdminDashboard = memo(({ adminKey }) => {
   const [mediaData, setMediaData] = useState(null);
   const [mediaLoading, setMediaLoading] = useState(false);
 
-  const fetchMedia = async (lid) => {
+  const fetchMedia = useCallback(async (lid) => {
     if (!lid) return;
-    setMediaLoading(true);
+    setMediaLoad(true);
     try {
-      const res = await fetch(`${API}/admin/media/${lid}`, { headers });
+      const res = await fetch(`${API}/admin/properties/${lid}/media`, { headers });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      setMediaData(json);
-    } catch { setMediaData(null); }
-    setMediaLoading(false);
-  };
+      setMedia(json.media || []);
+    } catch (e) {
+      toast.error("Failed to load media: " + e.message);
+    } finally {
+      setMediaLoad(false);
+    }
+  }, [API, headers]);
 
   useEffect(() => {
     if (tab === "media" && properties.length > 0 && !mediaListing) {
       setMediaListing(properties[0]._id);
     }
-  }, [tab, properties]);
+  }, [tab, properties, mediaListing]);
 
   useEffect(() => {
     if (mediaListing) fetchMedia(mediaListing);
@@ -1704,8 +1708,8 @@ export default function AdminPage() {
   }, [blocks, undo, redo]);
 
   const snapshot = useCallback(() => { setUndo(u => [...u.slice(-29), JSON.stringify(blocks)]); setRedo([]); }, [blocks]);
-  const doUndo = () => { if (!undo.length) return; setRedo(r => [...r, JSON.stringify(blocks)]); setBlocks(JSON.parse(undo.at(-1))); setUndo(u => u.slice(0, -1)); toast.info("Undo"); };
-  const doRedo = () => { if (!redo.length) return; setUndo(u => [...u, JSON.stringify(blocks)]); setBlocks(JSON.parse(redo.at(-1))); setRedo(r => r.slice(0, -1)); toast.info("Redo"); };
+  const doUndo = useCallback(() => { if (!undo.length) return; setRedo(r => [...r, JSON.stringify(blocks)]); setBlocks(JSON.parse(undo.at(-1))); setUndo(u => u.slice(0, -1)); toast.info("Undo"); }, [undo, blocks, setBlocks, setUndo, setRedo]);
+  const doRedo = useCallback(() => { if (!redo.length) return; setUndo(u => [...u, JSON.stringify(blocks)]); setBlocks(JSON.parse(redo.at(-1))); setRedo(r => r.slice(0, -1)); toast.info("Redo"); }, [redo, blocks, setBlocks, setUndo, setRedo]);
 
   const updateBlock = useCallback((id, field, value) => { snapshot(); setBlocks(b => b.map(x => x.id === id ? { ...x, data: { ...x.data, [field]: value } } : x)); }, [snapshot]);
   const addBlock = (type) => { 

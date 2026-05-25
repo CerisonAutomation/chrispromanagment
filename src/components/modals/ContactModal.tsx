@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useModal } from "@/context/modalcontext";
+import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
-import { useBlock } from "@/context/useBlock";
+import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
 import axios from "axios";
 import { gmail } from "@/lib/gmail";

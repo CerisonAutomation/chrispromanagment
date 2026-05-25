@@ -1,25 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Christiano Vincenti | Property Management Malta</title>
-    <meta name="description" content="Maximize your rental income on Malta. Professional short-let property management across Malta & Gozo. 45+ properties managed, 4.97 rating, 94% occupancy." />
-    <meta name="author" content="Christiano Property Management" />
-    <meta name="keywords" content="property management Malta, vacation rental management, short-term rental, property management services Malta, Airbnb management" />
-
-    <meta property="og:title" content="Maximise your rental income, effortlessly | Christiano Vincenti" />
-    <meta property="og:description" content="Professional short-let property management across Malta & Gozo. 45+ properties, 4.97 rating, 94% occupancy." />
+    <meta name="theme-color" content="#0F0F10" />
+    <meta name="description" content="Malta's premier luxury short-term rental management company. Book your dream vacation rental today." />
+    
+    {/* Open Graph / Facebook */}
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Christiano Vincenti | Property Management Malta" />
-    <meta name="twitter:description" content="Professional short-let property management across Malta & Gozo." />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:url" content="https://christianoproperties.com" />
+    <meta property="og:title" content="Christiano Property Management | Malta Vacation Rentals" />
+    <meta property="og:description" content="Experience luxury vacation rentals in Malta with full-service property management." />
+    <meta property="og:image" content="https://christianoproperties.com/og-image.jpg" />
+    
+    {/* Twitter */}
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://christianoproperties.com" />
+    <meta property="twitter:title" content="Christiano Property Management | Malta Vacation Rentals" />
+    <meta property="twitter:description" content="Experience luxury vacation rentals in Malta with full-service property management." />
+    <meta property="twitter:image" content="https://christianoproperties.com/og-image.jpg" />
+    
+    {/* Structured Data */}
+    <script type="application/ld+json">
+      {`
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "name": "Christiano Property Management",
+        "description": "Malta's premier luxury short-term rental management company.",
+        "url": "https://christianoproperties.com",
+        "logo": "https://christianoproperties.com/logo.png",
+        "image": "https://christianoproperties.com/og-image.jpg",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Valletta",
+          "addressCountry": "MT"
+        },
+        "sameAs": [
+          "https://www.facebook.com/christianoproperties",
+          "https://www.instagram.com/christianoproperties"
+        ]
+      `}
+    </script>
+    
+    <title>Christiano Property Management | Malta Vacation Rentals</title>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

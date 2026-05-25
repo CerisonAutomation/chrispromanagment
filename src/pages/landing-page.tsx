@@ -6,9 +6,9 @@ import {
   Award, TrendingUp, HeartHandshake, Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SearchWidget } from "@/components/search/widget";
-import { PropertyCard } from "@/components/property/card";
-import { useModal } from "@/context/modalcontext";
+import { SearchWidget } from "@/components/SearchWidget";
+import { PropertyCard } from "@/components/PropertyCard";
+import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

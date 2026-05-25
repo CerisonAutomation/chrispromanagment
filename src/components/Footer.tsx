@@ -2,7 +2,7 @@ import { memo, useMemo, useCallback } from 'react';
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, MessageCircle } from "lucide-react";
 import { useCMS } from "@/context/cmscontext";
-import { useModal } from "@/context/modalcontext";
+import { useModal } from "@/context/modal-context";
 import { useBlock } from "@/hooks/useBlock";
 import { cn } from '@/lib/utils';
 

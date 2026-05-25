@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, X, Download, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import SmartImage from "./SmartImage";
+import SmartImage from "./smart-image";
 
 /**
  * Lightbox — full-screen image viewer.

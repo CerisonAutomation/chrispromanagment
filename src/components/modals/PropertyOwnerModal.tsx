@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useModal } from "@/context/modalcontext";
+import { useModal } from "@/context/modal-context";
 import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
 import axios from "axios";
