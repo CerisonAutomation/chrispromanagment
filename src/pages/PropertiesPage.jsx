@@ -504,7 +504,22 @@ export const PropertiesPage = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-8">
-        {/* Error State */}
+        {/* Degraded / Stale Data Banner */}
+        {degraded && !error && (
+          <div className="mb-6 border border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#F5F5F0] px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium">
+                {degraded.stale ? "Showing recently cached availability" : "Live availability temporarily unavailable"}
+              </p>
+              <p className="text-[#A1A1AA] mt-1">
+                Our booking provider is briefly throttling requests. Results will refresh automatically.
+                {degraded.fetchedAt && ` Last updated ${new Date(degraded.fetchedAt).toLocaleString()}.`}
+              </p>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
