@@ -2,10 +2,13 @@ import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, MessageCircle } from "lucide-react";
 import { useCMS } from "@/context/CMSContext";
 import { useModal } from "@/context/ModalContext";
+import { useBlock } from "@/hooks/useBlock";
 
 export const Footer = () => {
   const { cms } = useCMS();
   const { openContactModal, openOwnerModal } = useModal();
+  const { content: footerCfg } = useBlock("footer");
+  const { content: socialCfg } = useBlock("socialBar");
 
   // WHITE LOGO - Same as Header
   const WHITE_LOGO = cms.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png";
@@ -95,7 +98,7 @@ export const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
             {/* Copyright */}
             <p className="text-xs text-[#71717A]">
-              © {new Date().getFullYear()} {cms.brand.name}. All rights reserved.
+              {footerCfg?.copyright || `© ${new Date().getFullYear()} ${cms.brand.name}. All rights reserved.`}
             </p>
 
             {/* Social Links - COMPACT */}
