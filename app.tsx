@@ -14,11 +14,11 @@ import { ModalProvider } from "@/context/modal-context";
 import { PropertiesPage } from "@/pages/properties-page";
 import { PropertyDetailPage } from "@/pages/property-detail-page";
 import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
-import { PropertyOwnersPage } from "@/pages/propertyOwnersPage";
+import { PropertyOwnersPage } from "@/pages/property-owners-page";
 import { StickyCallToAction } from "@/components/sticky-call-to-action";
 import { Toaster } from "@/components/ui/sonner";
-import AdminPage from "@/pages/adminPage";
-import AuthPage from "@/pages/authPage";
+import AdminPage from "@/pages/AdminPage";
+import AuthPage from "@/pages/AuthPage";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { app } from "@/lib/utils";
@@ -44,14 +44,12 @@ function ScrollToHash() {
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
-      // Wait a tick for the destination page to mount
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         const el = document.getElementById(id);
         if (el) {
           el.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 100);
-      return () => clearTimeout(timer);
     }
   }, [location]);
   return null;

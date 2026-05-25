@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useModal } from "@/context/modalcontext";
+import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
 import { useBlock } from "@/hooks/useBlock";
 import { cn } from '@/lib/utils';

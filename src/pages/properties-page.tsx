@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PropertyCard } from "@/components/property/card";
-import { SearchWidget } from "@/components/search/widget";
+import { SearchWidget } from "@/components/search-widget";
 import { guesty } from "@/lib/guesty";
 
 // Malta locations for filtering
