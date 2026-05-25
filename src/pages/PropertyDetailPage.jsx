@@ -169,47 +169,21 @@ export const PropertyDetailPage = () => {
     if (!quote?._id || !couponInput.trim()) return;
     setCouponLoading(true);
     try {
-      const res = await fetch(`${API}/quotes/${quote._id}/coupons`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coupons: [couponInput.trim().toUpperCase()] }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast.error(data?.detail?.message || "This coupon code is invalid or has expired.");
-      } else {
-        setQuote(data);
-        setCouponInput("");
-        toast.success("Coupon applied");
-      }
+      const data = await guesty.applyCoupon(quote._id, couponInput.trim().toUpperCase());
+      setQuote(data);
+      setCouponInput("");
+      toast.success("Coupon applied");
     } catch (e) {
       console.error(e);
-      toast.error("Could not apply coupon");
+      toast.error(e?.message || "This coupon code is invalid or has expired.");
     } finally {
       setCouponLoading(false);
     }
   };
 
-  const removeCoupon = async (code) => {
-    if (!quote?._id || !code) return;
-    setCouponLoading(true);
-    try {
-      const res = await fetch(`${API}/quotes/${quote._id}/coupons/${encodeURIComponent(code)}`, {
-        method: "DELETE",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast.error(data?.detail?.message || "Could not remove coupon");
-      } else {
-        setQuote(data);
-        toast.success("Coupon removed");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Could not remove coupon");
-    } finally {
-      setCouponLoading(false);
-    }
+  const removeCoupon = async (_code) => {
+    // BEAPI coupon removal not exposed via canonical client — instruct guest to recreate quote.
+    toast.info("Re-select dates to remove the coupon.");
   };
 
   const activeCoupons = quote?.coupons || quote?.rates?.coupons || [];
