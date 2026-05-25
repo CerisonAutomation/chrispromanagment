@@ -8,10 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
 import { useBlock } from "@/hooks/useBlock";
 import { cn } from '@/lib/utils';
+import VoiceSearchButton from '@/components/voice/VoiceSearchButton';
 
 interface DropdownItem {
   icon?: React.ComponentType<{ className?: string }>;
