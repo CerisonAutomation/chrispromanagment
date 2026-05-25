@@ -28,6 +28,7 @@ import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
 import { ModalProvider } from "@/context/ModalContext";
 import { CMSProvider } from "@/context/CMSContext";
 import EditModeBridge from "@/components/EditModeBridge";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Simple SEO that doesn't break
 function AppSEO() {
@@ -103,17 +104,19 @@ function AppContent() {
 
 function App() {
   return (
-    <HelmetProvider>
-      <CMSProvider>
-        <ModalProvider>
-          <div className="min-h-screen bg-[#0F0F10]">
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </div>
-        </ModalProvider>
-      </CMSProvider>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <CMSProvider>
+          <ModalProvider>
+            <div className="min-h-screen bg-[#0F0F10]">
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </div>
+          </ModalProvider>
+        </CMSProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
   );
 }
 
