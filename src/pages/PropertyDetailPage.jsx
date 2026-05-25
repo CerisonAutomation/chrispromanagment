@@ -189,18 +189,8 @@ export const PropertyDetailPage = () => {
 
   const activeCoupons = quote?.coupons || quote?.rates?.coupons || [];
 
-  // Gallery navigation
-  const nextImage = () => {
-    if (listing?.pictures) {
-      setCurrentImageIndex((prev) => (prev + 1) % listing.pictures.length);
-    }
-  };
+  // Gallery navigation moved into <PropertyGallery />
 
-  const prevImage = () => {
-    if (listing?.pictures) {
-      setCurrentImageIndex((prev) => (prev - 1 + listing.pictures.length) % listing.pictures.length);
-    }
-  };
 
   // Format price
   const formatPrice = (price, currency = "EUR") => {
