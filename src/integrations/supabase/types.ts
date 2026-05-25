@@ -82,6 +82,48 @@ export type Database = {
           },
         ]
       }
+      cms_page_seo: {
+        Row: {
+          canonical_url: string | null
+          created_at: string
+          id: string
+          json_ld: Json | null
+          meta_description: string | null
+          meta_title: string | null
+          og_image: string | null
+          og_type: string | null
+          page_slug: string
+          robots: string | null
+          updated_at: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          created_at?: string
+          id?: string
+          json_ld?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
+          og_type?: string | null
+          page_slug: string
+          robots?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canonical_url?: string | null
+          created_at?: string
+          id?: string
+          json_ld?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
+          og_type?: string | null
+          page_slug?: string
+          robots?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cms_settings: {
         Row: {
           created_at: string
