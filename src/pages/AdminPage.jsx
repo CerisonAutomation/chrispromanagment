@@ -1559,6 +1559,11 @@ const AdminDashboard = memo(({ adminKey }) => {
                 </div>
               </div>
             )}
+
+            {/* Live perf cache stats + Guesty token vault */}
+            <div className="mt-8">
+              <CacheDebugPanel />
+            </div>
           </div>
         )}
       </div>
