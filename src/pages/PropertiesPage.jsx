@@ -11,8 +11,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Checkbox } from "@/components/ui/checkbox";
 import { PropertyCard } from "@/components/PropertyCard";
 import { SearchWidget } from "@/components/SearchWidget";
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { guesty } from "@/lib/guesty";
 
 // Malta locations for filtering
 const MALTA_CITIES = [
@@ -55,6 +54,7 @@ export const PropertiesPage = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("recommended");
   const [totalCount, setTotalCount] = useState(0);
+  const [degraded, setDegraded] = useState(null); // { stale, fallback, reason }
   
   // Filters from URL
   const [filters, setFilters] = useState({
@@ -70,55 +70,43 @@ export const PropertiesPage = () => {
     propertyType: searchParams.get("propertyType") || "",
   });
 
-  // Fetch listings with retry logic
+  // Fetch listings via canonical Booking Engine edge function with retry + degradation surfacing
   const fetchListings = useCallback(async (currentFilters, attempt = 1) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const params = new URLSearchParams();
-      params.set("limit", "100");
-      
-      if (currentFilters.city && currentFilters.city !== "All Locations") {
-        params.set("city", currentFilters.city);
-      }
-      if (currentFilters.checkIn) params.set("checkIn", currentFilters.checkIn);
-      if (currentFilters.checkOut) params.set("checkOut", currentFilters.checkOut);
-      if (currentFilters.guests) params.set("minOccupancy", currentFilters.guests);
-      if (currentFilters.bedrooms) params.set("numberOfBedrooms", currentFilters.bedrooms);
-      if (currentFilters.bathrooms) params.set("numberOfBathrooms", currentFilters.bathrooms);
-      if (currentFilters.minPrice) params.set("minPrice", currentFilters.minPrice);
-      if (currentFilters.maxPrice) params.set("maxPrice", currentFilters.maxPrice);
-      if (currentFilters.propertyType) params.set("propertyType", currentFilters.propertyType);
-      if (currentFilters.amenities?.length > 0) {
-        params.set("includeAmenities", currentFilters.amenities.join(","));
-      }
+      const params = { limit: 100 };
+      if (currentFilters.city && currentFilters.city !== "All Locations") params.city = currentFilters.city;
+      if (currentFilters.checkIn) params.checkIn = currentFilters.checkIn;
+      if (currentFilters.checkOut) params.checkOut = currentFilters.checkOut;
+      if (currentFilters.guests) params.minOccupancy = currentFilters.guests;
+      if (currentFilters.bedrooms) params.numberOfBedrooms = currentFilters.bedrooms;
+      if (currentFilters.bathrooms) params.numberOfBathrooms = currentFilters.bathrooms;
+      if (currentFilters.minPrice) params.minPrice = currentFilters.minPrice;
+      if (currentFilters.maxPrice) params.maxPrice = currentFilters.maxPrice;
+      if (currentFilters.propertyType) params.propertyType = currentFilters.propertyType;
+      if (currentFilters.amenities?.length > 0) params.includeAmenities = currentFilters.amenities.join(",");
 
-      const response = await fetch(`${API_URL}/api/listings?${params.toString()}`, {
-        headers: { "Accept": "application/json" },
-        signal: AbortSignal.timeout(15000), // 15 second timeout
-      });
+      const hasDates = !!params.checkIn && !!params.checkOut;
+      const data = hasDates ? await guesty.search(params) : await guesty.listings(params);
 
-      if (!response.ok) {
-        throw new Error(`Failed to load properties (${response.status})`);
-      }
-
-      const data = await response.json();
-      setListings(data.results || []);
-      setTotalCount(data.pagination?.total || data.results?.length || 0);
+      setListings(data?.results || data?.data || []);
+      setTotalCount(data?.pagination?.total ?? (data?.results?.length || 0));
+      setDegraded(
+        data?._fallback || data?._stale
+          ? { stale: !!data._stale, fallback: !!data._fallback, reason: data._stale_reason, fetchedAt: data._fetched_at }
+          : null
+      );
       setRetryCount(0);
     } catch (err) {
       console.error("Error fetching listings:", err);
-      
-      // Retry logic with exponential backoff
       if (attempt < 3 && !err.name?.includes("Abort")) {
         const delay = Math.pow(2, attempt) * 1000;
-        console.log(`Retrying in ${delay}ms (attempt ${attempt + 1})...`);
         setTimeout(() => fetchListings(currentFilters, attempt + 1), delay);
         setRetryCount(attempt);
         return;
       }
-      
       setError(err.message || "Failed to load properties. Please try again.");
     } finally {
       setLoading(false);
@@ -516,7 +504,22 @@ export const PropertiesPage = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-8">
-        {/* Error State */}
+        {/* Degraded / Stale Data Banner */}
+        {degraded && !error && (
+          <div className="mb-6 border border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#F5F5F0] px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium">
+                {degraded.stale ? "Showing recently cached availability" : "Live availability temporarily unavailable"}
+              </p>
+              <p className="text-[#A1A1AA] mt-1">
+                Our booking provider is briefly throttling requests. Results will refresh automatically.
+                {degraded.fetchedAt && ` Last updated ${new Date(degraded.fetchedAt).toLocaleString()}.`}
+              </p>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
