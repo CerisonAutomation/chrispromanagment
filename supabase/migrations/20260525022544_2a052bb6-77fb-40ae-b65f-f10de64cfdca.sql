@@ -1,0 +1,1 @@
+DELETE FROM public.guesty_token_refresh_log WHERE status = 'error' AND created_at > now() - interval '24 hours';
