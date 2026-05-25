@@ -353,3 +353,110 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
     </div>
   );
 };
+
+function AIThemePanel() {
+  const [prompt, setPrompt] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [lastTokens, setLastTokens] = useState(null);
+  const [rationale, setRationale] = useState("");
+
+  const currentTokens = () => {
+    const cs = getComputedStyle(document.documentElement);
+    const out = {};
+    for (const k of THEME_TOKEN_ALLOWLIST) {
+      const v = cs.getPropertyValue(k).trim();
+      if (v) out[k] = v;
+    }
+    return out;
+  };
+
+  const onGenerate = async () => {
+    if (!prompt.trim()) return;
+    setBusy(true);
+    try {
+      const { tokens, rationale: r } = await generateThemeWithAI(prompt, currentTokens());
+      if (!tokens || Object.keys(tokens).length === 0) {
+        toast.error("AI returned no valid tokens. Try a different prompt.");
+      } else {
+        applyThemeTokens(tokens);
+        setLastTokens(tokens);
+        setRationale(r || "");
+        toast.success(`Applied ${Object.keys(tokens).length} tokens. Click Save to persist.`);
+      }
+    } catch (e) {
+      toast.error(e?.message || "AI generation failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onSave = async () => {
+    if (!lastTokens) return toast.info("Nothing to save — generate a theme first.");
+    setBusy(true);
+    try {
+      const { error } = await saveThemeTokens(lastTokens);
+      if (error) throw error;
+      toast.success("AI theme saved. It will load on every page.");
+    } catch (e) {
+      toast.error(e?.message || "Save failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onReset = async () => {
+    setBusy(true);
+    try {
+      await resetThemeTokens();
+      setLastTokens(null);
+      setRationale("");
+      toast.success("Theme reset to defaults.");
+    } catch (e) {
+      toast.error(e?.message || "Reset failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="p-5 rounded-lg border border-[#D4AF37]/30 bg-gradient-to-br from-[#D4AF37]/5 to-transparent space-y-3">
+      <div className="flex items-center gap-2">
+        <Sparkles className="w-5 h-5 text-[#D4AF37]" />
+        <h2 className="text-base font-semibold text-[#F5F5F0]">AI Theme Generator</h2>
+        <span className="text-xs text-[#71717A] ml-2">Describe a mood — applies live, click Save to persist.</span>
+      </div>
+      <Textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder="e.g. warmer Provençal villa at golden hour, less corporate"
+        rows={2}
+        className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0]"
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={onGenerate} disabled={busy || !prompt.trim()} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+          {busy ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+          Apply with AI
+        </Button>
+        <Button onClick={onSave} disabled={busy || !lastTokens} variant="outline" className="border-white/10">
+          <Save className="w-4 h-4 mr-2" /> Save
+        </Button>
+        <Button onClick={onReset} disabled={busy} variant="ghost" className="text-[#A1A1AA]">
+          <RotateCcw className="w-4 h-4 mr-2" /> Reset
+        </Button>
+      </div>
+      {rationale && (
+        <p className="text-xs text-[#A1A1AA] italic border-l-2 border-[#D4AF37]/40 pl-3">{rationale}</p>
+      )}
+      {lastTokens && (
+        <div className="flex flex-wrap gap-2 pt-2">
+          {Object.entries(lastTokens).map(([k, v]) => (
+            <div key={k} className="flex items-center gap-1.5 text-xs text-[#A1A1AA] font-mono">
+              <span className="inline-block w-4 h-4 rounded border border-white/20" style={{ background: v }} />
+              {k}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
