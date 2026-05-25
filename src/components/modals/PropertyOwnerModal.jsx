@@ -7,34 +7,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/context/ModalContext";
+import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const PROPERTY_TYPES = [
-  "Apartment",
-  "Villa",
-  "Penthouse",
-  "Townhouse",
-  "Studio",
-  "Palazzo/Historic",
-  "Other",
+const FALLBACK_PROPERTY_TYPES = [
+  "Apartment","Villa","Penthouse","Townhouse","Studio","Palazzo/Historic","Other",
 ];
 
-const LOCATIONS = [
-  "St. Julian's",
-  "Sliema",
-  "Valletta",
-  "St. Paul's Bay",
-  "Mellieha",
-  "Gozo",
-  "Mdina/Rabat",
-  "Other",
+const FALLBACK_LOCATIONS = [
+  "St. Julian's","Sliema","Valletta","St. Paul's Bay","Mellieha","Gozo","Mdina/Rabat","Other",
 ];
 
-const SERVICES_INTERESTED = [
+const FALLBACK_SERVICES = [
   { id: "fullManagement", label: "Full Property Management" },
   { id: "guestCommunication", label: "Guest Communication Only" },
   { id: "cleaning", label: "Cleaning & Turnover" },
@@ -46,6 +34,13 @@ const SERVICES_INTERESTED = [
 
 export const PropertyOwnerModal = () => {
   const { ownerModalOpen, closeOwnerModal, ownerModalStep, setOwnerModalStep, ownerPreFill } = useModal();
+  const { content: copy } = useBlock("ownerModal");
+  const PROPERTY_TYPES = (copy?.propertyTypes?.length ? copy.propertyTypes : FALLBACK_PROPERTY_TYPES.map((label) => ({ label })))
+    .map((p) => (typeof p === "string" ? p : p?.label)).filter(Boolean);
+  const LOCATIONS = (copy?.locations?.length ? copy.locations : FALLBACK_LOCATIONS.map((label) => ({ label })))
+    .map((l) => (typeof l === "string" ? l : l?.label)).filter(Boolean);
+  const SERVICES_INTERESTED = (copy?.services?.length ? copy.services : FALLBACK_SERVICES)
+    .filter((s) => s && s.id && s.label);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -170,10 +165,10 @@ export const PropertyOwnerModal = () => {
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
             <h3 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-3">
-              Inquiry Received!
+              {copy?.successTitle || "Inquiry Received!"}
             </h3>
             <p className="text-[#A1A1AA] mb-6">
-              Thank you for your interest. We'll review your property details and contact you within 48 hours to discuss how we can help maximize your property's potential.
+              {copy?.successBody || "Thank you for your interest. We'll review your property details and contact you within 48 hours to discuss how we can help maximize your property's potential."}
             </p>
             <Button
               onClick={handleClose}
@@ -186,12 +181,12 @@ export const PropertyOwnerModal = () => {
           <div className="p-6">
             <DialogHeader className="mb-4">
               <DialogTitle className="font-['Playfair_Display'] text-2xl text-[#F5F5F0]">
-                List Your Property
+                {copy?.title || "List Your Property"}
               </DialogTitle>
               <p className="text-[#A1A1AA] text-sm">
-                {ownerModalStep === 1 && "Tell us about your property"}
-                {ownerModalStep === 2 && "Your contact information"}
-                {ownerModalStep === 3 && "Services you're interested in"}
+                {ownerModalStep === 1 && (copy?.step1Sub || "Tell us about your property")}
+                {ownerModalStep === 2 && (copy?.step2Sub || "Your contact information")}
+                {ownerModalStep === 3 && (copy?.step3Sub || "Services you're interested in")}
               </p>
             </DialogHeader>
 
@@ -415,7 +410,7 @@ export const PropertyOwnerModal = () => {
                       Submitting...
                     </>
                   ) : (
-                    "Submit Inquiry"
+                    copy?.submitLabel || "Submit Inquiry"
                   )}
                 </Button>
               )}

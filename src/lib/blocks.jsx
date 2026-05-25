@@ -740,6 +740,206 @@ export const SCHEMAS = {
     },
     defaults: { style:"gradient", color:"rgba(212,175,55,0.3)" },
   },
+
+  // ─── NEWLY REGISTERED EDITABLE BLOCKS (auto-picked up by blockRegistry) ───
+  announcementBar: {
+    label:"Announcement Bar", category:"global", icon: Info,
+    fields: {
+      enabled:{ type:"boolean", label:"Enabled" },
+      message:{ type:"text", label:"Message" },
+      ctaText:{ type:"text", label:"CTA Text" },
+      ctaHref:{ type:"text", label:"CTA Link" },
+      bg:{ type:"color", label:"Background" },
+      fg:{ type:"color", label:"Foreground" },
+    },
+    defaults: { enabled:false, message:"Spring savings — 10% off direct bookings.", ctaText:"Book", ctaHref:"/properties", bg:"#D4AF37", fg:"#0F0F10" },
+  },
+
+  mobileMenu: {
+    label:"Mobile Menu", category:"global", icon: LayoutTemplate,
+    fields: {
+      ownersTitle:{ type:"text", label:"Owners Section Title" },
+      bookingTitle:{ type:"text", label:"Booking Section Title" },
+      callLabel:{ type:"text", label:"Call Button Label" },
+      contactLabel:{ type:"text", label:"Contact Button Label" },
+    },
+    defaults: { ownersTitle:"For Property Owners", bookingTitle:"Book a Stay", callLabel:"Call", contactLabel:"Contact Us" },
+  },
+
+  breadcrumbs: {
+    label:"Breadcrumbs", category:"global", icon: ArrowRight,
+    fields: {
+      homeLabel:{ type:"text", label:"Home Label" },
+      separator:{ type:"text", label:"Separator" },
+    },
+    defaults: { homeLabel:"Home", separator:"/" },
+  },
+
+  socialBar: {
+    label:"Social Bar", category:"global", icon: MessageCircle,
+    fields: { items:{ type:"array", label:"Links", itemFields:["platform","url","label"] } },
+    defaults: { items:[
+      { platform:"instagram", url:"https://instagram.com/christianopropertymanagement", label:"Instagram" },
+      { platform:"facebook",  url:"https://facebook.com/christianopropertymanagement",  label:"Facebook" },
+      { platform:"whatsapp",  url:"https://wa.me/35679790202",                          label:"WhatsApp" },
+    ] },
+  },
+
+  contactModal: {
+    label:"Contact Modal", category:"global", icon: Mail,
+    aiFields:["title","subtitle","successTitle","successBody"],
+    fields: {
+      title:{ type:"text", label:"Title" },
+      subtitle:{ type:"text", label:"Subtitle" },
+      successTitle:{ type:"text", label:"Success Title" },
+      successBody:{ type:"textarea", label:"Success Body" },
+      submitLabel:{ type:"text", label:"Submit Label" },
+      subjects:{ type:"array", label:"Quick Subjects", itemFields:["label"] },
+    },
+    defaults: {
+      title:"Get in Touch",
+      subtitle:"We typically respond within a few hours",
+      successTitle:"Message Sent!",
+      successBody:"Thank you for reaching out. We'll get back to you within 24 hours.",
+      submitLabel:"Send Message",
+      subjects:[
+        { label:"Booking Inquiry" }, { label:"Property Question" },
+        { label:"Availability Check" }, { label:"Special Request" }, { label:"Other" },
+      ],
+    },
+  },
+
+  ownerModal: {
+    label:"Owner Inquiry Modal", category:"global", icon: Building,
+    aiFields:["title","step1Sub","step2Sub","step3Sub","successTitle","successBody"],
+    fields: {
+      title:{ type:"text", label:"Title" },
+      step1Sub:{ type:"text", label:"Step 1 Subtitle" },
+      step2Sub:{ type:"text", label:"Step 2 Subtitle" },
+      step3Sub:{ type:"text", label:"Step 3 Subtitle" },
+      successTitle:{ type:"text", label:"Success Title" },
+      successBody:{ type:"textarea", label:"Success Body" },
+      submitLabel:{ type:"text", label:"Submit Label" },
+      propertyTypes:{ type:"array", label:"Property Types", itemFields:["label"] },
+      locations:{ type:"array", label:"Locations", itemFields:["label"] },
+      services:{ type:"array", label:"Services", itemFields:["id","label"] },
+    },
+    defaults: {
+      title:"List Your Property",
+      step1Sub:"Tell us about your property",
+      step2Sub:"Your contact information",
+      step3Sub:"Services you're interested in",
+      successTitle:"Inquiry Received!",
+      successBody:"Thank you for your interest. We'll review your property details and contact you within 48 hours.",
+      submitLabel:"Submit Inquiry",
+      propertyTypes:[
+        { label:"Apartment" },{ label:"Villa" },{ label:"Penthouse" },{ label:"Townhouse" },
+        { label:"Studio" },{ label:"Palazzo/Historic" },{ label:"Other" },
+      ],
+      locations:[
+        { label:"St. Julian's" },{ label:"Sliema" },{ label:"Valletta" },{ label:"St. Paul's Bay" },
+        { label:"Mellieha" },{ label:"Gozo" },{ label:"Mdina/Rabat" },{ label:"Other" },
+      ],
+      services:[
+        { id:"fullManagement",     label:"Full Property Management" },
+        { id:"guestCommunication", label:"Guest Communication Only" },
+        { id:"cleaning",           label:"Cleaning & Turnover" },
+        { id:"maintenance",        label:"Maintenance & Repairs" },
+        { id:"pricing",            label:"Dynamic Pricing" },
+        { id:"photography",        label:"Professional Photography" },
+        { id:"makeover",           label:"Home Makeover" },
+      ],
+    },
+  },
+
+  propertyCard: {
+    label:"Property Card", category:"properties", icon: Home,
+    fields: {
+      bookLabel:{ type:"text", label:"Book CTA Label" },
+      viewLabel:{ type:"text", label:"View CTA Label" },
+      currency:{ type:"text", label:"Currency Symbol" },
+      perNightLabel:{ type:"text", label:"Per-Night Label" },
+    },
+    defaults: { bookLabel:"Book Now", viewLabel:"View Details", currency:"€", perNightLabel:"/night" },
+  },
+
+  propertyHero: {
+    label:"Property Detail Hero", category:"properties", icon: Star,
+    fields: {
+      showRating:{ type:"boolean", label:"Show Rating" },
+      showSleeps:{ type:"boolean", label:"Show Capacity" },
+      cta:{ type:"text", label:"Reserve CTA" },
+    },
+    defaults: { showRating:true, showSleeps:true, cta:"Reserve Your Stay" },
+  },
+
+  amenitiesList: {
+    label:"Amenities List", category:"properties", icon: ClipboardList,
+    fields: {
+      title:{ type:"text", label:"Title" },
+      columns:{ type:"number", label:"Columns", min:1, max:4 },
+    },
+    defaults: { title:"What this place offers", columns:3 },
+  },
+
+  bookingWidget: {
+    label:"Booking Widget", category:"conversion", icon: CalendarDays,
+    fields: {
+      checkInLabel:{ type:"text", label:"Check-in Label" },
+      checkOutLabel:{ type:"text", label:"Check-out Label" },
+      guestsLabel:{ type:"text", label:"Guests Label" },
+      cta:{ type:"text", label:"Continue CTA" },
+    },
+    defaults: { checkInLabel:"Check in", checkOutLabel:"Check out", guestsLabel:"Guests", cta:"Check availability" },
+  },
+
+  reviewCard: {
+    label:"Review Card", category:"social", icon: Quote,
+    fields: {
+      showSource:{ type:"boolean", label:"Show Source Badge" },
+      maxLines:{ type:"number", label:"Max Lines", min:2, max:20 },
+    },
+    defaults: { showSource:true, maxLines:6 },
+  },
+
+  blogList: {
+    label:"Blog List", category:"content", icon: LayoutGrid,
+    fields: {
+      title:{ type:"text", label:"Title" },
+      perPage:{ type:"number", label:"Posts Per Page", min:3, max:24 },
+      readMore:{ type:"text", label:"Read More Label" },
+    },
+    defaults: { title:"Insights & Stories", perPage:9, readMore:"Read more" },
+  },
+
+  blogPost: {
+    label:"Blog Post", category:"content", icon: TextCursorInput,
+    fields: {
+      backLabel:{ type:"text", label:"Back Label" },
+      shareLabel:{ type:"text", label:"Share Label" },
+    },
+    defaults: { backLabel:"Back to all stories", shareLabel:"Share" },
+  },
+
+  legalContent: {
+    label:"Legal Page", category:"content", icon: ClipboardList,
+    fields: {
+      title:{ type:"text", label:"Title" },
+      lastUpdatedLabel:{ type:"text", label:"Last Updated Label" },
+      body:{ type:"richtext", label:"Body" },
+    },
+    defaults: { title:"Legal", lastUpdatedLabel:"Last updated", body:"" },
+  },
+
+  locationMap: {
+    label:"Location Map", category:"properties", icon: MapPin,
+    fields: {
+      title:{ type:"text", label:"Title" },
+      zoom:{ type:"number", label:"Zoom", min:1, max:20 },
+      showDirections:{ type:"boolean", label:"Show Directions Link" },
+    },
+    defaults: { title:"Where you'll be", zoom:14, showDirections:true },
+  },
 };
 
 // ─── BLOCK CATEGORIES ─────────────────────────────────────────

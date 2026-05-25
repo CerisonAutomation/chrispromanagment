@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useModal } from "@/context/ModalContext";
 import { useCMS } from "@/context/CMSContext";
+import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
 import axios from "axios";
 import { gmail } from "@/lib/gmail";
@@ -13,8 +14,8 @@ import { gmail } from "@/lib/gmail";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Quick contact options
-const QUICK_SUBJECTS = [
+// Quick contact options (fallback — editable via contactModal block)
+const FALLBACK_SUBJECTS = [
   "Booking Inquiry",
   "Property Question",
   "Availability Check",
@@ -25,6 +26,10 @@ const QUICK_SUBJECTS = [
 export const ContactModal = () => {
   const { contactModalOpen, closeContactModal, contactPreFill } = useModal();
   const { cms } = useCMS();
+  const { content: copy } = useBlock("contactModal");
+  const QUICK_SUBJECTS = Array.isArray(copy?.subjects) && copy.subjects.length
+    ? copy.subjects.map((s) => (typeof s === "string" ? s : s?.label)).filter(Boolean)
+    : FALLBACK_SUBJECTS;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
@@ -104,10 +109,10 @@ export const ContactModal = () => {
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
             <h3 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-3">
-              Message Sent!
+              {copy?.successTitle || "Message Sent!"}
             </h3>
             <p className="text-[#A1A1AA] mb-6">
-              Thank you for reaching out. We'll get back to you within 24 hours.
+              {copy?.successBody || "Thank you for reaching out. We'll get back to you within 24 hours."}
             </p>
             <Button
               onClick={handleClose}
@@ -120,10 +125,10 @@ export const ContactModal = () => {
           <>
             <DialogHeader className="p-6 pb-0">
               <DialogTitle className="font-['Playfair_Display'] text-2xl text-[#F5F5F0]">
-                Get in Touch
+                {copy?.title || "Get in Touch"}
               </DialogTitle>
               <p className="text-[#A1A1AA] text-sm mt-2">
-                We typically respond within a few hours
+                {copy?.subtitle || "We typically respond within a few hours"}
               </p>
             </DialogHeader>
 
@@ -255,7 +260,7 @@ export const ContactModal = () => {
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Send Message
+                    {copy?.submitLabel || "Send Message"}
                   </>
                 )}
               </Button>

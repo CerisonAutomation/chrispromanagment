@@ -63,6 +63,23 @@ const META = {
   grid:          { category: "layout" },
   columns:       { category: "layout" },
   embed:         { category: "content", ai: { canSuggest: false } },
+
+  // newly registered editable blocks
+  announcementBar: { category: "global",     ai: { useCases: ["content-generation", "improvement"] } },
+  mobileMenu:      { category: "global",     ai: { canSuggest: false } },
+  breadcrumbs:     { category: "global",     ai: { canSuggest: false } },
+  socialBar:       { category: "global",     ai: { canSuggest: false } },
+  contactModal:    { category: "global",     ai: { useCases: ["content-generation", "improvement", "translation"] } },
+  ownerModal:      { category: "global",     ai: { useCases: ["content-generation", "improvement", "translation"] } },
+  propertyCard:    { category: "properties", ai: { canSuggest: false } },
+  propertyHero:    { category: "properties", seo: { contributesHeadings: true } },
+  amenitiesList:   { category: "properties" },
+  bookingWidget:   { category: "booking",    ai: { canSuggest: false } },
+  reviewCard:      { category: "social" },
+  blogList:        { category: "content",    seo: { contributesHeadings: true } },
+  blogPost:        { category: "content",    seo: { contributesHeadings: true, contributesJsonLd: "BlogPosting" } },
+  legalContent:    { category: "content",    seo: { contributesHeadings: true } },
+  locationMap:     { category: "properties", ai: { canSuggest: false } },
 };
 
 // ── Field → Zod schema inference ───────────────────────────────────────────
