@@ -26,6 +26,7 @@ import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/g
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { guesty } from "@/lib/guesty";
 
 // Fix default marker icons for Leaflet under bundlers
 const DEFAULT_ICON = L.icon({
@@ -37,9 +38,6 @@ const DEFAULT_ICON = L.icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 export const PropertyDetailPage = () => {
   const { id } = useParams();
@@ -85,9 +83,7 @@ export const PropertyDetailPage = () => {
   const fetchListing = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API}/listings/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch listing");
-      const data = await response.json();
+      const data = await guesty.listing(id);
       setListing(data);
     } catch (error) {
       console.error("Error fetching listing:", error);
@@ -102,22 +98,14 @@ export const PropertyDetailPage = () => {
       const today = new Date();
       const futureDate = new Date();
       futureDate.setMonth(futureDate.getMonth() + 6);
-      
-      const params = new URLSearchParams({
-        startDate: format(today, "yyyy-MM-dd"),
-        endDate: format(futureDate, "yyyy-MM-dd")
-      });
-      
-      const response = await fetch(`${API}/listings/${id}/calendar?${params.toString()}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCalendarData(data);
-      } else {
-        console.warn("Calendar unavailable for this listing");
-      }
+      const data = await guesty.calendar(
+        id,
+        format(today, "yyyy-MM-dd"),
+        format(futureDate, "yyyy-MM-dd")
+      );
+      setCalendarData(data);
     } catch (error) {
-      console.error("Error fetching calendar:", error);
+      console.warn("Calendar unavailable for this listing:", error?.message);
     }
   };
 
@@ -135,43 +123,23 @@ export const PropertyDetailPage = () => {
 
   const fetchQuote = async () => {
     if (!listing || !checkIn || !checkOut) return;
-    
     setIsQuoteLoading(true);
     try {
-      const response = await fetch(`${API}/quotes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          listingId: listing._id,
-          checkInDateLocalized: format(checkIn, "yyyy-MM-dd"),
-          checkOutDateLocalized: format(checkOut, "yyyy-MM-dd"),
-          guestsCount: guests,
-        }),
+      const data = await guesty.createQuote({
+        listingId: listing._id,
+        checkInDateLocalized: format(checkIn, "yyyy-MM-dd"),
+        checkOutDateLocalized: format(checkOut, "yyyy-MM-dd"),
+        guestsCount: guests,
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorDetail = errorData?.detail;
-        
-        // Show user-friendly error message from backend
-        if (errorDetail?.message) {
-          toast.error(errorDetail.message);
-        } else if (response.status === 422) {
-          toast.error("Selected dates are not available");
-        } else if (response.status === 400) {
-          toast.error("These dates are unavailable for this property");
-        } else {
-          toast.error("Failed to get pricing. Please try different dates.");
-        }
-        setQuote(null);
-        return;
-      }
-      
-      const data = await response.json();
       setQuote(data);
     } catch (error) {
       console.error("Error fetching quote:", error);
-      toast.error("Failed to get pricing. Please try again.");
+      const msg = error?.message || "";
+      if (msg.toLowerCase().includes("unavail") || msg.includes("422") || msg.includes("400")) {
+        toast.error("Selected dates are not available");
+      } else {
+        toast.error("Failed to get pricing. Please try different dates.");
+      }
       setQuote(null);
     } finally {
       setIsQuoteLoading(false);
@@ -201,47 +169,21 @@ export const PropertyDetailPage = () => {
     if (!quote?._id || !couponInput.trim()) return;
     setCouponLoading(true);
     try {
-      const res = await fetch(`${API}/quotes/${quote._id}/coupons`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coupons: [couponInput.trim().toUpperCase()] }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast.error(data?.detail?.message || "This coupon code is invalid or has expired.");
-      } else {
-        setQuote(data);
-        setCouponInput("");
-        toast.success("Coupon applied");
-      }
+      const data = await guesty.applyCoupon(quote._id, couponInput.trim().toUpperCase());
+      setQuote(data);
+      setCouponInput("");
+      toast.success("Coupon applied");
     } catch (e) {
       console.error(e);
-      toast.error("Could not apply coupon");
+      toast.error(e?.message || "This coupon code is invalid or has expired.");
     } finally {
       setCouponLoading(false);
     }
   };
 
-  const removeCoupon = async (code) => {
-    if (!quote?._id || !code) return;
-    setCouponLoading(true);
-    try {
-      const res = await fetch(`${API}/quotes/${quote._id}/coupons/${encodeURIComponent(code)}`, {
-        method: "DELETE",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast.error(data?.detail?.message || "Could not remove coupon");
-      } else {
-        setQuote(data);
-        toast.success("Coupon removed");
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error("Could not remove coupon");
-    } finally {
-      setCouponLoading(false);
-    }
+  const removeCoupon = async (_code) => {
+    // BEAPI coupon removal not exposed via canonical client — instruct guest to recreate quote.
+    toast.info("Re-select dates to remove the coupon.");
   };
 
   const activeCoupons = quote?.coupons || quote?.rates?.coupons || [];
