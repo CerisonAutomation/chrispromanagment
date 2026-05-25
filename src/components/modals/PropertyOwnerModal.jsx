@@ -165,10 +165,10 @@ export const PropertyOwnerModal = () => {
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
             <h3 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-3">
-              Inquiry Received!
+              {copy?.successTitle || "Inquiry Received!"}
             </h3>
             <p className="text-[#A1A1AA] mb-6">
-              Thank you for your interest. We'll review your property details and contact you within 48 hours to discuss how we can help maximize your property's potential.
+              {copy?.successBody || "Thank you for your interest. We'll review your property details and contact you within 48 hours to discuss how we can help maximize your property's potential."}
             </p>
             <Button
               onClick={handleClose}
@@ -181,12 +181,12 @@ export const PropertyOwnerModal = () => {
           <div className="p-6">
             <DialogHeader className="mb-4">
               <DialogTitle className="font-['Playfair_Display'] text-2xl text-[#F5F5F0]">
-                List Your Property
+                {copy?.title || "List Your Property"}
               </DialogTitle>
               <p className="text-[#A1A1AA] text-sm">
-                {ownerModalStep === 1 && "Tell us about your property"}
-                {ownerModalStep === 2 && "Your contact information"}
-                {ownerModalStep === 3 && "Services you're interested in"}
+                {ownerModalStep === 1 && (copy?.step1Sub || "Tell us about your property")}
+                {ownerModalStep === 2 && (copy?.step2Sub || "Your contact information")}
+                {ownerModalStep === 3 && (copy?.step3Sub || "Services you're interested in")}
               </p>
             </DialogHeader>
 
@@ -410,7 +410,7 @@ export const PropertyOwnerModal = () => {
                       Submitting...
                     </>
                   ) : (
-                    "Submit Inquiry"
+                    copy?.submitLabel || "Submit Inquiry"
                   )}
                 </Button>
               )}
