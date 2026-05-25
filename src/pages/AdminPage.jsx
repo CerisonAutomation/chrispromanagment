@@ -18,6 +18,7 @@ import { SCHEMAS, CATEGORIES } from "@/lib/blocks";
 import { BlockErrorBoundary } from "@/components/BlockErrorBoundary";
 import { LiveNavigateMode } from "@/components/admin/LiveNavigateMode";
 import CacheDebugPanel from "@/components/admin/CacheDebugPanel";
+import SeoOverridesPanel from "@/components/admin/SeoOverridesPanel";
 import GmailInboxPanel from "@/components/admin/GmailInboxPanel";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
@@ -1565,6 +1566,11 @@ const AdminDashboard = memo(({ adminKey }) => {
             {/* Live perf cache stats + Guesty token vault */}
             <div className="mt-8">
               <CacheDebugPanel />
+            </div>
+
+            {/* Per-page SEO overrides */}
+            <div className="mt-8">
+              <SeoOverridesPanel />
             </div>
 
             {/* Gmail inbox (admin) */}
