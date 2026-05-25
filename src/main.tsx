@@ -16,6 +16,11 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 // @ts-ignore - JSX entry from ported CRA app
 import App from "./App.jsx";
+// @ts-ignore
+import { bootstrapTheme } from "./lib/themeTokens.js";
+
+// Apply persisted AI theme tokens before first paint (best effort).
+bootstrapTheme();
 
 createRoot(document.getElementById("root")!).render(<App />);
 

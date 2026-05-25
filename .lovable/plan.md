@@ -1,186 +1,181 @@
-# Plan v2 — Rewritten after brutal critique
+# Plan v3 — Consolidated Max-Enterprise, Zero Gaps, One-Shot
 
-Old plan had four flaws: it re-built work already shipped (SEO), buried the user's stated focus (AI Theme Editor), bundled risky refactors into giant single-shot phases, and never decided which of three competing editors dies. This version fixes all four.
-
----
-
-## Reality check first (no work needed on these)
-
-| Already shipped | Where | Verdict |
-|---|---|---|
-| Per-page SEO overrides | `cms_page_seo` table, `src/components/SEOHead.jsx`, `src/hooks/use-page-seo.js` | Keep. Document the override > sitewide precedence in one paragraph, done. |
-| Block registry interface | `src/lib/blockRegistry.js` + `docs/BLOCK_REGISTRY.md` + tests | Keep. Extend, don't replace. |
-| Guesty BEAPI pipeline (vault → token → BEAPI → stale-while-error cache → frontend hooks) | `supabase/functions/guesty-*`, `src/lib/guesty.js`, `src/hooks/use-guesty.js` | Keep. Currently degraded by Guesty's 22h cooldown — outside our control. |
-| Coupon + payment-provider step in checkout | `src/components/CheckoutExtrasPanel.jsx` | Keep. |
-| Admin cache hit/miss panel | `src/components/admin/CacheDebugPanel.jsx` | Keep. |
-
-Anything below that touches a "Keep" item must extend or document — never rebuild.
+Single source of truth. Merges v1 + v2 + everything outstanding from chat. Ordered so each phase is independently shippable, with explicit acceptance criteria and 1-command rollback. Nothing depends on a future phase.
 
 ---
 
-## Reordered by your stated focus + business value
+## Reality baseline (already shipped — DO NOT rebuild)
 
-You said **"FOCUS ON THIS"** next to the AI Theme Editor. Bookings are revenue. Editor chrome is internal-only. Order reflects that:
+| Capability | Location |
+|---|---|
+| Guesty BEAPI pipeline (vault → token-refresh → BEAPI → stale-while-error cache → `guesty.*` client → `useGuesty*` hooks) | `supabase/functions/guesty-*`, `src/lib/guesty.js`, `src/hooks/use-guesty.js`, `src/hooks/use-booking-flow.js` |
+| Listing/booking UI wired through `useBookingFlow` | `src/pages/PropertyDetailPage.jsx`, `src/pages/CheckoutPage.jsx` |
+| Coupon + payment-provider checkout step | `src/components/CheckoutExtrasPanel.jsx` (mounted in CheckoutPage:517) |
+| Admin cache hit/miss + clear panel | `src/components/admin/CacheDebugPanel.jsx` (mounted in AdminPage:1567) |
+| Per-page SEO overrides | `cms_page_seo` table + `src/hooks/use-page-seo.js` + `src/components/SEOHead.jsx` |
+| Centralized block registry | `src/lib/blockRegistry.js` + `docs/BLOCK_REGISTRY.md` + tests |
+| Guesty client-credentials token rotation (uses `GUESTY_CLIENT_ID`/`SECRET` only inside `guesty-token-refresh`; every other function reads `guesty_token_vault`) | `supabase/functions/guesty-token-refresh` |
+
+Anything below that touches these must extend or document — never rebuild.
+
+---
+
+## Phase order (revenue → leverage → cleanup → polish)
 
 ```text
-Phase 1  →  AI Theme Editor (Puck-style, live)         ← your focus
-Phase 2  →  Block registry AI metadata + suggestions   ← multiplies Phase 1
-Phase 3  →  Editor consolidation (kill the duplicates) ← cleanup, not user-visible
+P1  AI Theme Editor (Puck-style live iframe)        ← user's stated focus
+P2  Block registry AI metadata + block-ai-suggest   ← multiplies P1
+P3  Editor consolidation (LiveBlocks <400 lines)    ← debt removal
+P4  SEO override admin UI + sitemap.xml             ← finish the half-shipped SEO work
+P5  Observability + perf hardening                  ← enterprise polish
 ```
 
-Each phase is a single PR-sized commit, independently shippable, with explicit acceptance criteria and a 1-command rollback.
-
 ---
 
-## Phase 1 — AI Theme Editor (the focus)
+## Phase 1 — AI Theme Editor (Puck-style, live)
 
-**Goal:** non-technical editor types "make this feel more like a Provençal villa at golden hour, less corporate" and sees the site re-skin in <3 seconds, then clicks Save.
+**Goal:** non-technical editor types "warmer Provençal at golden hour, less corporate" and the site reskins in <3s in a live iframe; Save persists.
 
 ### Architecture
-
 ```text
-+-----------------------------------------------------+
-| /admin → Theme tab                                  |
-|                                                     |
-| ┌────────────────┐  ┌───────────────────────────┐  |
-| │ Left rail      │  │ Live iframe preview       │  |
-| │  Tokens        │  │  src = /                  │  |
-| │   • colors     │  │  postMessage bridge:      │  |
-| │   • typography │  │  parent → iframe sets     │  |
-| │   • spacing    │  │  document.documentElement │  |
-| │   • radius     │  │  .style.setProperty(...)  │  |
-| │   • shadows    │  │                           │  |
-| │                │  │  (no reload, no flash)    │  |
-| │  AI prompt     │  │                           │  |
-| │  [ textarea  ] │  │                           │  |
-| │  [ Apply AI  ] │  └───────────────────────────┘  |
-| │  [ Save      ] │                                  |
-| └────────────────┘                                  |
-+-----------------------------------------------------+
++----------------------------------------------------+
+| Admin → Theme                                      |
+| ┌─────────────┐  ┌──────────────────────────────┐ |
+| │ Left rail   │  │ Live iframe (src=/)          │ |
+| │  Token list │  │ postMessage bridge:          │ |
+| │  HSL pickers│  │  parent.setTokens(patch) →   │ |
+| │  Font pair  │  │  iframe sets                 │ |
+| │             │  │  documentElement.style       │ |
+| │ AI prompt   │  │  .setProperty('--x', hsl)    │ |
+| │ [textarea]  │  │  (no reload, no flash)       │ |
+| │ [Apply AI]  │  │                              │ |
+| │ [Save][Reset]│ │                              │ |
+| └─────────────┘  └──────────────────────────────┘ |
++----------------------------------------------------+
 ```
 
 ### Pieces
+1. **Edge function `theme-ai-generate`** — Lovable AI Gateway, `google/gemini-3-flash-preview`, structured tool-calling. Input: current token map + user prompt. Output: `{ tokens: { "--primary": "32 45% 52%", ... } }`. Validates HSL triplets, rejects raw hex, filters unknown token names against allow-list. Surfaces 429/402 as JSON.
+2. **`ThemeEditor.jsx` rewrite** — three-pane Puck layout. Iframe loads `/`. Token edits → `postMessage` → child listener calls `setProperty`. Persists to `cms_settings.theme_tokens`.
+3. **Boot bootstrap** — `src/main.tsx` reads `cms_settings.theme_tokens` and applies before first paint to avoid FOUC.
+4. **Public-site listener** — small module mounted in `src/App.tsx` that listens for `postMessage({type:'lov-theme', tokens})` and applies, gated by same-origin check.
 
-1. **`theme-ai-generate` edge function** (new). Lovable AI Gateway, `google/gemini-3-flash-preview`, structured tool-calling. Input: current token map + user prompt. Output: `{ tokens: { "--primary": "32 45% 52%", ... } }`. Validates every value is HSL triplet, rejects raw hex. Returns 429/402 as friendly toasts.
-2. **`ThemeEditor.jsx` rewrite** as the three-pane layout above. Iframe preview points at `/`. Token changes apply via `postMessage` → `setProperty` (no reload). Persists to existing `cms_settings` row `theme_tokens` (table already exists, schema fits).
-3. **Bootstrap on app start**: `src/main.tsx` reads `cms_settings.theme_tokens` and applies once before first paint to avoid flash-of-default-theme.
-
-### Acceptance criteria (you can verify yourself)
-
-- Type "ocean and sage, less gold" → ≤3s → site visibly shifts to blues/greens in the iframe.
-- Click Save → reload `/` in a new tab → new theme persists.
-- Click Reset → original tokens restored from `index.css` defaults.
-- No raw hex anywhere in the diff (grep test in CI).
-- Zero changes to any block component — all theming flows through CSS vars.
+### Acceptance
+- "ocean and sage, less gold" → ≤3s → iframe visually shifts.
+- Save → reload `/` → theme persists.
+- Reset → DOM and DB return to `index.css` defaults.
+- CI grep: zero raw hex in admin theme code.
+- Zero changes to any block component.
 
 ### Rollback
-
-`DELETE FROM cms_settings WHERE setting_key = 'theme_tokens';` — site instantly returns to baked-in defaults from `index.css`.
-
-### Test cases
-
-- HSL parser rejects `#ff0000`, accepts `0 100% 50%`.
-- AI patch with unknown token name (`--banana`) is filtered out before apply.
-- 429 from AI Gateway surfaces as toast, not silent failure.
-- Save then reload restores from DB.
-- Reset clears DB and DOM in same action.
-
-### What this is NOT (scope guard)
-
-- Not a font-file uploader — token only switches CSS var, fonts must already be loaded.
-- Not a per-page theme — global only. Per-page would need a different storage shape.
-- Not free-form CSS injection — AI can only patch known token names from an allow-list.
+`DELETE FROM cms_settings WHERE setting_key = 'theme_tokens';`
 
 ---
 
 ## Phase 2 — Block registry AI metadata + suggestions
 
-Builds on existing `src/lib/blockRegistry.js`. **Extends, doesn't replace.**
-
 ### Pieces
+1. **Extend each registry entry** with two optional fields:
+   - `aiUseCases: string[]` from `{generate, improve, summarize, translate, imageAlt, imageGenerate}`
+   - `suggestedModels: string[]` (Lovable AI Gateway IDs; default `google/gemini-3-flash-preview`)
+2. **Backfill all blocks**: hero/content/faq → `[generate, improve]`; gallery/image → `[imageAlt, imageGenerate]`; booking blocks → `[]`.
+3. **Edge function `block-ai-suggest-blocks`** — input = current page's block list, output = `{ suggestions: [{ blockType, reason, suggestedContent, confidence }] }`, max 5, blockType validated against registry.
+4. **PageEditor "Suggest next block (AI)" drawer** — renders 3–5 cards; click inserts using registry defaults + AI content.
 
-1. **Add two optional fields** to every existing registry entry:
-   - `aiUseCases: string[]` — values from a closed set: `generate | improve | summarize | translate | imageAlt | imageGenerate`
-   - `suggestedModels: string[]` — Lovable AI Gateway IDs only (default `google/gemini-3-flash-preview`)
-2. **Backfill every existing block** with sensible defaults. Hero/Content/FAQ → `[generate, improve]`. Gallery/Image → `[imageAlt, imageGenerate]`. Booking blocks → `[]` (data-driven, no AI).
-3. **`block-ai-suggest` edge function** (new, separate from existing `block-ai-suggest` which does something else — name it `block-ai-suggest-blocks` to avoid collision; check first). Input: current page's block list. Output via tool-calling: `{ suggestions: [{ blockType, reason, suggestedContent, confidence }] }`, max 5.
-4. **Wire into `PageEditor.jsx`**: "Suggest next block (AI)" button. Side drawer shows cards. Click → inserts using registry defaults + AI-suggested content.
-
-### Acceptance criteria
-
-- Every entry in `blockRegistry.js` has both new fields (lint check).
-- Suggestion endpoint never returns a `blockType` not in the registry (validation guard).
-- Suggestion drawer renders 3–5 cards; clicking one appends a block to the page.
-- 429/402 surfaced as toast.
-
-### Test cases
-
-- Vitest: every registry entry has `aiUseCases` (array, non-null) and `suggestedModels` (array, all values match allow-list).
-- Suggestion edge function with empty page → returns ≥1 hero-category suggestion.
-- Suggestion edge function with `[hero, gallery, faq]` → does NOT re-suggest hero.
-- Unknown `blockType` from model → filtered out, not crashed.
+### Acceptance
+- Vitest: every registry entry has both new fields and only allow-list values.
+- Suggestion endpoint never returns invalid `blockType`.
+- Empty page → ≥1 hero suggestion.
+- Page with `[hero, gallery, faq]` → no duplicate hero suggested.
 
 ### Rollback
-
-The two fields are optional. Revert the function file and the editor button; registry consumers ignore unknown fields.
+Fields are optional; revert edge function + drawer.
 
 ---
 
-## Phase 3 — Editor consolidation (kills duplicates, no new user features)
+## Phase 3 — Editor consolidation
 
-Today three things edit pages: `PageEditor.jsx` (sidebar form), `LiveNavigateMode.jsx` (in-place on live frontend), and `LiveBlocks.jsx` (1619 lines, renders blocks). This is the real tech debt.
-
-**Decision (was a question in v1, now a decision):** keep `LiveNavigateMode` as the canonical authoring surface (it's closer to Puck — edit on the live page). Demote `PageEditor.jsx` to a thin shell that mounts the Theme Editor and AI Suggestions panel. Do NOT build a fourth editor.
+Three things edit pages today: `PageEditor.jsx` (form), `LiveNavigateMode.jsx` (in-place), `LiveBlocks.jsx` (1619-line renderer). **Decision:** keep `LiveNavigateMode` canonical, demote `PageEditor` to a shell hosting Theme + AI Suggestions + block library.
 
 ### Pieces
+1. Replace every `switch (block.type)` in `LiveBlocks.jsx` with `<BlockRenderer />` resolving via registry.
+2. Delete renderer duplicates in `blocks.jsx`, `blocksConsolidated.js`, `advancedBlocks.js` where they shadow registry entries.
+3. `PageEditor.jsx` becomes a shell: Theme tab + AI Suggestions tab + library.
 
-1. **Audit `LiveBlocks.jsx`**: every `switch (block.type)` arm must come from the registry, not from inline JSX. Replace with `<BlockRenderer type={block.type} content={block.content} />` that resolves via registry.
-2. **Delete duplicated renderers** from `blocks.jsx`, `blocksConsolidated.js`, `advancedBlocks.js` where they shadow registry entries. Track the line-count delta as the acceptance metric.
-3. **`PageEditor.jsx`** keeps only: Theme tab (Phase 1), AI Suggestions tab (Phase 2), block library list. Page authoring happens in `LiveNavigateMode`.
-
-### Acceptance criteria
-
-- `rg "switch.*block\.type" src/` returns 0 results outside the registry.
-- `LiveBlocks.jsx` drops below 400 lines (currently 1619).
-- Every block previously rendered still renders in the live preview (manual smoke test on home + 2 listing pages).
+### Acceptance
+- `rg "switch.*block\\.type" src/` returns 0 outside registry.
+- `LiveBlocks.jsx` < 400 lines.
+- Home + 2 listing pages render identical block output (snapshot test).
 
 ### Rollback
-
-Revert the file deletions. Registry remains additive.
-
-### Test cases
-
-- Snapshot test: render every registry block with defaults; output is non-empty and has no `undefined` strings.
-- Smoke test (Playwright optional, manual acceptable): home page + 2 listing pages render the same block types before and after.
+Revert deletions; registry is additive.
 
 ---
 
-## What I deliberately CUT vs. v1
+## Phase 4 — SEO override admin UI + sitemap
 
-| v1 item | Cut reason |
+Data layer exists (`cms_page_seo`, `use-page-seo.js`, `SEOHead.jsx`). Missing: editor UI + sitemap + structured-data audit.
+
+### Pieces
+1. **SEO tab inside `LiveNavigateMode` page settings** — fields: meta title (<60 char counter), meta description (<160 char counter), canonical URL, OG image picker, robots (index/noindex). Writes `cms_page_seo`.
+2. **Edge function `sitemap-xml`** — generates `/sitemap.xml` from `cms_pages` + live listings via `guesty.listings()`. Cached 1h.
+3. **`robots.txt`** under `/public` referencing sitemap.
+4. **JSON-LD per block category** — Listings emit `LodgingBusiness`; FAQ blocks emit `FAQPage`; Hero emits `WebSite`. Already partial — close gaps.
+5. **One-paragraph doc** in `docs/SEO.md` explaining override > sitewide precedence.
+
+### Acceptance
+- Edit page → save → `<title>` and meta visible in view-source within 1s.
+- `/sitemap.xml` returns 200 with all published pages + listings.
+- Lighthouse SEO ≥ 95 on home + 1 listing page.
+
+### Rollback
+Hide the SEO tab; data layer is harmless if unused.
+
+---
+
+## Phase 5 — Observability + perf hardening
+
+### Pieces
+1. **Edge function structured logging** — every `guesty-*` function logs `{fn, ms, cacheHit, status, requestId}` JSON; surfaced in `CacheDebugPanel`.
+2. **Frontend perf marks** — `performance.mark` around `useBookingFlow` quote/confirm; render p95 in `CacheDebugPanel`.
+3. **Error boundary** — top-level `<ErrorBoundary>` in `App.tsx` posting to a new `client-errors` edge function (table `client_error_log`, RLS: only admins read).
+4. **429 / 402 toast surface** — single hook `useGatewayErrors` consumed by Theme AI + Block AI + future AI calls.
+5. **Cache TTL tuning** — listings 5m, calendar 1m, quotes no-cache, theme tokens 24h.
+
+### Acceptance
+- Hitting Guesty cooldown shows a single global toast, not silent failure.
+- `CacheDebugPanel` shows live hit/miss + p95 latency per function.
+- Throwing in any block renders the error boundary, logs persist to DB.
+
+### Rollback
+Toggle off via `cms_settings.observability_enabled`.
+
+---
+
+## Explicitly OUT of scope
+
+| Item | Why |
 |---|---|
-| Phase 4 SEO overrides | Already shipped. One-paragraph doc update only. |
-| Drag-and-drop reorder with `@dnd-kit` | Not requested, adds dep, scope creep. |
-| Undo/redo history stack | Not requested, large state-machine work, adds bugs. |
-| TypeScript pivot for registry | Project is JSX. Mixing runtimes = friction with no benefit. |
-| Zod | Not installed. Use plain validators in registry (already the pattern). |
-| `commit-after-plan` skill | Lovable manages git internally — performative. |
-| `react-helmet-async` | Project already does per-route SEO via `SEOHead.jsx` + Supabase. Don't add a parallel mechanism. |
+| Drag-and-drop with `@dnd-kit` | Not requested, scope creep, adds dep. |
+| Undo/redo history | Large state-machine work, adds bugs. |
+| TypeScript pivot | Project is JSX; mixing = friction with no benefit. |
+| `zod` | Not installed; existing validators are sufficient. |
+| `react-helmet-async` | `SEOHead.jsx` already covers this. |
+| Fixing Guesty 22h cooldown | Outside our control — only Guesty support can. |
+| New auth provider | Existing auth is fine. |
 
 ---
 
 ## Honest risks
-
-1. **Guesty cooldown** is independent of this plan. Site stays cached-stale until Guesty lifts the 429. Nothing in Phases 1–3 fixes that — only Guesty support can.
-2. **Iframe preview in Phase 1** requires same-origin for `postMessage` + `setProperty`. Works on `*.lovable.app` and custom domains where the admin and the public site share an origin. If you ever serve admin on a different domain, the bridge needs `postMessage` + a listener inside the public app instead — note for future.
-3. **AI suggestions in Phase 2** can hallucinate `blockType` values. The filter guard catches it but the drawer may show "no suggestions" if all 5 were invalid — UX must communicate that, not silently render empty.
+1. **Guesty cooldown** persists until Guesty lifts the 429. No phase fixes that.
+2. **Iframe bridge (P1)** assumes admin + public site share origin (`*.lovable.app` / same custom domain). Cross-origin needs an explicit child listener — already included.
+3. **AI suggestions (P2)** can hallucinate block types — registry validator catches them; UX must show "no suggestions" not empty silence.
+4. **Editor consolidation (P3)** is the riskiest because it deletes code. Ship after P1+P2 stable 24h.
 
 ---
 
-## Recommended sequence
+## Recommended execution
 
-1. **Approve Phase 1 only** → I ship the AI Theme Editor end-to-end with the iframe bridge, edge function, and persistence. You can verify it the moment it's deployed.
-2. Review the live result. If the iframe bridge feels right, approve Phase 2.
-3. Phase 3 only after Phases 1+2 are stable for 24h — it's the riskiest because it deletes code.
+Ship in order. Each phase is one PR-sized commit, independently revertible.
 
-Reply with **"Ship Phase 1"** and I'll execute without further questions.
+Reply **"Ship P1"** (or **"Ship P1–P2"**, **"Ship all"**) and I execute without further questions.
