@@ -242,6 +242,60 @@ async function proxyJson(response: Response) {
   }
 }
 
+function cacheKeyFor(action: string, url: URL) {
+  const params = [...url.searchParams.entries()]
+    .filter(([k]) => k !== "action")
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
+  return `${action}?${params}`;
+}
+
+async function readCache(key: string) {
+  const { data } = await admin
+    .from("guesty_response_cache")
+    .select("payload, status_code, fetched_at")
+    .eq("cache_key", key)
+    .maybeSingle();
+  return data;
+}
+
+async function writeCache(key: string, action: string, payload: unknown, statusCode: number) {
+  try {
+    await admin.from("guesty_response_cache").upsert({
+      cache_key: key, action, payload: payload as object,
+      status_code: statusCode, fetched_at: new Date().toISOString(),
+    });
+  } catch (_) { /* cache writes must never break a request */ }
+}
+
+/** Run an upstream Booking Engine call with stale-while-error fallback. */
+async function cachedCall(action: string, url: URL, fetcher: () => Promise<Response>) {
+  const key = cacheKeyFor(action, url);
+  try {
+    const res = await fetcher();
+    const text = await res.text();
+    let parsed: unknown = {};
+    if (text) { try { parsed = JSON.parse(text); } catch (_) { parsed = { error: text }; } }
+    if (res.ok) {
+      await writeCache(key, action, parsed, res.status);
+      return json(parsed, res.status);
+    }
+    const cached = await readCache(key);
+    if (cached) {
+      return json({ ...(cached.payload as object), _stale: true, _stale_reason: `upstream_${res.status}`, _fetched_at: cached.fetched_at }, 200);
+    }
+    return json(parsed, res.status);
+  } catch (err) {
+    const cached = await readCache(key);
+    if (cached) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return json({ ...(cached.payload as object), _stale: true, _stale_reason: msg, _fetched_at: cached.fetched_at }, 200);
+    }
+    throw err;
+  }
+}
+
 const LISTINGS_KEYS = [
   "minOccupancy",
   "numberOfBedrooms",
