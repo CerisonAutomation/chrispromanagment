@@ -24,7 +24,7 @@ describe("blockRegistry", () => {
     const hero = getBlock("hero");
     // Find any text-typed field on hero and pass a number for it
     const textField = Object.entries(hero?.editorFields || {}).find(
-      ([, f]) => f?.type === "text" || f?.type === "textarea",
+      ([, f]: [string, any]) => f?.type === "text" || f?.type === "textarea",
     );
     expect(textField).toBeTruthy();
     const [key] = textField;
