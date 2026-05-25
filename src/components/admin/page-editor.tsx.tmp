@@ -209,7 +209,6 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
   const renderSectionEditor = (sectionId) => {
     const pageData = getPageData();
     
-  // eslint-disable-next-line no-case-declarations
     switch (sectionId) {
       case "hero": {
         const heroData = pageId === "landing" ? localCms.hero : pageData.hero;
@@ -253,8 +252,6 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
             </div>
           </div>
         );
-
-       } // end of hero case
 
       case "about": {
         const aboutData = localCms.about;
@@ -309,7 +306,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
           </div>
         );
 
-      case "features":
+      case "features": {
         const featuresData = localCms.features || [];
         return (
           <div className="space-y-4">
@@ -369,7 +366,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
           </div>
         );
 
-      case "testimonials":
+      case "testimonials": {
         const testimonialsData = localCms.testimonials || [];
         return (
           <div className="space-y-4">
@@ -445,7 +442,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
           </div>
         );
 
-      case "whyChooseUs":
+      case "whyChooseUs": {
         const whyData = pageData?.whyChooseUs;
         return (
           <div className="space-y-4">
@@ -506,6 +503,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
           </div>
         );
 
+  },
       default:
         return (
           <div className="text-center py-8 text-[#71717A]">

@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ARViewer from '@/components/ar/ARViewer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 
+interface Property {
+  id: string;
+  title: string;
+  images: string[];
+}
+
 export default function ARViewPage() {
-  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [showAR, setShowAR] = useState(false);
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +28,7 @@ export default function ARViewPage() {
     loadProperties();
   }, []);
 
-  const openAR = (property: any) => {
+  const openAR = (property: Property) => {
     setSelectedProperty(property);
     setShowAR(true);
   };

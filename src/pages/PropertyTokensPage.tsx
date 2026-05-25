@@ -16,7 +16,7 @@ export default function PropertyTokensPage() {
     try {
       const address = await connectWallet();
       setWalletAddress(address);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message);
     }
   };
@@ -31,8 +31,8 @@ export default function PropertyTokensPage() {
     setError('');
 
     try {
-      const provider = new (window as any).ethereum;
-      const ethersProvider = new (await import('ethers')).BrowserProvider(provider);
+      const ethers = await import('ethers');
+      const ethersProvider = new ethers.BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
 
       const contractAddress = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
@@ -48,7 +48,7 @@ export default function PropertyTokensPage() {
       });
 
       alert(`NFT minted successfully! Tx: ${txHash}`);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message);
     } finally {
       setLoading(false);

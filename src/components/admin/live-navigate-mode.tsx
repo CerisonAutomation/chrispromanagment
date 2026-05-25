@@ -47,7 +47,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   useEffect(() => {
     const w = iframeRef.current?.contentWindow;
     if (!w) return;
-    try { w.postMessage({ type: "cvpm:edit-mode", on: editing }, "*"); } catch {}
+    try { w.postMessage({ type: "cvpm:edit-mode", on: editing }, "*"); } catch { /* empty */ }
     if (!editing) { setFocused(null); setDraft(""); }
   }, [editing, iframeKey]);
 
@@ -66,7 +66,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
     const w = iframeRef.current?.contentWindow;
     try {
       w?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: draft }, "*");
-    } catch {}
+    } catch { /* empty */ }
     // Persist as a CMS overlay record so it survives reloads
     try {
       const overlayKey = "live_overlays";
@@ -184,7 +184,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
                     onChange={(e) => {
                       setDraft(e.target.value);
                       // Live push as the user types in the side editor
-                      try { iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: e.target.value }, "*"); } catch {}
+                       try { iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: e.target.value }, "*"); } catch { /* empty */ }
                     }}
                     className="bg-[#08080a] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[140px] resize-none focus:border-[#D4AF37]/50"
                   />

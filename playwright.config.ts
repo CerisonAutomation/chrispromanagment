@@ -21,4 +21,4 @@ export default defineConfig({
 });
 
 // Import devices
-const { devices } = require('@playwright/test');
+import { devices } from '@playwright/test';

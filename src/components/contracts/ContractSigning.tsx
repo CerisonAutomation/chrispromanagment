@@ -17,7 +17,7 @@ export default function ContractSigning({ propertyId, checkIn, checkOut, price, 
   const handleSign = async () => {
     setLoading(true);
     try {
-      const provider = new (window as any).ethereum;
+      const provider = new (window as unknown as { ethereum: new () => { BrowserProvider: typeof BrowserProvider } }).ethereum;
       const { BrowserProvider } = await import('ethers');
       const ethersProvider = new BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
@@ -35,7 +35,7 @@ export default function ContractSigning({ propertyId, checkIn, checkOut, price, 
       );
 
       onSuccess(txHash);
-    } catch (err: any) {
+    } catch (err: Error) {
       console.error(err);
     } finally {
       setLoading(false);

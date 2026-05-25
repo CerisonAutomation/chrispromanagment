@@ -309,7 +309,7 @@ export const CMSProvider = ({ children }) => {
       sub.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const loadRoles = async (userId) => {

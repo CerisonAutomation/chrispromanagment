@@ -34,7 +34,7 @@ export default function ConciergeChat({ propertyId }: ConciergeChatProps) {
         ...prev,
         { role: 'assistant', content: response }
       ]);
-    } catch (err: any) {
+    } catch (err: Error) {
       setMessages(prev => [
         ...prev,
         { role: 'assistant', content: `Error: ${err.message}` }

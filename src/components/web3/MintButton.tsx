@@ -14,14 +14,14 @@ export default function MintButton({ contractAddress, tokenURI, onMint }: MintBu
   const handleMint = async () => {
     setLoading(true);
     try {
-      const provider = new (window as any).ethereum;
+      const provider = new (window as unknown as { ethereum: new () => { BrowserProvider: typeof BrowserProvider } }).ethereum;
       const { BrowserProvider } = await import('ethers');
       const ethersProvider = new BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
 
       const txHash = await mintPropertyNFT(contractAddress, tokenURI, signer);
       onMint(txHash);
-    } catch (err: any) {
+    } catch (err: Error) {
       console.error(err);
     } finally {
       setLoading(false);

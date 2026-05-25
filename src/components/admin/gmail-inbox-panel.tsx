@@ -30,7 +30,7 @@ export default function GmailInboxPanel() {
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { load();   }, []);
 
   const openMessage = async (m) => {
     try {

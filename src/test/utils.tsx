@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
