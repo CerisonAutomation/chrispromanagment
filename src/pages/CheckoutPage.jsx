@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/guestyPricing";
 import { StripeInlinePayment } from "@/components/StripeInlinePayment";
+import CheckoutExtrasPanel from "@/components/CheckoutExtrasPanel";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
