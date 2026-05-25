@@ -49,7 +49,15 @@ async function assertTokenCircuitClosed(admin: ReturnType<typeof createClient>) 
     .select("status, error, created_at")
     .order("created_at", { ascending: false })
     .limit(10);
-  const row = data?.find((entry) => entry.status === "error" && !(entry.error || "").includes("token circuit open"));
+  // Scan newest-first. A more recent success closes the circuit regardless of older errors.
+  let row: { status: string; error: string | null; created_at: string } | null = null;
+  for (const entry of data ?? []) {
+    if (entry.status === "success") return; // newer success → circuit closed
+    if (entry.status === "error" && !(entry.error || "").includes("token circuit open")) {
+      row = entry as typeof row;
+      break;
+    }
+  }
   if (!row) return;
   const message = row.error || "";
   const is429 = message.includes("429") || message.toLowerCase().includes("too many");
