@@ -186,6 +186,9 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
         </Button>
       </div>
 
+      {/* AI Theme Generator */}
+      <AIThemePanel />
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-white/10 pb-2">
         {["colors", "fonts", "presets"].map((tab) => (
