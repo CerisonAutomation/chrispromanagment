@@ -80,25 +80,34 @@ Deno.serve(async (req) => {
 
     if (upErr) throw upErr;
 
-    // Increment refresh_count atomically (best-effort)
-    await admin.rpc("noop").catch(() => {});
-    await admin
-      .from("guesty_token_vault")
-      .update({ refresh_count: (await admin.from("guesty_token_vault").select("refresh_count").eq("id", 1).maybeSingle()).data?.refresh_count + 1 || 1 })
-      .eq("id", 1)
-      .then(() => {});
+    // Best-effort increment of refresh_count
+    try {
+      const { data: cur } = await admin
+        .from("guesty_token_vault")
+        .select("refresh_count")
+        .eq("id", 1)
+        .maybeSingle();
+      await admin
+        .from("guesty_token_vault")
+        .update({ refresh_count: (cur?.refresh_count ?? 0) + 1 })
+        .eq("id", 1);
+    } catch (_) { /* non-fatal */ }
 
-    await admin.from("guesty_token_refresh_log").insert({
-      status: "success",
-      expires_at: expiresAt.toISOString(),
-    });
+    try {
+      await admin.from("guesty_token_refresh_log").insert({
+        status: "success",
+        expires_at: expiresAt.toISOString(),
+      });
+    } catch (_) { /* non-fatal */ }
 
     console.log(`[guesty-token-refresh] OK — expires ${expiresAt.toISOString()}`);
     return json({ ok: true, expires_at: expiresAt.toISOString() });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[guesty-token-refresh] failed:", msg);
-    await admin.from("guesty_token_refresh_log").insert({ status: "error", error: msg }).catch(() => {});
+    try {
+      await admin.from("guesty_token_refresh_log").insert({ status: "error", error: msg });
+    } catch (_) { /* non-fatal */ }
     return json({ ok: false, error: msg }, 500);
   }
 });
