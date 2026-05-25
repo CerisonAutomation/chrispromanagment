@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
-const GOOGLE_MAPS_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export const MapPage = () => {
   const [searchParams] = useSearchParams();

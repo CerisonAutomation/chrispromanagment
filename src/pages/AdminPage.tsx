@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SCHEMAS, CATEGORIES } from "@/lib/blocks";
-import { BlockErrorBoundary } from "@/components/BlockErrorBoundary";
+import { BlockErrorBoundary } from "@/components/block-error-boundary";
 import { LiveNavigateMode } from "@/components/admin/live-navigate-mode";
 import CacheDebugPanel from "@/components/admin/cache-debug-panel";
 import SeoOverridesPanel from "@/components/admin/seo-overrides-panel";
@@ -33,7 +33,7 @@ import {
   LiveGuestyListings, LiveGuestyBook,
 } from "@/components/admin/live-blocks";
 
-const API = process.env.REACT_APP_BACKEND_URL + "/api";
+const API = import.meta.env.VITE_BACKEND_URL + "/api";
 
 // Use exact frontend block renderers from LiveBlocks.jsx
 const BLOCKS = LIVE_BLOCKS;
@@ -669,7 +669,7 @@ const SuggestPanel = memo(({ blocks, onAdd, onAI, selected }) => {
   const runCritique = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai/generate`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/ai/generate`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({

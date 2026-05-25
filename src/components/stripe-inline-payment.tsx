@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/guestyPricing";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-const PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
+const PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 // Cache Stripe instance across renders (canonical pattern)
 const stripePromise = PUBLISHABLE_KEY ? loadStripe(PUBLISHABLE_KEY) : null;

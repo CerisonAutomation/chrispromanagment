@@ -8,7 +8,7 @@
 import { io } from 'socket.io-client';
 import { toast } from 'sonner';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const WS_URL = BACKEND_URL.replace('/api', '').replace('http', 'ws');
 
 class WebSocketManager {

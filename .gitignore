@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local databases and runtime files
+*.db
+*.sqlite
+ruvector.db
+*.bak
+
+# Environment secrets
+.env.local
+.env.*.local

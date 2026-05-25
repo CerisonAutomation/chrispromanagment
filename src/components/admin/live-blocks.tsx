@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const API = process.env.REACT_APP_BACKEND_URL + "/api";
+const API = import.meta.env.VITE_BACKEND_URL + "/api";
 
 // Icon registry for CMS-driven icons
 const ICON_MAP = {

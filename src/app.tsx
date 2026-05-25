@@ -1,81 +1,89 @@
 import "@/App.css";
 import { useEffect, lazy, Suspense } from "react";
-import { ContactModal } from "@/components/modals/ContactModal";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import { CMSProvider } from "@/context/cmscontext";
+import { ModalProvider } from "@/context/modal-context";
 import { ErrorBoundary } from "@/components/error-boundary";
 import EditModeBridge from "@/components/edit-mode-bridge";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
-import { LandingPage } from "@/pages/landing-page";
-import { MapPage } from "@/pages/map-page-leaflet";
-import { ModalProvider } from "@/context/modal-context";
-import { PropertiesPage } from "@/pages/properties-page";
-import { PropertyDetailPage } from "@/pages/property-detail-page";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { ContactModal } from "@/components/modals/ContactModal";
 import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
-import { PropertyOwnersPage } from "@/pages/propertyOwnersPage";
 import { StickyCallToAction } from "@/components/sticky-call-to-action";
 import { Toaster } from "@/components/ui/sonner";
-import AdminPage from "@/pages/adminPage";
-import AuthPage from "@/pages/authPage";
-import { HelmetProvider, Helmet } from "react-helmet-async";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { app } from "@/lib/utils";
-import { modalContext } from "@/context/modal-context";
 
-// Lazy load page components for better performance
-const CheckoutPage = lazy(() => import('@/pages/checkout-page'));
-const ConfirmationPage = lazy(() => import('@/pages/confirmation-page'));
-const LandingPage = lazy(() => import('@/pages/landing-page'));
-const MapPage = lazy(() => import('@/pages/map-page-leaflet'));
-const PropertiesPage = lazy(() => import('@/pages/properties-page'));
-const PropertyDetailPage = lazy(() => import('@/pages/property-detail-page'));
-const PropertyOwnersPage = lazy(() => import('@/pages/PropertyOwnersPage'));
-const AdminPage = lazy(() => import('@/pages/AdminPage'));
-const AuthPage = lazy(() => import('@/pages/AuthPage'));
-const PropertyOwnerModal = lazy(() => import('@/components/modals/PropertyOwnerModal'));
+const LandingPage            = lazy(() => import("@/pages/landing-page").then(m => ({ default: m.LandingPage ?? m.default })));
+const PropertiesPage         = lazy(() => import("@/pages/properties-page").then(m => ({ default: m.PropertiesPage ?? m.default })));
+const PropertyDetailPage     = lazy(() => import("@/pages/property-detail-page").then(m => ({ default: m.PropertyDetailPage ?? m.default })));
+const CheckoutPage           = lazy(() => import("@/pages/checkout-page"));
+const ConfirmationPage       = lazy(() => import("@/pages/confirmation-page"));
+const AuthPage               = lazy(() => import("@/pages/auth-page"));
+const AdminPage              = lazy(() => import("@/pages/AdminPage"));
+const MapPage                = lazy(() => import("@/pages/map-page-leaflet").then(m => ({ default: m.MapPage ?? m.default })));
+const PropertyOwnersPage     = lazy(() => import("@/pages/property-owners-page").then(m => ({ default: m.PropertyOwnersPage ?? m.default })));
+const AnalyticsDashboard     = lazy(() => import("@/pages/analytics-dashboard-page"));
+const ARViewPage             = lazy(() => import("@/pages/arview-page"));
+const AuditLogsPage          = lazy(() => import("@/pages/audit-logs-page"));
+const AutomationRulesPage    = lazy(() => import("@/pages/automation-rules-page"));
+const ChatPage               = lazy(() => import("@/pages/chat-page"));
+const ConciergePage          = lazy(() => import("@/pages/concierge-page"));
+const ErrorDashboardPage     = lazy(() => import("@/pages/error-dashboard-page"));
+const ListingsManagementPage = lazy(() => import("@/pages/listings-management-page"));
+const MaintenancePage        = lazy(() => import("@/pages/maintenance-page"));
+const OfflineBookingPage     = lazy(() => import("@/pages/offline-booking"));
+const OwnerPortalPage        = lazy(() => import("@/pages/owner-portal-page"));
+const PricingEnginePage      = lazy(() => import("@/pages/pricing-engine-page"));
+const PropertyTokensPage     = lazy(() => import("@/pages/property-tokens-page"));
+const TaxReportsPage         = lazy(() => import("@/pages/tax-reports-page"));
 
-// Simple SEO that doesn't break
 function AppSEO() {
   const location = useLocation();
-  // Skip SEO on admin pages
-  if (location.pathname.startsWith('/admin')) return null;
-  
+  if (location.pathname.startsWith("/admin")) return null;
   return (
     <Helmet>
       <title>Christiano Property Management | Malta Vacation Rentals</title>
       <meta name="description" content="Malta's premier luxury short-term rental management company." />
+      <meta property="og:title" content="Christiano Property Management | Malta Vacation Rentals" />
+      <meta property="og:description" content="Malta's premier luxury short-term rental management company." />
+      <meta property="og:type" content="website" />
+      <link rel="canonical" href={`https://chrispromanagement.com${location.pathname}`} />
     </Helmet>
   );
 }
 
-// Smooth-scroll to #hash anchors on route change
 function ScrollToHash() {
   const location = useLocation();
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace("#", "");
-      // Wait a tick for the destination page to mount
       const timer = setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
       return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     }
-  }, [location]);
+  }, [location.pathname, location.hash]);
   return null;
 }
 
-// Skip link for accessibility
 function SkipLink() {
   return (
-    <a 
-      href="#main-content" 
-      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-background focus:p-2 focus:rounded"
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-background focus:p-2 focus:rounded z-50"
     >
       Skip to content
     </a>
+  );
+}
+
+function PageFallback() {
+  return (
+    <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+    </div>
   );
 }
 
@@ -88,20 +96,37 @@ export default function App() {
             <BrowserRouter>
               <ScrollToHash />
               <SkipLink />
+              <EditModeBridge />
               <Header />
               <main id="main-content" className="min-h-[calc(100vh-4rem)]">
                 <AppSEO />
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/properties" element={<PropertiesPage />} />
-                  <Route path="/property/:id" element={<PropertyDetailPage />} />
-                  <Route path="/checkout/:quoteId?" element={<CheckoutPage />} />
-                  <Route path="/confirmation" element={<ConfirmationPage />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/admin/*" element={<AdminPage />} />
-                  <Route path="/map" element={<MapPage />} />
-                  <Route path="/property-owners" element={<PropertyOwnersPage />} />
-                </Routes>
+                <Suspense fallback={<PageFallback />}>
+                  <Routes>
+                    <Route path="/"                  element={<LandingPage />} />
+                    <Route path="/properties"        element={<PropertiesPage />} />
+                    <Route path="/property/:id"      element={<PropertyDetailPage />} />
+                    <Route path="/checkout/:quoteId?" element={<CheckoutPage />} />
+                    <Route path="/confirmation"      element={<ConfirmationPage />} />
+                    <Route path="/auth"              element={<AuthPage />} />
+                    <Route path="/admin/*"           element={<AdminPage />} />
+                    <Route path="/map"               element={<MapPage />} />
+                    <Route path="/property-owners"   element={<PropertyOwnersPage />} />
+                    <Route path="/analytics"         element={<AnalyticsDashboard />} />
+                    <Route path="/ar"                element={<ARViewPage />} />
+                    <Route path="/audit-logs"        element={<AuditLogsPage />} />
+                    <Route path="/automation"        element={<AutomationRulesPage />} />
+                    <Route path="/chat"              element={<ChatPage />} />
+                    <Route path="/concierge"         element={<ConciergePage />} />
+                    <Route path="/error-dashboard"   element={<ErrorDashboardPage />} />
+                    <Route path="/listings"          element={<ListingsManagementPage />} />
+                    <Route path="/maintenance"       element={<MaintenancePage />} />
+                    <Route path="/offline-booking"   element={<OfflineBookingPage />} />
+                    <Route path="/owner-portal"      element={<OwnerPortalPage />} />
+                    <Route path="/pricing"           element={<PricingEnginePage />} />
+                    <Route path="/tokens"            element={<PropertyTokensPage />} />
+                    <Route path="/tax-reports"       element={<TaxReportsPage />} />
+                  </Routes>
+                </Suspense>
               </main>
               <Footer />
               <ContactModal />
