@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+// import { supabase } from '@/lib/supabase'; // TODO: implement supabase client
 
+// Game-changer: Real-time booking updates via Supabase Realtime
 export function useRealtimeBookings() {
   const [bookings, setBookings] = useState([]);
   const [newBooking, setNewBooking] = useState(null);

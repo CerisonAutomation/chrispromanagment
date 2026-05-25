@@ -1,4 +1,3 @@
-import "@/App.css";
 import { useEffect, lazy, Suspense } from "react";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { CMSProvider } from "@/context/cmscontext";
@@ -23,6 +22,9 @@ const PropertyOwnersPage = lazy(() => import('@/pages/PropertyOwnersPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
 const AuthPage = lazy(() => import('@/pages/AuthPage'));
 const PropertyOwnerModal = lazy(() => import('@/components/modals/PropertyOwnerModal'));
+
+// Game-changer: Real-time booking updates
+import { useRealtimeBookings } from "@/hooks/use-realtime-bookings";
 
 // Simple SEO that doesn't break
 function AppSEO() {
@@ -60,6 +62,17 @@ function ScrollToHash() {
 }
 
 function AppContent() {
+  // Game-changer: Real-time booking notifications
+  const { newBooking } = useRealtimeBookings();
+
+  // Show notification for new bookings
+  useEffect(() => {
+    if (newBooking) {
+      // You could show a toast notification here
+      console.log('New booking received:', newBooking);
+    }
+  }, [newBooking]);
+
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <>
