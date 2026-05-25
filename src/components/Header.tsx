@@ -248,7 +248,12 @@ export const Header = memo(function Header() {
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
             {/* Voice Search - Game-changer! */}
-            <VoiceSearchButton onTranscript={(text) => console.log('Voice search:', text)} />
+            <VoiceSearchButton onTranscript={(text) => {
+              if (text) {
+                // Navigate to properties page with search query
+                window.location.href = `/properties?search=${encodeURIComponent(text)}`;
+              }
+            }} />
             
             <a
               href={`tel:${cms.contact?.phone || '+35679790202'}`}
