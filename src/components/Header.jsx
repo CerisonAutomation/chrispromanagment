@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useModal } from "@/context/ModalContext";
 import { useCMS } from "@/context/CMSContext";
+import { useBlock } from "@/hooks/useBlock";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,6 +21,8 @@ export const Header = () => {
   const location = useLocation();
   const { openContactModal, openOwnerModal } = useModal();
   const { cms } = useCMS();
+  const { content: headerCfg } = useBlock("header");
+  const { content: mobileCfg } = useBlock("mobileMenu");
 
   const openDropdown = (id) => {
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
@@ -211,7 +214,7 @@ export const Header = () => {
               onClick={() => isOwnerPage ? openOwnerModal() : navigate("/properties")}
               className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest px-6 py-3 font-semibold btn-gold-glow"
             >
-              {isOwnerPage ? "List Property" : "Book Now"}
+              {isOwnerPage ? "List Property" : (headerCfg?.ctaText || "Book Now")}
             </Button>
           </div>
 
@@ -233,7 +236,7 @@ export const Header = () => {
                 <nav className="flex-1 p-6 overflow-y-auto">
                   {/* For Owners Section */}
                   <div className="mb-6">
-                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">For Property Owners</p>
+                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">{mobileCfg?.ownersTitle || "For Property Owners"}</p>
                     <div className="space-y-1">
                       {ownerDropdownItems.filter(i => !i.divider).map((item, i) => (
                         <button
@@ -250,7 +253,7 @@ export const Header = () => {
 
                   {/* Book a Stay Section */}
                   <div className="mb-6">
-                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">Book a Stay</p>
+                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">{mobileCfg?.bookingTitle || "Book a Stay"}</p>
                     <div className="space-y-1">
                       {bookingDropdownItems.filter(i => !i.divider).map((item, i) => (
                         <button
@@ -278,7 +281,7 @@ export const Header = () => {
                     variant="outline"
                     className="w-full border-white/10 text-[#F5F5F0] rounded-none py-4"
                   >
-                    Contact Us
+                    {mobileCfg?.contactLabel || "Contact Us"}
                   </Button>
                 </div>
               </div>
