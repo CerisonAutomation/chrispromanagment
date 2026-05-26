@@ -65,6 +65,8 @@ function fieldsToJsonSchema(fields: Record<string, { type: string }>) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  const guard = await requireEditor(req);
+  if (guard) return guard;
 
   try {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
