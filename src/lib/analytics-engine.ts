@@ -1,108 +1,118 @@
 import { supabase } from '@/integrations/supabase/client';
-import { format, subDays } from 'date-fns';
+import { format, subDays, eachDayOfInterval } from 'date-fns';
 
-export interface AnalyticsData {
-  revenue: { date: string; amount: number }[];
-  occupancy: { date: string; rate: number }[];
-  bookings: { date: string; count: number }[];
-  topProperties: { id: string; title: string; revenue: number }[];
+export interface RevenuePoint   { date: string; amount: number; month: string; revenue: number }
+export interface OccupancyPoint { date: string; rate: number; month: string; occupancy: number }
+export interface BookingPoint   { date: string; count: number; month: string; bookings: number }
+export interface TopProperty    { id: string; title: string; revenue: number; name: string; bookings: number }
+export interface KPIStats { totalRevenue: number; avgOccupancy: number; totalBookings: number; avgNightlyRate: number }
+
+function extractAmount(money: unknown): number {
+  if (!money || typeof money !== 'object') return 0;
+  const m = money as Record<string, number>;
+  return m.hostPayout ?? m.totalPaid ?? m.netIncome ?? 0;
 }
 
-export class AnalyticsEngine {
-  async getRevenueData(days: number = 30): Promise<AnalyticsData['revenue']> {
-    const startDate = subDays(new Date(), days).toISOString();
-
+class AnalyticsEngine {
+  async getRevenueData(days = 30): Promise<RevenuePoint[]> {
+    const start = subDays(new Date(), days).toISOString().split('T')[0];
     const { data } = await supabase
-      .from('bookings')
-      .select('created_at, total_price')
-      .gte('created_at', startDate)
-      .order('created_at');
+      .from('reservations_cache')
+      .select('check_in, money')
+      .gte('check_in', start)
+      .order('check_in');
 
-    const revenueMap = new Map<string, number>();
-    data?.forEach(booking => {
-      const date = booking.created_at.split('T')[0];
-      revenueMap.set(date, (revenueMap.get(date) || 0) + booking.total_price);
+    const map = new Map<string, number>();
+    data?.forEach(r => {
+      if (r.check_in) map.set(r.check_in, (map.get(r.check_in) || 0) + extractAmount(r.money));
     });
 
-    return Array.from(revenueMap.entries()).map(([date, amount]) => ({
-      date,
-      amount
-    }));
+    return eachDayOfInterval({ start: subDays(new Date(), days - 1), end: new Date() }).map(d => {
+      const date = format(d, 'yyyy-MM-dd');
+      const amount = map.get(date) || 0;
+      return { date, amount, month: format(d, 'MMM'), revenue: amount };
+    });
   }
 
-  async getOccupancyData(days: number = 30): Promise<AnalyticsData['occupancy']> {
-    const startDate = subDays(new Date(), days).toISOString();
+  async getOccupancyData(days = 30): Promise<OccupancyPoint[]> {
+    const start = subDays(new Date(), days).toISOString().split('T')[0];
+    const end = new Date().toISOString().split('T')[0];
 
-    const { data: properties } = await supabase
-      .from('properties')
-      .select('id');
+    const [{ count: totalProps }, { data: reservations }] = await Promise.all([
+      supabase.from('guesty_properties_cache').select('*', { count: 'exact', head: true }),
+      supabase.from('reservations_cache').select('check_in, check_out').gte('check_in', start).lte('check_out', end),
+    ]);
 
-    const { data: bookings } = await supabase
-      .from('bookings')
-      .select('check_in, check_out, property_id')
-      .gte('check_in', startDate);
-
-    const occupancyMap = new Map<string, { occupied: number; total: number }>();
-    const totalProperties = properties?.length || 1;
-
-    for (let i = 0; i < days; i++) {
-      const date = format(subDays(new Date(), days - i - 1), 'yyyy-MM-dd');
-      const dayBookings = bookings?.filter(b => {
-        const checkIn = new Date(b.check_in);
-        const checkOut = new Date(b.check_out);
-        const currentDate = new Date(date);
-        return currentDate >= checkIn && currentDate < checkOut;
-      }) || [];
-
-      occupancyMap.set(date, {
-        occupied: dayBookings.length,
-        total: totalProperties
-      });
-    }
-
-    return Array.from(occupancyMap.entries()).map(([date, { occupied, total }]) => ({
-      date,
-      rate: (occupied / total) * 100
-    }));
+    const propCount = totalProps || 1;
+    return eachDayOfInterval({ start: subDays(new Date(), days - 1), end: new Date() }).map(d => {
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const occupied = reservations?.filter(r => r.check_in <= dateStr && r.check_out > dateStr).length || 0;
+      const rate = Math.min(100, (occupied / propCount) * 100);
+      return { date: dateStr, rate, month: format(d, 'MMM'), occupancy: rate };
+    });
   }
 
-  async getBookingsData(days: number = 30): Promise<AnalyticsData['bookings']> {
-    const startDate = subDays(new Date(), days).toISOString();
-
+  async getBookingsData(days = 30): Promise<BookingPoint[]> {
+    const start = subDays(new Date(), days).toISOString().split('T')[0];
     const { data } = await supabase
-      .from('bookings')
+      .from('reservations_cache')
       .select('created_at')
-      .gte('created_at', startDate)
+      .gte('created_at', start)
       .order('created_at');
 
-    const bookingsMap = new Map<string, number>();
-    data?.forEach(booking => {
-      const date = booking.created_at.split('T')[0];
-      bookingsMap.set(date, (bookingsMap.get(date) || 0) + 1);
+    const map = new Map<string, number>();
+    data?.forEach(r => {
+      const date = r.created_at?.split('T')[0];
+      if (date) map.set(date, (map.get(date) || 0) + 1);
     });
 
-    return Array.from(bookingsMap.entries()).map(([date, count]) => ({
-      date,
-      count
-    }));
+    return eachDayOfInterval({ start: subDays(new Date(), days - 1), end: new Date() }).map(d => {
+      const date = format(d, 'yyyy-MM-dd');
+      const count = map.get(date) || 0;
+      return { date, count, month: format(d, 'MMM'), bookings: count };
+    });
   }
 
-  async getTopProperties(limit: number = 5): Promise<AnalyticsData['topProperties']> {
+  async getTopProperties(limit = 5): Promise<TopProperty[]> {
     const { data } = await supabase
-      .from('bookings')
-      .select(`
-        property_id,
-        total_price,
-        property:properties(title)
-      `)
-      .order('total_price', { ascending: false })
-      .limit(limit);
+      .from('reservations_cache')
+      .select('guesty_property_id, money, guesty_properties_cache(title)');
 
-    return data?.map(b => ({
-      id: b.property_id,
-      title: (b.property as { title: string } | undefined)?.title || 'Unknown',
-      revenue: b.total_price
-    })) || [];
+    if (!data) return [];
+    const propMap = new Map<string, { title: string; revenue: number; bookings: number }>();
+    data.forEach(r => {
+      const id = r.guesty_property_id;
+      if (!id) return;
+      const title = (r.guesty_properties_cache as { title?: string } | null)?.title ?? id;
+      const existing = propMap.get(id) ?? { title, revenue: 0, bookings: 0 };
+      propMap.set(id, { title, revenue: existing.revenue + extractAmount(r.money), bookings: existing.bookings + 1 });
+    });
+
+    return Array.from(propMap.entries())
+      .map(([id, v]) => ({ id, ...v, name: v.title }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, limit);
+  }
+
+  async getKPIStats(days = 30): Promise<KPIStats> {
+    const start = subDays(new Date(), days).toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('reservations_cache')
+      .select('money, nights_count')
+      .gte('check_in', start);
+
+    let totalRevenue = 0, totalNights = 0;
+    data?.forEach(r => {
+      totalRevenue += extractAmount(r.money);
+      totalNights += (r as { nights_count?: number }).nights_count ?? 0;
+    });
+
+    const totalBookings = data?.length || 0;
+    const avgNightlyRate = totalNights > 0 ? totalRevenue / totalNights : 0;
+    const occData = await this.getOccupancyData(days);
+    const avgOccupancy = occData.reduce((s, d) => s + d.rate, 0) / (occData.length || 1);
+
+    return { totalRevenue, avgOccupancy, totalBookings, avgNightlyRate };
   }
 }
 

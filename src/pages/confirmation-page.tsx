@@ -1,66 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { CheckCircle2, Loader2, AlertCircle, Calendar, Users, MapPin, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 export const ConfirmationPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const sessionId = searchParams.get("session_id");
-  // New inline-Elements flow passes reservation_id + code directly (no polling needed)
   const directReservationId = searchParams.get("reservation_id");
   const directCode = searchParams.get("code");
+  const sessionId = searchParams.get("session_id");
 
-  const [status, setStatus] = useState("loading"); // loading, success, failed, error
+  const [status, setStatus] = useState("loading");
   const [transaction, setTransaction] = useState(null);
-  const [pollAttempts, setPollAttempts] = useState(0);
-  const maxAttempts = 10;
-
-  const checkPaymentStatus = useCallback(async () => {
-    if (!sessionId) {
-      setStatus("error");
-      return;
-    }
-
-    try {
-      const response = await axios.get(`${API}/checkout/status/${sessionId}`);
-      const data = response.data;
-
-      if (data.payment_status === "paid") {
-        setStatus("success");
-        setTransaction(data);
-        return true; // Stop polling
-      } else if (data.status === "expired" || data.payment_status === "expired") {
-        setStatus("failed");
-        return true; // Stop polling
-      }
-      
-      return false; // Continue polling
-    } catch (error) {
-      
-      // Try to get transaction details even if status check fails
-      try {
-        const txResponse = await axios.get(`${API}/transaction/${sessionId}`);
-        if (txResponse.data) {
-          setTransaction(txResponse.data);
-          if (txResponse.data.payment_status === "paid") {
-            setStatus("success");
-            return true;
-          }
-        }
-      } catch (txError) {
-        
-      }
-      return false;
-    }
-  }, [sessionId]);
 
   useEffect(() => {
-    // Canonical inline-Elements path: reservation already created, jump straight to success
     if (directReservationId || directCode) {
       setTransaction({
         reservation_id: directReservationId,
@@ -70,36 +23,13 @@ export const ConfirmationPage = () => {
       setStatus("success");
       return;
     }
-
-    if (!sessionId) {
-      setStatus("error");
+    // Legacy Stripe Checkout path — verification requires backend; show pending state
+    if (sessionId) {
+      setStatus("pending");
       return;
     }
-
-    // Legacy Stripe Checkout polling path
-    const pollStatus = async () => {
-      const shouldStop = await checkPaymentStatus();
-      if (!shouldStop && pollAttempts < maxAttempts) {
-        setPollAttempts((prev) => prev + 1);
-      } else if (!shouldStop && pollAttempts >= maxAttempts) {
-        const finalCheck = await checkPaymentStatus();
-        if (!finalCheck) {
-          setStatus("pending");
-        }
-      }
-    };
-
-    pollStatus();
-  }, [pollAttempts, checkPaymentStatus, sessionId, directReservationId, directCode]);
-
-  useEffect(() => {
-    if (pollAttempts > 0 && pollAttempts < maxAttempts && status === "loading") {
-      const timer = setTimeout(() => {
-        setPollAttempts((prev) => prev + 1);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [pollAttempts, status]);
+    setStatus("error");
+  }, [directReservationId, directCode, sessionId]);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -148,13 +78,10 @@ export const ConfirmationPage = () => {
           You will receive a confirmation email once complete.
         </p>
         <Button
-          onClick={() => {
-            setStatus("loading");
-            setPollAttempts(0);
-          }}
+          onClick={() => navigate("/#contact")}
           className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
         >
-          Check Again
+          Contact Us
         </Button>
       </div>
     );

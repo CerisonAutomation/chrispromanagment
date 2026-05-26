@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-
-const API = import.meta.env.VITE_BACKEND_URL + "/api";
+import { supabase } from "@/integrations/supabase/client";
 
 // Block type definitions
 const BLOCK_TYPES = {
@@ -125,18 +124,16 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
   const generateAIContent = async (section, field, prompt) => {
     setAiGenerating(true);
     try {
-      const response = await fetch(`${API}/ai/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, section, field, context: pageId }),
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: { prompt, section, field, context: pageId },
       });
-      const data = await response.json();
-      if (data.content) {
+      if (error) throw error;
+      if (data?.content) {
         handleFieldChange(section, field, data.content);
         toast.success("AI content generated!");
       }
-    } catch (error) {
-      toast.error("AI generation failed. Please try again.");
+    } catch {
+      toast.error("AI generation requires the ai-generate edge function to be deployed.");
     } finally {
       setAiGenerating(false);
     }

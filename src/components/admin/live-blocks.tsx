@@ -13,8 +13,7 @@ import {
   Plus, Minus, BarChart3, Wrench, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const API = import.meta.env.VITE_BACKEND_URL + "/api";
+import { supabase } from "@/integrations/supabase/client";
 
 // Icon registry for CMS-driven icons
 const ICON_MAP = {
@@ -65,16 +64,23 @@ function useGuestyListings({ limit = 6, filters = {} } = {}) {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const p = new URLSearchParams({ limit: String(Math.min(limit, 50)) });
-      if (filters.checkIn)  p.set("checkIn",            filters.checkIn);
-      if (filters.checkOut) p.set("checkOut",           filters.checkOut);
-      if (filters.guests)   p.set("minOccupancy",       String(filters.guests));
-      if (filters.bedrooms) p.set("numberOfBedrooms",   String(filters.bedrooms));
-      const res  = await fetch(`${API}/listings?${p}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setListings(data.results || data.data || []);
-    } catch (e) { setError(e.message || "Failed to load from Guesty"); }
+      let query = supabase
+        .from("guesty_properties_cache")
+        .select("guesty_id, title, address_full, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, amenities")
+        .eq("active", true)
+        .limit(Math.min(limit, 50));
+      if (filters.guests)   query = query.gte("accommodates", filters.guests);
+      if (filters.bedrooms) query = query.gte("bedrooms", filters.bedrooms);
+      const { data, error } = await query;
+      if (error) throw error;
+      setListings((data || []).map(p => ({
+        _id: p.guesty_id, title: p.title,
+        address: { full: p.address_full, city: p.city },
+        accommodates: p.accommodates, bedrooms: p.bedrooms, bathrooms: p.bathrooms,
+        prices: { basePrice: p.base_price, currency: p.currency },
+        picture: { thumbnail: p.thumbnail }, amenities: p.amenities,
+      })));
+    } catch (e) { setError(e instanceof Error ? e.message : "Failed to load properties"); }
     finally { setLoading(false); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, filterKey]);
@@ -978,10 +984,12 @@ export function LiveReviewsLive({ d, onEdit }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const adminKey = localStorage.getItem("cvpm_admin_key") || "";
-    fetch(`${API}/admin/reviews?limit=${d.limit || 6}`, { headers: { "X-Admin-Key": adminKey } })
-      .then(r => r.json())
-      .then(data => { setReviews(data.data || []); setLoading(false); })
+    supabase
+      .from("guesty_reviews_cache")
+      .select("reviewer_name, rating, comment, created_at, property_id")
+      .order("created_at", { ascending: false })
+      .limit(d.limit || 6)
+      .then(({ data }) => { setReviews(data || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [d.limit]);
 

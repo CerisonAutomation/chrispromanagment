@@ -72,7 +72,7 @@ export class PricingEngine {
 
   async generateForecast(propertyId: string, days: number = 30): Promise<PricingForecast[]> {
     const { data: property } = await supabase
-      .from('properties')
+      .from('guesty_properties_cache')
       .select('base_price')
       .eq('id', propertyId)
       .single();

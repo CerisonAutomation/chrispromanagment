@@ -1,6 +1,7 @@
 import "@/App.css";
-import { useEffect, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect, lazy, Suspense, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { CMSProvider } from "@/context/cmscontext";
 import { ModalProvider } from "@/context/modal-context";
@@ -103,6 +104,24 @@ function NotFound() {
   );
 }
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthed(!!data.session);
+      setChecked(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthed(!!session);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  if (!checked) return <PageFallback />;
+  if (!authed) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -124,23 +143,23 @@ export default function App() {
                     <Route path="/checkout/:quoteId?" element={<CheckoutPage />} />
                     <Route path="/confirmation"      element={<ConfirmationPage />} />
                     <Route path="/auth"              element={<AuthPage />} />
-                    <Route path="/admin/*"           element={<AdminPage />} />
+                    <Route path="/admin/*"           element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                     <Route path="/map"               element={<MapPage />} />
                     <Route path="/property-owners"   element={<PropertyOwnersPage />} />
-                    <Route path="/analytics"         element={<AnalyticsDashboard />} />
+                    <Route path="/analytics"         element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
                     <Route path="/ar"                element={<ARViewPage />} />
-                    <Route path="/audit-logs"        element={<AuditLogsPage />} />
-                    <Route path="/automation"        element={<AutomationRulesPage />} />
+                    <Route path="/audit-logs"        element={<ProtectedRoute><AuditLogsPage /></ProtectedRoute>} />
+                    <Route path="/automation"        element={<ProtectedRoute><AutomationRulesPage /></ProtectedRoute>} />
                     <Route path="/chat"              element={<ChatPage />} />
                     <Route path="/concierge"         element={<ConciergePage />} />
-                    <Route path="/error-dashboard"   element={<ErrorDashboardPage />} />
-                    <Route path="/listings"          element={<ListingsManagementPage />} />
-                    <Route path="/maintenance"       element={<MaintenancePage />} />
-                    <Route path="/offline-booking"   element={<OfflineBookingPage />} />
-                    <Route path="/owner-portal"      element={<OwnerPortalPage />} />
-                    <Route path="/pricing"           element={<PricingEnginePage />} />
-                    <Route path="/tokens"            element={<PropertyTokensPage />} />
-                    <Route path="/tax-reports"       element={<TaxReportsPage />} />
+                    <Route path="/error-dashboard"   element={<ProtectedRoute><ErrorDashboardPage /></ProtectedRoute>} />
+                    <Route path="/listings"          element={<ProtectedRoute><ListingsManagementPage /></ProtectedRoute>} />
+                    <Route path="/maintenance"       element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
+                    <Route path="/offline-booking"   element={<ProtectedRoute><OfflineBookingPage /></ProtectedRoute>} />
+                    <Route path="/owner-portal"      element={<ProtectedRoute><OwnerPortalPage /></ProtectedRoute>} />
+                    <Route path="/pricing"           element={<ProtectedRoute><PricingEnginePage /></ProtectedRoute>} />
+                    <Route path="/tokens"            element={<ProtectedRoute><PropertyTokensPage /></ProtectedRoute>} />
+                    <Route path="/tax-reports"       element={<ProtectedRoute><TaxReportsPage /></ProtectedRoute>} />
                     <Route path="/privacy-policy"    element={<PrivacyPolicyPage />} />
                     <Route path="/terms"             element={<TermsPage />} />
                     <Route path="*"                  element={<NotFound />} />

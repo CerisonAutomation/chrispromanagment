@@ -10,8 +10,8 @@ import { Loader2, CreditCard, Shield, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/guestyPricing";
+import { supabase } from "@/integrations/supabase/client";
 
-const API = `${import.meta.env.VITE_BACKEND_URL}/api`;
 const PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 // Cache Stripe instance across renders (canonical pattern)
@@ -69,10 +69,8 @@ function PaymentForm({
 
     if (paymentIntent && paymentIntent.status === "succeeded") {
       try {
-        const res = await fetch(`${API}/payments/finalize`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke("payments-finalize", {
+          body: {
             quoteId,
             paymentIntentId: paymentIntent.id,
             paymentMethodId:
@@ -82,22 +80,16 @@ function PaymentForm({
             ratePlanId,
             guest,
             specialRequests,
-          }),
+          },
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          // Payment captured but Guesty reservation creation failed — user gets a friendly message and we keep the transaction record for ops follow-up.
-          toast.error(
-            data?.detail?.message ||
-              "Payment captured but booking confirmation failed. We'll email you shortly."
-          );
+        if (error) {
+          toast.error("Payment captured but booking confirmation failed. We'll email you shortly.");
           setIsProcessing(false);
           return;
         }
         toast.success("Booking confirmed!");
         onSuccess?.(data);
-      } catch (err) {
-        
+      } catch {
         toast.error("Payment captured but booking confirmation failed. Please contact support.");
         setIsProcessing(false);
       }
@@ -204,30 +196,19 @@ export const StripeInlinePayment = ({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API}/payments/create-intent`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quoteId,
-            ratePlanId,
-            guest,
-            specialRequests,
-          }),
+        const { data, error } = await supabase.functions.invoke("payments-create-intent", {
+          body: { quoteId, ratePlanId, guest, specialRequests },
         });
-        const data = await res.json().catch(() => ({}));
         if (cancelled) return;
-        if (!res.ok || !data.clientSecret) {
-          setLoadError(
-            data?.detail?.message ||
-              "Could not initialise payment. Please try again."
-          );
+        if (error || !data?.clientSecret) {
+          setLoadError("Could not initialise payment. Please try again or contact support.");
           return;
         }
         setClientSecret(data.clientSecret);
         setPaymentIntentId(data.paymentIntentId);
         setAmount(data.amount);
         setCurrency(data.currency || "EUR");
-      } catch (err) {
+      } catch {
         if (!cancelled) setLoadError("Network error while initialising payment.");
       }
     })();

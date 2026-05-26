@@ -8,8 +8,7 @@ import {
   ChevronLeft, ChevronRight, Loader2, Filter, Home
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+import { supabase } from "@/integrations/supabase/client";
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -58,27 +57,41 @@ export const MapPage = () => {
   const [selectedListing, setSelectedListing] = useState(null);
   const [viewMode, setViewMode] = useState("split"); // split, map, list
 
-  // Fetch listings
+  // Fetch listings from Supabase cache
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const params = new URLSearchParams();
-        params.set("limit", "100");
-        params.set("fields", "_id title address picture prices accommodates bedrooms bathrooms reviews propertyType");
-        
+        let query = supabase
+          .from("guesty_properties_cache")
+          .select("guesty_id, title, address_full, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, amenities")
+          .eq("active", true)
+          .limit(100);
+
         const city = searchParams.get("city");
-        if (city) params.set("city", city);
-        
-        const response = await fetch(`${API_URL}/api/listings?${params.toString()}`);
-        const data = await response.json();
-        setListings(data.results || []);
-      } catch (error) {
-        
+        if (city) query = query.eq("city", city);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        // Normalise to the shape the map components expect
+        setListings(
+          (data || []).map(p => ({
+            _id: p.guesty_id,
+            title: p.title,
+            address: { full: p.address_full, city: p.city, lat: null, lng: null },
+            accommodates: p.accommodates,
+            bedrooms: p.bedrooms,
+            bathrooms: p.bathrooms,
+            prices: { basePrice: p.base_price, currency: p.currency },
+            picture: { thumbnail: p.thumbnail },
+            amenities: p.amenities,
+          })),
+        );
+      } catch {
+        // silent — map will show empty state
       } finally {
         setLoading(false);
       }
     };
-    
     fetchListings();
   }, [searchParams]);
 

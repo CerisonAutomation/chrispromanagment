@@ -93,16 +93,46 @@ serve(async (req) => {
   }
 
   if (eventType.startsWith("reservation.")) {
-    // Invalidate any per-listing availability cache rows for the affected listing
-    const listingId = (payload.listingId ?? payload.listing?._id) as string | undefined;
-    if (listingId) {
-      await admin
-        .from("guesty_response_cache")
-        .delete()
-        .like("cache_key", `%${listingId}%`)
-        .then(() => {}, () => {});
+    const res = payload as {
+      _id?: string;
+      listingId?: string;
+      listing?: { _id?: string };
+      guest?: { _id?: string; firstName?: string; lastName?: string; email?: string };
+      checkIn?: string;
+      checkOut?: string;
+      nightsCount?: number;
+      guestsCount?: number;
+      money?: { totalAmount?: number; currency?: string };
+      status?: string;
+      source?: string;
+    };
+
+    const listingId = (res.listingId ?? res.listing?._id) as string | undefined;
+    const reservationId = res._id;
+
+    if (reservationId) {
+      const checkIn = res.checkIn ? new Date(res.checkIn).toISOString().slice(0, 10) : null;
+      const checkOut = res.checkOut ? new Date(res.checkOut).toISOString().slice(0, 10) : null;
+      const status = res.status ?? "confirmed";
+
+      await admin.from("reservations_cache").upsert({
+        guesty_id: reservationId,
+        listing_id: listingId ?? null,
+        guest_name: [res.guest?.firstName, res.guest?.lastName].filter(Boolean).join(" ") || null,
+        guest_email: res.guest?.email ?? null,
+        check_in: checkIn,
+        check_out: checkOut,
+        nights: res.nightsCount ?? null,
+        guests: res.guestsCount ?? null,
+        total_price: res.money?.totalAmount ?? null,
+        currency: res.money?.currency ?? "EUR",
+        status: status === "canceled" ? "cancelled" : status,
+        channel: res.source ?? null,
+        last_synced_at: new Date().toISOString(),
+      }, { onConflict: "guesty_id" }).then(() => {}, () => {});
     }
-    return ok({ invalidated: listingId });
+
+    return ok({ synced: reservationId, listing: listingId });
   }
 
   return ok({ skipped: eventType });

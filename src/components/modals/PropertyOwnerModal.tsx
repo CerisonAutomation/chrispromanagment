@@ -9,10 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/context/modal-context";
 import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
-import axios from "axios";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { supabase } from "@/integrations/supabase/client";
 
 const FALLBACK_PROPERTY_TYPES = [
   "Apartment","Villa","Penthouse","Townhouse","Studio","Palazzo/Historic","Other",
@@ -106,12 +103,23 @@ export const PropertyOwnerModal = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await axios.post(`${API}/property-owner-inquiry`, {
-        ...form,
-        servicesInterested: form.servicesInterested.join(", "),
+      const { error } = await supabase.from("owner_inquiries").insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        property_type: form.propertyType || null,
+        location: form.location || null,
+        bedrooms: form.bedrooms || null,
+        bathrooms: form.bathrooms || null,
+        max_guests: form.maxGuests || null,
+        services_interested: form.servicesInterested.join(", ") || null,
+        currently_listed: form.currentlyListed || null,
+        expected_revenue: form.expectedRevenue || null,
+        additional_info: form.additionalInfo || null,
       });
+      if (error) throw error;
       setIsSuccess(true);
-      toast.success("Inquiry submitted! We'll be in touch soon.");
+      toast.success("Inquiry submitted! We'll be in touch within 24 hours.");
     } catch (error) {
       toast.error("Failed to submit. Please try again.");
     } finally {

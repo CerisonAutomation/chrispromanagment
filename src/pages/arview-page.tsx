@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface Property {
   id: string;
   title: string;
-  images: string[];
+  thumbnail: string | null;
 }
 
 export default function ARViewPage() {
@@ -19,8 +19,8 @@ export default function ARViewPage() {
   useEffect(() => {
     const loadProperties = async () => {
       const { data } = await supabase
-        .from('properties')
-        .select('id, title, images')
+        .from('guesty_properties_cache')
+        .select('id, title, thumbnail')
         .limit(10);
       setProperties(data || []);
       setLoading(false);

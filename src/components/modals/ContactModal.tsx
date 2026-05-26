@@ -9,12 +9,8 @@ import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
 import { useBlock } from "@/hooks/useBlock";
 import { toast } from "sonner";
-import axios from "axios";
-import { gmail } from "@/lib/gmail";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 interface ContactForm {
   name: string;
@@ -77,34 +73,17 @@ export const ContactModal = memo(function ContactModal() {
 
     setIsSubmitting(true);
     try {
-      const subject = form.subject || "General Inquiry";
-      // Log inquiry (non-blocking)
-      axios.post(`${API}/contact`, {
-        name: form.name, email: form.email, phone: form.phone, subject, message: form.message,
-      }).catch(() => {});
-
-      // Send email via Gmail
-      const adminTo = cms?.contact?.email || "info@example.com";
-      const body = [
-        `New website inquiry — ${subject}`,
-        ``,
-        `From: ${form.name} <${form.email}>`,
-        form.phone ? `Phone: ${form.phone}` : null,
-        ``,
-        `Message:`,
-        form.message,
-      ].filter(Boolean).join("\n");
-
-      await gmail.send({
-        to: adminTo,
-        subject: `[Website] ${subject} — ${form.name}`,
-        text: body,
-        replyTo: form.email,
+      const { error } = await supabase.from("contact_submissions").insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        subject: form.subject || "General Inquiry",
+        message: form.message,
       });
-
+      if (error) throw error;
       setIsSuccess(true);
-      toast.success("Message sent successfully!");
-      } catch (error: unknown) {
+      toast.success("Message sent! We'll be in touch within 24 hours.");
+    } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Failed to send message. Please try again.";
       toast.error(msg);
     } finally {

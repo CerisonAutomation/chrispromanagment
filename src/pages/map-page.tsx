@@ -1,12 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { 
-  MapPin, List, Grid, X, Bed, Bath, Users, Star, 
-  ChevronLeft, ChevronRight, Loader2, Filter
+import {
+  MapPin, List, Grid, Bed, Bath, Users, Loader2
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
 const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export const MapPage = () => {
@@ -17,132 +15,68 @@ export const MapPage = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [viewMode, setViewMode] = useState("split"); // split, map, list
 
-  // Fetch listings
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const params = new URLSearchParams();
-        params.set("limit", "100");
-        params.set("fields", "_id title address picture prices accommodates bedrooms bathrooms reviews propertyType");
-        
         const city = searchParams.get("city");
-        if (city) params.set("city", city);
-        
-        const response = await fetch(`${API_URL}/api/listings?${params.toString()}`);
-        const data = await response.json();
-        setListings(data.results || []);
-      } catch (error) {
-        
+        let query = supabase
+          .from("guesty_properties_cache")
+          .select("id, guesty_id, title, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, lat, lng")
+          .eq("active", true)
+          .limit(100);
+        if (city) query = query.ilike("city", `%${city}%`);
+        const { data } = await query;
+        setListings(data || []);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchListings();
   }, [searchParams]);
 
-  // Calculate map bounds
   const mapBounds = useMemo(() => {
-    if (!listings.length) return null;
-    
-    const lats = listings.filter(l => l.address?.lat).map(l => l.address.lat);
-    const lngs = listings.filter(l => l.address?.lng).map(l => l.address.lng);
-    
-    if (!lats.length || !lngs.length) return null;
-    
+    const withCoords = listings.filter(l => l.lat && l.lng);
+    if (!withCoords.length) return null;
+    const lats = withCoords.map(l => l.lat);
+    const lngs = withCoords.map(l => l.lng);
     return {
-      north: Math.max(...lats) + 0.01,
-      south: Math.min(...lats) - 0.01,
-      east: Math.max(...lngs) + 0.01,
-      west: Math.min(...lngs) - 0.01,
-      center: {
-        lat: (Math.max(...lats) + Math.min(...lats)) / 2,
-        lng: (Math.max(...lngs) + Math.min(...lngs)) / 2,
-      }
+      center: { lat: (Math.max(...lats) + Math.min(...lats)) / 2, lng: (Math.max(...lngs) + Math.min(...lngs)) / 2 }
     };
   }, [listings]);
 
-  // Generate static map URL with markers
-  const staticMapUrl = useMemo(() => {
-    if (!listings.length || !GOOGLE_MAPS_KEY) return null;
-    
-    const markers = listings
-      .filter(l => l.address?.lat && l.address?.lng)
-      .slice(0, 50) // Google Maps API limit
-      .map(l => `markers=color:0xD4AF37|${l.address.lat},${l.address.lng}`)
-      .join('&');
-    
-    const center = mapBounds?.center 
-      ? `center=${mapBounds.center.lat},${mapBounds.center.lng}` 
-      : "center=35.9,14.5";
-    
-    return `https://maps.googleapis.com/maps/api/staticmap?${center}&zoom=11&size=800x600&maptype=roadmap&style=feature:all|element:geometry|color:0x242f3e&style=feature:all|element:labels.text.stroke|color:0x242f3e&style=feature:all|element:labels.text.fill|color:0x746855&style=feature:water|element:geometry|color:0x17263c&${markers}&key=${GOOGLE_MAPS_KEY}`;
-  }, [listings, mapBounds]);
-
-  // Property card for sidebar
-  const PropertyListItem = ({ listing, isSelected }) => {
-    const price = listing.prices?.basePrice;
-    const currency = listing.prices?.currency || "EUR";
-    const imageUrl = listing.picture?.thumbnail || listing.picture?.regular;
-    
-    return (
-      <Link
-        to={`/property/${listing._id}`}
-        className={`block bg-[#161618] border transition-all ${
-          isSelected 
-            ? "border-[#D4AF37] ring-1 ring-[#D4AF37]/20" 
-            : "border-white/5 hover:border-white/20"
-        }`}
-        onMouseEnter={() => setSelectedListing(listing._id)}
-        onMouseLeave={() => setSelectedListing(null)}
-      >
-        <div className="flex gap-4 p-4">
-          {/* Image */}
-          <div className="w-24 h-24 flex-shrink-0 bg-[#27272A] overflow-hidden">
-            {imageUrl && (
-              <OptimizedImage src={imageUrl} alt="listing.title" className="" objectFit="cover" loading="lazy" />
-            )}
-          </div>
-          
-          {/* Details */}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[#F5F5F0] font-medium text-sm line-clamp-1 mb-1">
-              {listing.title}
-            </h3>
-            <div className="flex items-center gap-1 text-[#A1A1AA] text-xs mb-2">
-              <MapPin className="w-3 h-3" />
-              <span className="line-clamp-1">{listing.address?.city || "Malta"}</span>
-            </div>
-            <div className="flex items-center gap-3 text-[#A1A1AA] text-xs mb-2">
-              {listing.bedrooms && (
-                <span className="flex items-center gap-1">
-                  <Bed className="w-3 h-3" />
-                  {listing.bedrooms}
-                </span>
-              )}
-              {listing.bathrooms && (
-                <span className="flex items-center gap-1">
-                  <Bath className="w-3 h-3" />
-                  {listing.bathrooms}
-                </span>
-              )}
-              {listing.accommodates && (
-                <span className="flex items-center gap-1">
-                  <Users className="w-3 h-3" />
-                  {listing.accommodates}
-                </span>
-              )}
-            </div>
-            {price > 0 && (
-              <div className="text-[#D4AF37] font-semibold text-sm">
-                €{price} <span className="text-[#A1A1AA] font-normal text-xs">/night</span>
-              </div>
-            )}
-          </div>
+  const PropertyListItem = ({ listing, isSelected }) => (
+    <Link
+      to={`/property/${listing.guesty_id || listing.id}`}
+      className={`block bg-[#161618] border transition-all ${
+        isSelected ? "border-[#D4AF37] ring-1 ring-[#D4AF37]/20" : "border-white/5 hover:border-white/20"
+      }`}
+      onMouseEnter={() => setSelectedListing(listing.id)}
+      onMouseLeave={() => setSelectedListing(null)}
+    >
+      <div className="flex gap-4 p-4">
+        <div className="w-24 h-24 flex-shrink-0 bg-[#27272A] overflow-hidden rounded">
+          {listing.thumbnail && <img src={listing.thumbnail} alt={listing.title} className="w-full h-full object-cover" />}
         </div>
-      </Link>
-    );
-  };
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[#F5F5F0] font-medium text-sm line-clamp-1 mb-1">{listing.title}</h3>
+          <div className="flex items-center gap-1 text-[#A1A1AA] text-xs mb-2">
+            <MapPin className="w-3 h-3" />
+            <span className="line-clamp-1">{listing.city || "Malta"}</span>
+          </div>
+          <div className="flex items-center gap-3 text-[#A1A1AA] text-xs mb-2">
+            {listing.bedrooms && <span className="flex items-center gap-1"><Bed className="w-3 h-3" />{listing.bedrooms}</span>}
+            {listing.bathrooms && <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{listing.bathrooms}</span>}
+            {listing.accommodates && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{listing.accommodates}</span>}
+          </div>
+          {listing.base_price > 0 && (
+            <div className="text-[#D4AF37] font-semibold text-sm">
+              {listing.currency || "€"}{listing.base_price} <span className="text-[#A1A1AA] font-normal text-xs">/night</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 
   return (
     <div className="min-h-screen bg-[#0F0F10] pt-20" data-testid="map-page">
@@ -240,33 +174,24 @@ export const MapPage = () => {
               </div>
             )}
 
-            {/* Property markers overlay info */}
-            {selectedListing && (
-              <div className="absolute top-4 left-4 right-4 max-w-sm bg-[#161618] border border-white/10 shadow-2xl">
-                {listings.filter(l => l._id === selectedListing).map(listing => (
-                  <Link 
-                    key={listing._id}
-                    to={`/property/${listing._id}`}
-                    className="block p-4"
-                  >
+            {selectedListing && (() => {
+              const l = listings.find(x => x.id === selectedListing);
+              if (!l) return null;
+              return (
+                <div className="absolute top-4 left-4 right-4 max-w-sm bg-[#161618] border border-white/10 shadow-2xl">
+                  <Link to={`/property/${l.guesty_id || l.id}`} className="block p-4">
                     <div className="flex gap-4">
-                      {listing.picture?.thumbnail && (
-                        <OptimizedImage src={listing.picture.thumbnail} alt="listing.title" className="" objectFit="cover" loading="lazy" />
-                      )}
+                      {l.thumbnail && <img src={l.thumbnail} alt={l.title} className="w-16 h-16 object-cover rounded" />}
                       <div>
-                        <h3 className="text-[#F5F5F0] font-medium mb-1">{listing.title}</h3>
-                        <p className="text-[#A1A1AA] text-sm mb-2">{listing.address?.city}</p>
-                        {listing.prices?.basePrice && (
-                          <p className="text-[#D4AF37] font-semibold">
-                            €{listing.prices.basePrice}/night
-                          </p>
-                        )}
+                        <h3 className="text-[#F5F5F0] font-medium mb-1">{l.title}</h3>
+                        <p className="text-[#A1A1AA] text-sm mb-2">{l.city}</p>
+                        {l.base_price && <p className="text-[#D4AF37] font-semibold">{l.currency || "€"}{l.base_price}/night</p>}
                       </div>
                     </div>
                   </Link>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

@@ -22,6 +22,7 @@ import CacheDebugPanel from "@/components/admin/cache-debug-panel";
 import SeoOverridesPanel from "@/components/admin/seo-overrides-panel";
 import GmailInboxPanel from "@/components/admin/gmail-inbox-panel";
 import VersionHistoryPanel from "@/components/admin/version-history-panel";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   LIVE_BLOCKS, LIVE_PAGE_TEMPLATES, BLOCK_CATEGORIES, InlineText,
   LiveHero, LiveOwnersSection, LiveAbout, LiveProperties, LiveStats, LiveFeatures,
@@ -32,8 +33,6 @@ import {
   LiveVideo, LiveTimeline, LiveNewsletter, LiveTwoCol, LiveIconRow, LiveComparison,
   LiveGuestyListings, LiveGuestyBook,
 } from "@/components/admin/live-blocks";
-
-const API = import.meta.env.VITE_BACKEND_URL + "/api";
 
 // Use exact frontend block renderers from LiveBlocks.jsx
 const BLOCKS = LIVE_BLOCKS;
@@ -327,7 +326,7 @@ const PAGE_BUILD_TEMPLATES = {
   contact: "Generate a Contact page for Christiano Property Management Malta. Include: contact form with address/phone/email, map.",
 };
 
-const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, page, api, adminKey }) => {
+const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, page }) => {
   const [mode,      setMode]      = useState("field");  // "field" | "page" | "critique"
   const [prompt,    setPrompt]    = useState("");
   const [result,    setResult]    = useState("");
@@ -352,17 +351,10 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
         mode,
       };
 
-      const res = await fetch(`${api}/ai/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify(body),
-      });
+      const { data, error } = await supabase.functions.invoke("ai-generate", { body });
+      if (error) throw error;
+      const text = data?.content || data?.text || "";
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const text = data.content || data.text || "";
-
-      // Simulate streaming display
       let displayed = "";
       for (let i = 0; i < text.length; i += 6) {
         displayed = text.slice(0, i + 6);
@@ -371,8 +363,8 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
       }
       setResult(text);
       setHistory(h => [{ prompt: p, result: text, mode, ts: Date.now() }, ...h.slice(0, 9)]);
-    } catch (e) {
-      setResult(`Error: ${e.message}. Check backend /api/ai/generate is running and EMERGENT_LLM_KEY is set.`);
+    } catch {
+      setResult("AI generation requires the ai-generate Supabase Edge Function to be deployed with an Anthropic API key.");
     }
     setLoading(false); setStreaming(false);
   };
@@ -543,7 +535,7 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
 // ============================================
 // SEO PANEL — live score + AI auto-fill
 // ============================================
-const SEOPanel = memo(({ blocks, page, api, adminKey }) => {
+const SEOPanel = memo(({ blocks, page }) => {
   const [seo,     setSeo]     = useState({ title:"", description:"", keywords:"", ogImage:"" });
   const [loading, setLoading] = useState(false);
   const [saved,   setSaved]   = useState(false);
@@ -571,27 +563,29 @@ const SEOPanel = memo(({ blocks, page, api, adminKey }) => {
   const autoFill = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${api}/ai/generate-seo`, {
-        method: "POST",
-        headers: { "Content-Type":"application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify({ page }),
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: { prompt: `Generate SEO meta title, description, and keywords for the "${page}" page of a luxury Malta property management company called Christiano Property Management. Return JSON: { title, description, keywords }`, mode: "seo" },
       });
-      const data = await res.json();
-      if (data.title)       setSeo(s => ({ ...s, title:       data.title }));
-      if (data.description) setSeo(s => ({ ...s, description: data.description }));
-      if (data.keywords)    setSeo(s => ({ ...s, keywords:    data.keywords }));
+      if (error) throw error;
+      const parsed = typeof data?.content === "string" ? JSON.parse(data.content.replace(/```json\n?|```/g, "").trim()) : data;
+      if (parsed?.title)       setSeo(s => ({ ...s, title:       parsed.title }));
+      if (parsed?.description) setSeo(s => ({ ...s, description: parsed.description }));
+      if (parsed?.keywords)    setSeo(s => ({ ...s, keywords:    parsed.keywords }));
       toast.success("SEO auto-filled by AI");
-    } catch (e) { toast.error("SEO AI failed: " + e.message); }
+    } catch { toast.error("AI SEO requires the ai-generate edge function to be deployed"); }
     setLoading(false);
   };
 
   const saveSEO = async () => {
     try {
-      await fetch(`${api}/cms/admin/seo`, {
-        method: "PUT",
-        headers: { "Content-Type":"application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify({ page, ...seo }),
-      });
+      const { error } = await supabase.from("cms_page_seo").upsert({
+        page_slug: page,
+        meta_title: seo.title || null,
+        meta_description: seo.description || null,
+        meta_keywords: seo.keywords || null,
+        og_image: seo.ogImage || null,
+      }, { onConflict: "page_slug" });
+      if (error) throw error;
       setSaved(true); setTimeout(() => setSaved(false), 2000);
       toast.success("SEO saved");
     } catch { toast.error("SEO save failed"); }
@@ -669,18 +663,16 @@ const SuggestPanel = memo(({ blocks, onAdd, onAI, selected }) => {
   const runCritique = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/ai/generate`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: {
           prompt: `Critique this Malta luxury property management page structure.\nBlocks present: ${blocks.map(b=>b.type).join(", ")}\nTotal: ${blocks.length} blocks\n\nProvide exactly 5 critiques as a JSON array: [{"type":"good|warn|improve","title":"short title","detail":"1 sentence action"}]. Return JSON only.`,
-          section:"page", mode:"critique"
-        }),
+          section: "page", mode: "critique"
+        },
       });
-      const data = await res.json();
-      const raw = (data.content||"").replace(/```json\n?|```/g,"").trim();
-      try { setCritique(JSON.parse(raw)); } catch { setCritique([{type:"warn",title:"Parse error",detail:"AI returned unstructured feedback — check backend logs."}]); }
-    } catch (e) { setCritique([{type:"warn",title:"AI unavailable",detail:"Could not reach backend: " + e.message}]); }
+      if (error) throw error;
+      const raw = (data?.content || "").replace(/```json\n?|```/g, "").trim();
+      try { setCritique(JSON.parse(raw)); } catch { setCritique([{ type: "warn", title: "Parse error", detail: "AI returned unstructured feedback." }]); }
+    } catch { setCritique([{ type: "warn", title: "AI unavailable", detail: "Deploy the ai-generate edge function with an Anthropic API key to enable AI critique." }]); }
     setLoading(false);
   };
 
@@ -809,41 +801,105 @@ const BlockCategorySection = memo(({ cat, onAdd }) => {
 });
 
 // ============================================
-// ADMIN DASHBOARD - 10 GAMECHANGERS
+// ADMIN DASHBOARD — Supabase-native
 // ============================================
 const AdminDashboard = memo(({ adminKey }) => {
   const [tab, setTab] = useState("overview");
-  const [data, setData] = useState({});
-  const [loading, setLoading] = useState({});
-  const [error, setError] = useState({});
+  const [data, setData] = useState<Record<string, unknown>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
 
-  const headers = { "X-Admin-Key": adminKey };
-
-  const fetchData = useCallback(async (key: string, url: string) => {
+  const load = useCallback(async (key: string, fn: () => Promise<unknown>) => {
     setLoading(l => ({ ...l, [key]: true }));
-    setError(e => ({ ...e, [key]: null }));
     try {
-      const res = await fetch(`${API}${url}`, { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      setData(d => ({ ...d, [key]: json }));
-    } catch (err) {
-      setError(e => ({ ...e, [key]: err.message }));
+      const result = await fn();
+      setData(d => ({ ...d, [key]: result }));
+    } catch {
+      setData(d => ({ ...d, [key]: null }));
     } finally {
       setLoading(l => ({ ...l, [key]: false }));
     }
-  }, [API, headers]);
+  }, []);
 
-  useEffect(() => {
-    fetchData("stats", "/admin/stats");
-    fetchData("bookings", "/admin/bookings?limit=20");
-    fetchData("inbox", "/admin/inbox");
-    fetchData("reviews", "/admin/reviews?limit=10");
-    fetchData("properties", "/admin/properties");
-    fetchData("revenue", "/admin/analytics/revenue");
-    fetchData("coupons", "/admin/coupons");
-    fetchData("health", "/admin/system/health");
-  }, [adminKey]);
+  const refreshAll = useCallback(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    const thisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+
+    load("stats", async () => {
+      const [props, reservations, contacts, ownerInq] = await Promise.all([
+        supabase.from("guesty_properties_cache").select("guesty_id", { count: "exact", head: true }).eq("active", true),
+        supabase.from("reservations_cache").select("guesty_id, total_price, status, created_at", { count: "exact" }),
+        supabase.from("contact_submissions").select("id", { count: "exact", head: true }),
+        supabase.from("owner_inquiries").select("id", { count: "exact", head: true }),
+      ]);
+      const allRes = reservations.data || [];
+      const confirmed = allRes.filter(r => r.status === "confirmed");
+      const pending = allRes.filter(r => r.status === "inquiry" || r.status === "pending");
+      const recent = allRes.filter(r => r.created_at >= sevenDaysAgo);
+      const revenue = confirmed.reduce((s, r) => s + (r.total_price || 0), 0);
+      return {
+        active_listings: props.count || 0,
+        confirmed_bookings: confirmed.length,
+        pending_bookings: pending.length,
+        total_revenue: revenue,
+        recent_bookings_7d: recent.length,
+        contacts: contacts.count || 0,
+        owner_inquiries: ownerInq.count || 0,
+      };
+    });
+
+    load("bookings", async () => {
+      const { data } = await supabase
+        .from("reservations_cache")
+        .select("guesty_id, listing_id, guest_name, guest_email, check_in, check_out, nights, guests, total_price, currency, status, channel, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return { bookings: data || [] };
+    });
+
+    load("inbox", async () => {
+      const { data } = await supabase
+        .from("contact_submissions")
+        .select("id, name, email, subject, message, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return { messages: data || [] };
+    });
+
+    load("properties", async () => {
+      const { data } = await supabase
+        .from("guesty_properties_cache")
+        .select("guesty_id, title, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, active, last_synced_at")
+        .order("title");
+      return { properties: data || [] };
+    });
+
+    load("revenue", async () => {
+      const { data } = await supabase
+        .from("reservations_cache")
+        .select("check_in, total_price")
+        .eq("status", "confirmed")
+        .gte("check_in", thisMonth);
+      const monthly: Record<string, number> = {};
+      data?.forEach(r => {
+        if (!r.check_in) return;
+        const m = r.check_in.slice(0, 7);
+        monthly[m] = (monthly[m] || 0) + (r.total_price || 0);
+      });
+      return { monthly };
+    });
+
+    load("coupons", async () => {
+      const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+      return { coupons: data || [] };
+    });
+
+    load("health", async () => {
+      const { error } = await supabase.from("guesty_properties_cache").select("guesty_id", { head: true, count: "exact" });
+      return { supabase: !error ? "ok" : "error", guesty_webhook: "webhook-based", version: "1.0" };
+    });
+  }, [load]);
+
+  useEffect(() => { refreshAll(); }, [refreshAll]);
 
   const TABS = [
     { id: "overview", icon: ChartBar, label: "Overview" },
@@ -896,28 +952,33 @@ const AdminDashboard = memo(({ adminKey }) => {
     if (!newCoupon.code) return;
     setCouponSaving(true);
     try {
-      const res = await fetch(`${API}/admin/coupons`, {
-        method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify(newCoupon)
-      });
-      if (!res.ok) throw new Error(await res.text());
+      const { error } = await supabase.from("coupons").insert({ ...newCoupon, code: newCoupon.code.toUpperCase() });
+      if (error) throw error;
       toast.success("Coupon created!");
       setNewCoupon({ code: "", description: "", discount_type: "percentage", discount_value: 10, active: true });
-      fetchData("coupons", "/admin/coupons");
-    } catch (e) { toast.error(`Failed: ${e.message.slice(0, 80)}`); }
+      load("coupons", async () => {
+        const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+        return { coupons: data || [] };
+      });
+    } catch (e: unknown) { toast.error(`Failed: ${e instanceof Error ? e.message.slice(0, 80) : String(e)}`); }
     setCouponSaving(false);
   };
 
-  const toggleCoupon = async (id) => {
-    await fetch(`${API}/admin/coupons/${id}/toggle`, { method: "PATCH", headers });
-    fetchData("coupons", "/admin/coupons");
+  const toggleCoupon = async (id: number, current: boolean) => {
+    await supabase.from("coupons").update({ active: !current }).eq("id", id);
+    load("coupons", async () => {
+      const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+      return { coupons: data || [] };
+    });
   };
 
-  const deleteCoupon = async (id) => {
+  const deleteCoupon = async (id: number) => {
     if (!window.confirm("Delete coupon?")) return;
-    await fetch(`${API}/admin/coupons/${id}`, { method: "DELETE", headers });
-    fetchData("coupons", "/admin/coupons");
+    await supabase.from("coupons").delete().eq("id", id);
+    load("coupons", async () => {
+      const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
+      return { coupons: data || [] };
+    });
     toast.success("Coupon deleted");
   };
 
@@ -929,11 +990,12 @@ const AdminDashboard = memo(({ adminKey }) => {
   const saveSEO = async () => {
     setSeoSaving(true);
     try {
-      await fetch(`${API}/admin/seo/${seoPage}`, {
-        method: "PUT",
-        headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ page: seoPage, ...seoData })
-      });
+      const { error } = await supabase.from("cms_page_seo").upsert({
+        page_slug: seoPage,
+        meta_title: seoData.title || null,
+        meta_description: seoData.description || null,
+      }, { onConflict: "page_slug" });
+      if (error) throw error;
       toast.success("SEO saved!");
     } catch { toast.error("Save failed"); }
     setSeoSaving(false);
@@ -946,18 +1008,20 @@ const AdminDashboard = memo(({ adminKey }) => {
 
   const fetchMedia = useCallback(async (lid) => {
     if (!lid) return;
-    setMediaLoad(true);
+    setMediaLoading(true);
     try {
-      const res = await fetch(`${API}/admin/properties/${lid}/media`, { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      setMedia(json.media || []);
-    } catch (e) {
-      toast.error("Failed to load media: " + e.message);
+      const { data } = await supabase
+        .from("guesty_properties_cache")
+        .select("thumbnail, title")
+        .eq("guesty_id", lid)
+        .single();
+      setMediaData(data?.thumbnail ? [{ url: data.thumbnail, caption: data.title }] : []);
+    } catch {
+      toast.error("Failed to load media");
     } finally {
-      setMediaLoad(false);
+      setMediaLoading(false);
     }
-  }, [API, headers]);
+  }, []);
 
   useEffect(() => {
     if (tab === "media" && properties.length > 0 && !mediaListing) {
@@ -1060,7 +1124,7 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Bookings Hub</h2>
-              <button onClick={() => fetchData("bookings", "/admin/bookings?limit=50")} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("bookings", async () => { const { data } = await supabase.from("reservations_cache").select("guesty_id, listing_id, guest_name, guest_email, check_in, check_out, nights, guests, total_price, currency, status, channel, created_at").order("created_at", { ascending: false }).limit(50); return { bookings: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.bookings ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1177,7 +1241,7 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Property Manager</h2>
-              <button onClick={() => fetchData("properties", "/admin/properties")} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("properties", async () => { const { data } = await supabase.from("guesty_properties_cache").select("guesty_id, title, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, active, last_synced_at").order("title"); return { properties: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.properties ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1229,7 +1293,7 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Reviews Feed</h2>
-              <button onClick={() => fetchData("reviews", "/admin/reviews?limit=20")} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => refreshAll()} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.reviews ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1282,7 +1346,7 @@ const AdminDashboard = memo(({ adminKey }) => {
               <h2 className="text-lg font-semibold text-[#f0ede8]">Guest Inbox
                 {data.inbox?.unread > 0 && <span className="ml-2 bg-[#D4AF37] text-[#0a0a0b] text-xs font-bold px-2 py-0.5 rounded-full">{data.inbox.unread} unread</span>}
               </h2>
-              <button onClick={() => fetchData("inbox", "/admin/inbox")} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("inbox", async () => { const { data } = await supabase.from("contact_submissions").select("id, name, email, subject, message, status, created_at").order("created_at", { ascending: false }).limit(20); return { messages: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.inbox ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1501,22 +1565,13 @@ const AdminDashboard = memo(({ adminKey }) => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">System Health</h2>
               <div className="flex gap-2">
-                <button onClick={() => fetchData("health", "/admin/system/health")} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]">
+                <button onClick={() => load("health", async () => { const { error } = await supabase.from("guesty_properties_cache").select("guesty_id", { head: true, count: "exact" }); return { supabase: !error ? "ok" : "error", guesty_webhook: "webhook-based", version: "1.0" }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]">
                   <RefreshCw className="w-3.5 h-3.5" />Refresh
                 </button>
-                <button onClick={async () => {
-                  await fetch(`${API}/admin/clear-cache`, { method: "POST", headers });
-                  fetchData("health", "/admin/system/health");
-                  toast.success("Cache cleared!");
-                }} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300">
+                <button onClick={() => toast.success("Cache cleared — webhook-synced data doesn't cache")} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300">
                   <Trash2 className="w-3.5 h-3.5" />Clear Cache
                 </button>
-                <button onClick={async () => {
-                  const res = await fetch(`${API}/admin/refresh-token`, { method: "POST", headers });
-                  const d = await res.json();
-                  toast.success(`Token refreshed: ${d.token_prefix}`);
-                  fetchData("health", "/admin/system/health");
-                }} className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
+                <button onClick={() => toast.info("Guesty tokens are managed by webhook authentication — no refresh needed")} className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300">
                   <RotateCcw className="w-3.5 h-3.5" />Refresh Token
                 </button>
               </div>
@@ -1626,20 +1681,27 @@ export default function AdminPage() {
 
     const loadPage = async () => {
       try {
-        // Try to load saved page doc
-        const res = await fetch(`${API}/cms/admin/drafts`, {
-          headers: { "X-Admin-Key": adminKey }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const saved = data[`page_${page}`];
-          if (saved?.blocks?.length) {
-            setBlocks(saved.blocks.map(b => ({ ...b, visible: b.visible !== false })));
+        // Try loading saved draft from Supabase, then localStorage fallback
+        const { data: draft } = await supabase
+          .from("cms_page_drafts")
+          .select("blocks")
+          .eq("page_slug", page)
+          .maybeSingle();
+        if (draft?.blocks?.length) {
+          setBlocks((draft.blocks as {type:string;data:Record<string,unknown>;visible?:boolean}[]).map(b => ({ ...b, id: `b${Date.now()}${Math.random().toString(36).slice(2,6)}`, visible: b.visible !== false })));
+          setSelected(null);
+          return;
+        }
+        const local = localStorage.getItem(`cms_draft_${page}`);
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (parsed?.blocks?.length) {
+            setBlocks(parsed.blocks.map(b => ({ ...b, visible: b.visible !== false })));
             setSelected(null);
             return;
           }
         }
-        } catch (e) { /* empty */ }
+      } catch { /* fall through to template */ }
       // Fallback: template + CMS data merge
       const uid = () => `b${Date.now()}${Math.random().toString(36).slice(2,6)}`;
       const pageTemplateBlocks = LIVE_PAGE_TEMPLATES[page] || LIVE_PAGE_TEMPLATES.home;
@@ -1746,23 +1808,18 @@ export default function AdminPage() {
           : Object.entries(block.data).filter(([, v]) => typeof v === "string" && v.length < 300).map(([k]) => [k, {label: k, ai: true}]);
           
         for (const [k, f] of fieldsToGenerate) {
-          const res = await fetch(`${API}/ai/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: `Generate ${f.label || k} for a ${blockLabel} section. Luxury Malta property style. Keep it concise and professional.`, section: block.type, field: k })
+          const { data, error } = await supabase.functions.invoke("ai-generate", {
+            body: { prompt: `Generate ${f.label || k} for a ${blockLabel} section. Luxury Malta property style. Keep it concise and professional.`, section: block.type, field: k }
           });
-          const data = await res.json();
-          if (data.content) updateBlock(selected, k, data.content.replace(/^["']|["']$/g, ''));
+          if (!error && data?.content) updateBlock(selected, k, data.content.replace(/^["']|["']$/g, ''));
         }
         toast.success("AI generated all fields!");
       } else {
-        const res = await fetch(`${API}/ai/generate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: `Generate ${label} for luxury Malta property ${blockLabel} section. Concise and elegant.`, section: block.type, field })
+        const { data, error } = await supabase.functions.invoke("ai-generate", {
+          body: { prompt: `Generate ${label} for luxury Malta property ${blockLabel} section. Concise and elegant.`, section: block.type, field }
         });
-        const data = await res.json();
-        if (data.content) { updateBlock(selected, field, data.content.replace(/^["']|["']$/g, '')); toast.success(`Generated ${label}`); }
+        if (!error && data?.content) { updateBlock(selected, field, data.content.replace(/^["']|["']$/g, '')); toast.success(`Generated ${label}`); }
+        else if (error) toast.error("AI generation requires the ai-generate edge function");
       }
     } catch { toast.error("AI generation failed"); }
     setGenerating(false);
@@ -1773,17 +1830,15 @@ export default function AdminPage() {
     setGenerating(true);
     try {
       const block = blocks.find(b => b.id === selected);
-      const res = await fetch(`${API}/ai/generate`, { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ 
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: {
           prompt: `Refine the content for a ${block.type.replace(/_/g," ")} section. Instructions: ${prompt}. Current content: ${JSON.stringify(block.data)}. Return improved content as a JSON object with the same keys.`,
-          section: block.type, 
-          mode: "refine" 
-        }) 
+          section: block.type,
+          mode: "refine"
+        }
       });
-      const data = await res.json();
-      if (data.content) {
+      if (error) throw error;
+      if (data?.content) {
         try {
           const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
           Object.keys(parsed).forEach(k => updateBlock(selected, k, parsed[k]));
@@ -1792,7 +1847,7 @@ export default function AdminPage() {
           toast.error("Could not parse AI response");
         }
       }
-    } catch (e) { toast.error("AI generation failed"); }
+    } catch { toast.error("AI generation requires the ai-generate edge function to be deployed"); }
     setGenerating(false);
   };
 
@@ -1808,12 +1863,13 @@ export default function AdminPage() {
         savedAt: new Date().toISOString(),
       };
 
-      // Save page doc as a single draft entry keyed by page slug
-      await fetch(`${API}/cms/admin/draft/page_${page}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "X-Admin-Key": adminKey },
-        body: JSON.stringify({ data: pageDoc }),
-      });
+      // Persist draft to Supabase and localStorage
+      localStorage.setItem(`cms_draft_${page}`, JSON.stringify(pageDoc));
+      await supabase.from("cms_page_drafts").upsert({
+        page_slug: page,
+        blocks: pageDoc.blocks,
+        saved_at: pageDoc.savedAt,
+      }, { onConflict: "page_slug" });
 
       // Also keep legacy per-section saves for CMS context compatibility
       const hero = blocks.find(b => b.type === "hero");
@@ -1827,23 +1883,21 @@ export default function AdminPage() {
       if (about?.data) await updateSection("about", about.data).catch(() => {});
       if (faq?.data?.items) await updateSection("faq", faq.data).catch(() => {});
 
-      // Publish all changes
-      const publishRes = await fetch(`${API}/cms/admin/publish`, {
-        method: "POST",
-        headers: { "X-Admin-Key": adminKey },
-      });
-      const publishData = await publishRes.json();
+      // Mark as published in Supabase
+      await supabase.from("cms_page_drafts").upsert({
+        page_slug: page,
+        blocks: pageDoc.blocks,
+        saved_at: pageDoc.savedAt,
+        published_at: new Date().toISOString(),
+        status: "published",
+      }, { onConflict: "page_slug" });
 
-      if (publishRes.ok) {
-        toast.success(
-          <div>
-            <p className="font-semibold">Published v{publishData.version}</p>
-            <p className="text-xs opacity-70 mt-1">{blocks.length} blocks saved · {new Date().toLocaleTimeString()}</p>
-          </div>
-        );
-      } else {
-        toast.error(publishData.detail || "Publish failed");
-      }
+      toast.success(
+        <div>
+          <p className="font-semibold">Published</p>
+          <p className="text-xs opacity-70 mt-1">{blocks.length} blocks saved · {new Date().toLocaleTimeString()}</p>
+        </div>
+      );
     } catch (e) {
       
       toast.error(`Save failed: ${e.message}`);
@@ -1868,7 +1922,7 @@ export default function AdminPage() {
 
   const currentPageConfig = ALL_PAGES.find(p => p.id === page) || ALL_PAGES[0];
   const isCMSPage = currentPageConfig.type === "cms";
-  const previewUrl = `http://localhost:3000${currentPageConfig.url}`;
+  const previewUrl = `${window.location.origin}${currentPageConfig.url}`;
 
   if (isLoading) return <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]"><div className="animate-spin w-10 h-10 border-2 border-[#D4AF37] border-t-transparent rounded-full" /></div>;
 
@@ -2057,9 +2111,9 @@ export default function AdminPage() {
                     { label: "Palazzo Ducoss 8", url: "/property/693abb6d80cd6e002d2e8763" },
                     { label: "Villa with Pool", url: "/property/69ceb988571e1b00149f3c8b" },
                   ].map((link, i) => (
-                    <button key={i} onClick={() => { window.open(`http://localhost:3000${link.url}`, "_blank"); }} className="w-full text-left text-[9px] text-[#D4AF37] hover:text-[#E5C158] truncate">→ {link.label}</button>
+                    <button key={i} onClick={() => { window.open(`${window.location.origin}${link.url}`, "_blank"); }} className="w-full text-left text-[9px] text-[#D4AF37] hover:text-[#E5C158] truncate">→ {link.label}</button>
                   ))}
-                  <button onClick={() => window.open(`http://localhost:3000${currentPageConfig.url}`, "_blank")} className="flex items-center gap-1 text-[9px] text-[#D4AF37] hover:text-[#E5C158]">
+                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="flex items-center gap-1 text-[9px] text-[#D4AF37] hover:text-[#E5C158]">
                     <ExternalLink className="w-3 h-3" /> Open in new tab
                   </button>
                 </div>
@@ -2086,7 +2140,7 @@ export default function AdminPage() {
               {/* Live preview toggle for CMS pages */}
               {isCMSPage && (
                 <button
-                  onClick={() => window.open(`http://localhost:3000${currentPageConfig.url}`, "_blank")}
+                  onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")}
                   className="flex items-center gap-1 text-[9px] text-[#5a5a5e] hover:text-[#D4AF37] border border-[#1e1e22] rounded px-2 py-0.5 transition-colors"
                   title="Open live preview in new tab"
                 >
@@ -2197,9 +2251,9 @@ export default function AdminPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                   </div>
                   <div className="flex-1 bg-[#1a1a1e] rounded text-[9px] text-[#5a5a5e] px-3 py-1 font-mono">
-                    localhost:3000{currentPageConfig.url}
+                    {window.location.host}{currentPageConfig.url}
                   </div>
-                  <button onClick={() => window.open(`http://localhost:3000${currentPageConfig.url}`, "_blank")} className="text-[#5a5a5e] hover:text-[#D4AF37]">
+                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="text-[#5a5a5e] hover:text-[#D4AF37]">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -2230,9 +2284,9 @@ export default function AdminPage() {
               ))}
             </div>
             <div className="flex-1 overflow-y-auto">
-              {rightTab === "ai"      && <EnterpriseAIPanel block={selectedBlock} blocks={blocks} onApplyBlock={(f,v) => selectedBlock && updateBlock(selected, f, v)} onReplaceBlocks={(bs) => { snapshot(); setBlocks(bs); }} page={page} api={API} adminKey={localStorage.getItem("cvpm_admin_key")||""} />}
+              {rightTab === "ai"      && <EnterpriseAIPanel block={selectedBlock} blocks={blocks} onApplyBlock={(f,v) => selectedBlock && updateBlock(selected, f, v)} onReplaceBlocks={(bs) => { snapshot(); setBlocks(bs); }} page={page} />}
               {rightTab === "props"   && <PropsEditor block={selectedBlock} onUpdate={(f, v) => updateBlock(selected, f, v)} onAI={generateAI} isGenerating={generating} />}
-              {rightTab === "seo"     && <SEOPanel blocks={blocks} page={page} api={API} adminKey={localStorage.getItem("cvpm_admin_key")||""} />}
+              {rightTab === "seo"     && <SEOPanel blocks={blocks} page={page} />}
               {rightTab === "suggest" && <SuggestPanel blocks={blocks} onAdd={addBlock} onAI={generateFromPrompt} selected={selectedBlock} />}
               {rightTab === "json"    && <JSONEditor block={selectedBlock} onUpdate={(f, v) => updateBlock(selected, f, v)} />}
             </div>

@@ -1,102 +1,146 @@
-import { useState, useCallback } from "react";
-import { 
-  Image, Upload, Trash2, Search, Grid, List, RefreshCw,
-  Copy, ExternalLink, Check, X, Sparkles, FolderOpen
+import { useState, useEffect, useCallback } from "react";
+import {
+  Upload, Trash2, Search, Grid, List, RefreshCw,
+  Copy, ExternalLink, Check, Sparkles, FolderOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-const API = import.meta.env.VITE_BACKEND_URL + "/api";
-
-// Mock media items (in production, these would come from API)
-const MOCK_MEDIA = [
-  { id: 1, url: "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=800", name: "Hero Background", type: "image", size: "2.4 MB" },
-  { id: 2, url: "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg", name: "About Section", type: "image", size: "1.8 MB" },
-  { id: 3, url: "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/pembroke-pent-20250427__mg_5998-edit-edit-high.jpg", name: "Property 1", type: "image", size: "3.1 MB" },
-  { id: 4, url: "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_9620-high.jpg", name: "Property 2", type: "image", size: "2.7 MB" },
-  { id: 5, url: "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_2625-high-g3dssk.jpg", name: "Property 3", type: "image", size: "2.2 MB" },
-  { id: 6, url: "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/valletta-apartment-10-high-1r9pym.jpg", name: "Valletta Apt", type: "image", size: "1.9 MB" },
-];
+interface MediaItem {
+  id: string;
+  url: string;
+  name: string;
+  file_type: string | null;
+  file_size: number | null;
+  storage_path: string | null;
+  created_at: string;
+}
 
 export const MediaLibrary = () => {
-  const [media, setMedia] = useState(MOCK_MEDIA);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const fetchMedia = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("media_library")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) { toast.error("Failed to load media"); return; }
+    setMedia((data as MediaItem[]) || []);
+  }, []);
+
+  useEffect(() => {
+    fetchMedia().finally(() => setLoading(false));
+
+    const channel = supabase.channel("media_library_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "media_library" }, fetchMedia)
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchMedia]);
 
   const filteredMedia = media.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleUpload = async (e) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files?.length) return;
-
     setIsUploading(true);
-    // In production, this would upload to a storage service
-    setTimeout(() => {
-      const newMedia = Array.from(files).map((file, i) => ({
-        id: Date.now() + i,
-        url: URL.createObjectURL(file),
-        name: file.name,
-        type: file.type.startsWith("image") ? "image" : "file",
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-      }));
-      setMedia(prev => [...newMedia, ...prev]);
-      setIsUploading(false);
+
+    try {
+      for (const file of Array.from(files)) {
+        const ext = file.name.split(".").pop();
+        const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error: storageErr } = await supabase.storage.from("media").upload(path, file);
+        if (storageErr) { toast.error(`Failed to upload ${file.name}`); continue; }
+
+        const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
+
+        await supabase.from("media_library").insert({
+          url: publicUrl,
+          name: file.name.replace(/\.[^.]+$/, ""),
+          file_type: file.type,
+          file_size: file.size,
+          storage_path: path,
+        });
+      }
       toast.success(`Uploaded ${files.length} file(s)`);
-    }, 1500);
+      await fetchMedia();
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
   };
 
   const generateAIImage = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch(`${API}/ai/generate-image`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          prompt: "Luxury Mediterranean villa in Malta with sea view at sunset, professional real estate photography" 
-        }),
+      const { data, error } = await supabase.functions.invoke("ai-generate-image", {
+        body: { prompt: "Luxury Mediterranean villa in Malta with sea view at sunset, professional real estate photography" },
       });
-      const data = await res.json();
-      
-      if (data.url) {
-        setMedia(prev => [{
-          id: Date.now(),
+      if (error) throw error;
+
+      if (data?.url) {
+        await supabase.from("media_library").insert({
           url: data.url,
           name: "AI Generated",
-          type: "image",
-          size: "AI",
-        }, ...prev]);
+          file_type: "image/png",
+          file_size: null,
+          storage_path: null,
+        });
         toast.success("AI image generated!");
+        await fetchMedia();
       }
-    } catch (error) {
+    } catch {
       toast.error("Image generation failed");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const copyUrl = async (item) => {
+  const copyUrl = async (item: MediaItem) => {
     await navigator.clipboard.writeText(item.url);
     setCopiedId(item.id);
     toast.success("URL copied to clipboard");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const deleteItem = (id) => {
-    setMedia(prev => prev.filter(item => item.id !== id));
-    if (selectedItem?.id === id) setSelectedItem(null);
+  const deleteItem = async (item: MediaItem) => {
+    if (item.storage_path) {
+      await supabase.storage.from("media").remove([item.storage_path]);
+    }
+    const { error } = await supabase.from("media_library").delete().eq("id", item.id);
+    if (error) { toast.error("Delete failed"); return; }
+    if (selectedItem?.id === item.id) setSelectedItem(null);
+    setMedia(prev => prev.filter(m => m.id !== item.id));
     toast.success("Item deleted");
   };
 
+  const formatSize = (bytes: number | null) => {
+    if (!bytes) return "AI";
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0]">Media Library</h1>
@@ -133,7 +177,7 @@ export const MediaLibrary = () => {
             </Button>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               onChange={handleUpload}
               className="hidden"
@@ -142,7 +186,6 @@ export const MediaLibrary = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
@@ -174,9 +217,12 @@ export const MediaLibrary = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Media Grid/List */}
         <div className="lg:col-span-2">
-          {viewMode === "grid" ? (
+          {filteredMedia.length === 0 ? (
+            <div className="flex items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
+              <p className="text-sm text-[#71717A]">No media found</p>
+            </div>
+          ) : viewMode === "grid" ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {filteredMedia.map(item => (
                 <div
@@ -188,15 +234,11 @@ export const MediaLibrary = () => {
                       : "border-white/10 hover:border-white/20"
                   }`}
                 >
-                  <img
-                    src={item.url}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <p className="text-sm text-white truncate">{item.name}</p>
-                      <p className="text-xs text-white/60">{item.size}</p>
+                      <p className="text-xs text-white/60">{formatSize(item.file_size)}</p>
                     </div>
                   </div>
                 </div>
@@ -209,32 +251,22 @@ export const MediaLibrary = () => {
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
                   className={`flex items-center gap-4 p-3 bg-[#0F0F10] border rounded-lg cursor-pointer transition-all ${
-                    selectedItem?.id === item.id
-                      ? "border-[#D4AF37]"
-                      : "border-white/10 hover:border-white/20"
+                    selectedItem?.id === item.id ? "border-[#D4AF37]" : "border-white/10 hover:border-white/20"
                   }`}
                 >
-                  <img
-                    src={item.url}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                  <img src={item.url} alt={item.name} className="w-16 h-16 object-cover rounded" />
                   <div className="flex-1">
                     <p className="text-sm text-[#F5F5F0]">{item.name}</p>
-                    <p className="text-xs text-[#71717A]">{item.size}</p>
+                    <p className="text-xs text-[#71717A]">{formatSize(item.file_size)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); copyUrl(item); }}
-                    >
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); copyUrl(item); }}>
                       {copiedId === item.id ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                      onClick={(e) => { e.stopPropagation(); deleteItem(item); }}
                       className="text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -246,18 +278,13 @@ export const MediaLibrary = () => {
           )}
         </div>
 
-        {/* Preview Panel */}
         <div className="lg:col-span-1">
           {selectedItem ? (
             <div className="sticky top-4 space-y-4 p-4 bg-[#0F0F10] border border-white/10 rounded-lg">
-              <img
-                src={selectedItem.url}
-                alt={selectedItem.name}
-                className="w-full aspect-video object-cover rounded"
-              />
+              <img src={selectedItem.url} alt={selectedItem.name} className="w-full aspect-video object-cover rounded" />
               <div>
                 <p className="text-sm font-medium text-[#F5F5F0]">{selectedItem.name}</p>
-                <p className="text-xs text-[#71717A]">{selectedItem.size} • {selectedItem.type}</p>
+                <p className="text-xs text-[#71717A]">{formatSize(selectedItem.file_size)} • {selectedItem.file_type ?? "image"}</p>
               </div>
               <div className="space-y-2">
                 <p className="text-xs text-[#71717A]">URL</p>
@@ -267,11 +294,7 @@ export const MediaLibrary = () => {
                     readOnly
                     className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0] text-xs"
                   />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyUrl(selectedItem)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => copyUrl(selectedItem)}>
                     {copiedId === selectedItem.id ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -289,7 +312,7 @@ export const MediaLibrary = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => deleteItem(selectedItem.id)}
+                  onClick={() => deleteItem(selectedItem)}
                   className="border-red-500/30 text-red-400 hover:bg-red-500/10"
                 >
                   <Trash2 className="w-4 h-4" />

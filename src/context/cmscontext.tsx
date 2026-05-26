@@ -1,8 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import axios from "axios";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 // Complete default CMS content - matches original website exactly
 const DEFAULT_CMS = {

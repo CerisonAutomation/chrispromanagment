@@ -53,7 +53,8 @@
     "@stripe/react-stripe-js": "^6.3.0",
     "@stripe/stripe-js": "^9.4.0",
     "@supabase/realtime-js": "^2.106.2",
-    "@supabase/supabase-js": "^2.95.3",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "^5.83.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@tiptap/extension-color": "^3.19.0",
@@ -95,7 +96,8 @@
     "vaul": "^0.9.9",
     "web3": "^4.16.0",
     "xrpl": "^4.6.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-
-const API = import.meta.env.VITE_BACKEND_URL + "/api";
+import { supabase } from "@/integrations/supabase/client";
 
 // AI Action presets
 const AI_PRESETS = [
@@ -83,25 +82,23 @@ export const AIAssistant = ({ cms, updateSection, setHasUnsavedChanges }) => {
     setConversation(prev => [...prev, { role: "user", content: finalPrompt }]);
 
     try {
-      const res = await fetch(`${API}/ai/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: {
           prompt: finalPrompt,
           context: {
-            brand: cms.brand?.name,
+            brand: cms?.brand?.name,
             industry: "vacation rental property management",
             location: "Malta",
           }
-        }),
+        },
       });
 
-      const data = await res.json();
-      
-      if (data.content) {
+      if (error) throw error;
+
+      if (data?.content) {
         setResponse(data.content);
         setConversation(prev => [...prev, { role: "assistant", content: data.content }]);
-      } else if (data.error) {
+      } else if (data?.error) {
         toast.error(data.error);
         setConversation(prev => [...prev, { role: "assistant", content: `Error: ${data.error}` }]);
       }

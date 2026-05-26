@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { PropertyCard } from "@/components/property-card";
 import { SearchWidget } from "@/components/search-widget";
 import { guesty } from "@/lib/guesty";
+import { useGuestyListingsQuery } from "@/hooks/use-guesty";
 
 // Malta locations for filtering
 const MALTA_CITIES = [

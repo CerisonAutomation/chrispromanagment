@@ -1,31 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { RealtimeChannel } from '@supabase/realtime-js';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   room_id: string;
-  sender_id: string;
+  sender_id: string | null;
+  sender_name: string | null;
   content: string;
   is_read: boolean;
   created_at: string;
-  sender?: {
-    full_name: string;
-    avatar_url: string;
-  };
 }
 
-interface ChatRoom {
+export interface ChatRoom {
   id: string;
-  property_id: string;
-  owner_id: string;
-  guest_id: string;
+  property_id: string | null;
+  guest_email: string;
+  guest_name: string | null;
+  owner_id: string | null;
+  status: string;
+  subject: string | null;
   created_at: string;
   updated_at: string;
-  property?: {
-    title: string;
-    images: string[];
-  };
 }
 
 export function useChat(roomId?: string) {
@@ -36,132 +32,84 @@ export function useChat(roomId?: string) {
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
   const fetchRooms = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_rooms')
-        .select(`
-          *,
-          property:properties(title, images)
-        `)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-      setRooms(data || []);
-    } catch (err) {
-      setError(err as Error);
-    }
+    const { data, error } = await supabase
+      .from('chat_rooms')
+      .select('*')
+      .order('updated_at', { ascending: false });
+    if (error) setError(error as unknown as Error);
+    setRooms((data as ChatRoom[]) || []);
   }, []);
 
-  const fetchMessages = useCallback(async (currentRoomId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select(`
-          *,
-          sender:profiles(full_name, avatar_url)
-        `)
-        .eq('room_id', currentRoomId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      setMessages(data || []);
-    } catch (err) {
-      setError(err as Error);
-    }
+  const fetchMessages = useCallback(async (id: string) => {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('room_id', id)
+      .order('created_at', { ascending: true });
+    if (error) setError(error as unknown as Error);
+    setMessages((data as ChatMessage[]) || []);
   }, []);
 
-  const sendMessage = useCallback(async (content: string, currentRoomId: string) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Not authenticated');
-
-      const { error } = await supabase
-        .from('chat_messages')
-        .insert({
-          room_id: currentRoomId,
-          sender_id: user.user.id,
-          content
-        });
-
-      if (error) throw error;
-
-      // Update room's updated_at
-      await supabase
-        .from('chat_rooms')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', currentRoomId);
-    } catch (err) {
-      setError(err as Error);
-    }
+  const sendMessage = useCallback(async (content: string, targetRoomId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('chat_messages').insert({
+      room_id: targetRoomId,
+      sender_id: user?.id ?? null,
+      sender_name: user?.user_metadata?.display_name ?? user?.email ?? 'Admin',
+      content,
+    });
+    if (error) throw error;
+    await supabase.from('chat_rooms').update({ updated_at: new Date().toISOString() }).eq('id', targetRoomId);
   }, []);
 
-  const markAsRead = useCallback(async (currentRoomId: string) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+  const createRoom = useCallback(async (guestEmail: string, guestName: string, subject?: string, propertyId?: string) => {
+    const { data, error } = await supabase.from('chat_rooms').insert({
+      guest_email: guestEmail,
+      guest_name: guestName,
+      subject: subject ?? null,
+      property_id: propertyId ?? null,
+    }).select().single();
+    if (error) throw error;
+    return data as ChatRoom;
+  }, []);
 
-      await supabase
-        .from('chat_messages')
-        .update({ is_read: true })
-        .eq('room_id', currentRoomId)
-        .neq('sender_id', user.user.id)
-        .eq('is_read', false);
-    } catch (err) {
-      setError(err as Error);
-    }
+  const markAsRead = useCallback(async (targetRoomId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('chat_messages')
+      .update({ is_read: true })
+      .eq('room_id', targetRoomId)
+      .neq('sender_id', user.id)
+      .eq('is_read', false);
   }, []);
 
   useEffect(() => {
-    fetchRooms().then(() => setLoading(false));
+    fetchRooms().finally(() => setLoading(false));
 
-    // Subscribe to chat rooms changes
-    const roomsChannel = supabase.channel('public:chat_rooms')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'chat_rooms'
-      }, () => {
-        fetchRooms();
-      })
+    const roomsSub = supabase.channel('chat_rooms_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_rooms' }, fetchRooms)
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(roomsChannel);
-    };
+    return () => { supabase.removeChannel(roomsSub); };
   }, [fetchRooms]);
 
   useEffect(() => {
     if (!roomId) return;
-
     fetchMessages(roomId);
     markAsRead(roomId);
 
-    // Subscribe to new messages
-    const messagesChannel = supabase.channel(`room:${roomId}`)
+    const msgSub = supabase.channel(`chat_messages:${roomId}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'chat_messages',
-        filter: `room_id=eq.${roomId}`
+        event: 'INSERT', schema: 'public', table: 'chat_messages',
+        filter: `room_id=eq.${roomId}`,
       }, (payload) => {
         setMessages(prev => [...prev, payload.new as ChatMessage]);
       })
       .subscribe();
 
-    setChannel(messagesChannel);
-
-    return () => {
-      supabase.removeChannel(messagesChannel);
-    };
+    setChannel(msgSub);
+    return () => { supabase.removeChannel(msgSub); };
   }, [roomId, fetchMessages, markAsRead]);
 
-  return {
-    messages,
-    rooms,
-    loading,
-    error,
-    sendMessage,
-    markAsRead,
-    channel
-  };
+  return { messages, rooms, loading, error, sendMessage, createRoom, markAsRead, channel };
 }
