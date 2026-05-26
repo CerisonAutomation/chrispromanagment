@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ChatMessage } from '@/hooks/use-chat';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';

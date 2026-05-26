@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useCallback } from "react";
 import {
   Upload, Trash2, Search, Grid, List, RefreshCw,

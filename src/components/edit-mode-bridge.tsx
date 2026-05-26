@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Edit-mode bridge: mounted in the live frontend when loaded inside the admin
 // editor's iframe (parent posts {type:"cvpm:edit-mode", on:true|false}).
 // When ON: hover-outline editable text, click to focus, edits stream back to

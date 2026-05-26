@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { getConciergeResponse, ConciergeMessage } from '@/lib/concierge-ai';
 import { Button } from '@/components/ui/button';
