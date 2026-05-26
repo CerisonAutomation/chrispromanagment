@@ -75,13 +75,11 @@ export const LandingPage = () => {
            className="absolute inset-0 will-change-transform"
            style={{ transform: `translateY(${scrollY * 0.3}px)` }}
          >
-           <OptimizedImage 
+           <img
              src={cms.hero?.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"}
-             alt="Luxury villa Malta" 
-             className="w-full h-[120%]"
-             objectFit="cover"
+             alt="Luxury villa Malta"
+             className="w-full h-[120%] object-cover"
              loading="eager"
-             onLoad={() => {}}
            />
         </div>
         
@@ -134,7 +132,7 @@ export const LandingPage = () => {
             </div>
 
             {/* Stats */}
-            <div className="flex flex-wrap items-center gap-8 md:gap-12 animate-fade-in-up opacity-0 stagger-4">
+            <div className="flex flex-wrap items-center gap-8 md:gap-12 animate-fade-in-up opacity-0 stagger-4 mb-10">
               {[
                 { value: "9+", label: "Years Superhost" },
                 { value: "100%", label: "Response Rate" },
@@ -145,6 +143,11 @@ export const LandingPage = () => {
                   <span className="text-sm text-[#A1A1AA] leading-tight">{stat.label}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Search Bar */}
+            <div className="w-full max-w-4xl animate-fade-in-up opacity-0 stagger-5">
+              <SearchWidget variant="hero" />
             </div>
           </div>
         </div>
@@ -277,7 +280,7 @@ export const LandingPage = () => {
             {/* Image */}
             <div className="order-1 lg:order-2 relative">
               <div className="aspect-[4/3] overflow-hidden bg-[#161618]">
-                <OptimizedImage src={cms.about?.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"} alt="Image" className="" objectFit="cover" loading="lazy" />
+                <img src={cms.about?.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"} alt="About Christiano Property Management" className="w-full h-full object-cover" loading="lazy" />
               </div>
               {/* Decorative element */}
               <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#D4AF37]/30 hidden lg:block" />

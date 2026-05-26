@@ -1,488 +1,433 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Users, Search, ChevronDown, MapPin, Loader2, Mic } from "lucide-react";
-import { useVoiceRecognition } from "@/lib/voice-recognition";
+import { Calendar, Users, Search, MapPin, Loader2, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useFormPersist } from "@/hooks/use-form-persist";
+import { useForm } from "react-hook-form";
+import { format, parseISO, isValid } from "date-fns";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
-// Malta locations for autocomplete
-const MALTA_LOCATIONS = [
-  { city: "All Malta", region: "All Locations", type: "all", popular: true },
-  { city: "Valletta", region: "South Eastern", type: "city", popular: true },
-  { city: "Sliema", region: "Northern Harbour", type: "city", popular: true },
-  { city: "St. Julian's", region: "Northern Harbour", type: "city", popular: true },
-  { city: "St Julian's", region: "Northern Harbour", type: "city", popular: true },
-  { city: "Gzira", region: "Northern Harbour", type: "city" },
-  { city: "Msida", region: "Northern Harbour", type: "city" },
-  { city: "Pieta", region: "Northern Harbour", type: "city" },
-  { city: "Ta' Xbiex", region: "Northern Harbour", type: "city" },
-  { city: "Swieqi", region: "Northern", type: "city" },
-  { city: "San Gwann", region: "Northern", type: "city" },
-  { city: "Pembroke", region: "Northern", type: "city" },
-  { city: "Paceville", region: "Northern Harbour", type: "area", popular: true },
-  { city: "Bahar ic-Caghaq", region: "Northern", type: "city" },
-  { city: "Mellieha", region: "Northern", type: "city" },
-  { city: "Bugibba", region: "Northern", type: "city" },
-  { city: "Qawra", region: "Northern", type: "city" },
-  { city: "Madliena", region: "Northern", type: "city" },
-  { city: "Mdina", region: "Western", type: "city" },
-  { city: "Rabat", region: "Western", type: "city" },
-  { city: "Gozo", region: "Gozo", type: "island" },
-  { city: "Victoria", region: "Gozo", type: "city" },
-  { city: "Marsaxlokk", region: "South Eastern", type: "city" },
-  { city: "Birgu", region: "South Eastern", type: "city" },
-  { city: "Birkirkara", region: "Northern Harbour", type: "city" },
+// Static fallback — shown when DB has no cities yet
+const FALLBACK_LOCATIONS = [
+  { city: "All Malta",    region: "All Locations",    popular: true },
+  { city: "Valletta",     region: "South Eastern",    popular: true },
+  { city: "Sliema",       region: "Northern Harbour", popular: true },
+  { city: "St. Julian's", region: "Northern Harbour", popular: true },
+  { city: "Paceville",    region: "Northern Harbour", popular: true },
+  { city: "Gzira",        region: "Northern Harbour", popular: false },
+  { city: "Mellieħa",     region: "Northern",         popular: true },
+  { city: "Bugibba",      region: "Northern",         popular: false },
+  { city: "Qawra",        region: "Northern",         popular: false },
+  { city: "Mdina",        region: "Western",          popular: true },
+  { city: "Gozo",         region: "Gozo",             popular: true },
 ];
 
-export const SearchWidget = ({ variant = "hero", initialFilters = {} }) => {
-  const navigate = useNavigate();
-  const [checkIn, setCheckIn] = useState(initialFilters.checkIn ? new Date(initialFilters.checkIn) : null);
-  const [checkOut, setCheckOut] = useState(initialFilters.checkOut ? new Date(initialFilters.checkOut) : null);
-  const [guests, setGuests] = useState(initialFilters.guests || 2);
-  const [location, setLocation] = useState(initialFilters.city || "");
-  const [locationInput, setLocationInput] = useState(initialFilters.city || "");
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isGuestsOpen, setIsGuestsOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const locationRef = useRef(null);
-  const { isListening, transcript, startListening, stopListening } = useVoiceRecognition();
+type SearchForm = {
+  city: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+};
+
+type Location = { city: string; region: string; popular: boolean };
+
+function useLiveLocations() {
+  const [locations, setLocations] = useState<Location[]>(FALLBACK_LOCATIONS);
 
   useEffect(() => {
-    if (transcript) {
-      setLocationInput(transcript);
-      setLocation(transcript);
-    }
-  }, [transcript]);
-
-  // Filter locations based on input
-  const filteredLocations = MALTA_LOCATIONS.filter(loc => 
-    loc.city.toLowerCase().includes(locationInput.toLowerCase()) ||
-    loc.region.toLowerCase().includes(locationInput.toLowerCase())
-  ).slice(0, 8);
-
-  const popularLocations = MALTA_LOCATIONS.filter(loc => loc.popular);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (locationRef.current && !locationRef.current.contains(e.target)) {
-        setShowLocationDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    supabase
+      .from("guesty_properties_cache")
+      .select("city")
+      .eq("active", true)
+      .not("city", "is", null)
+      .then(({ data }) => {
+        if (!data?.length) return;
+        const unique = [...new Set(data.map(r => r.city as string))].sort();
+        const live: Location[] = [
+          { city: "All Malta", region: "All Locations", popular: true },
+          ...unique.map(c => ({
+            city: c,
+            region: "Malta",
+            popular: FALLBACK_LOCATIONS.some(f => f.city === c && f.popular),
+          })),
+        ];
+        setLocations(live);
+      });
   }, []);
 
-  const handleDateSelect = (range) => {
-    if (range?.from) {
-      setCheckIn(range.from);
-      if (range?.to) {
-        setCheckOut(range.to);
-        setIsCalendarOpen(false);
-      }
-    }
-  };
+  return locations;
+}
 
-  const handleLocationSelect = (loc) => {
-    if (loc.city === "All Malta") {
-      setLocation("");
-      setLocationInput("All Malta");
-    } else {
-      setLocation(loc.city);
-      setLocationInput(loc.city);
-    }
-    setShowLocationDropdown(false);
+interface SearchWidgetProps {
+  variant?: "hero" | "compact";
+  initialFilters?: Partial<SearchForm>;
+  className?: string;
+}
+
+export const SearchWidget = ({ variant = "hero", initialFilters = {}, className }: SearchWidgetProps) => {
+  const navigate = useNavigate();
+  const locations = useLiveLocations();
+  const [isSearching, setIsSearching] = useState(false);
+  const [locationInput, setLocationInput] = useState(initialFilters.city || "");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showGuestPicker, setShowGuestPicker] = useState(false);
+  const locationRef = useRef<HTMLDivElement>(null);
+  const guestRef = useRef<HTMLDivElement>(null);
+
+  const { register, watch, reset, setValue, getValues } = useForm<SearchForm>({
+    defaultValues: {
+      city: initialFilters.city || "",
+      checkIn: initialFilters.checkIn || "",
+      checkOut: initialFilters.checkOut || "",
+      guests: initialFilters.guests || 2,
+    },
+  });
+
+  useFormPersist("search", { watch, reset, exclude: [] });
+
+  const guests = watch("guests");
+  const checkIn = watch("checkIn");
+  const checkOut = watch("checkOut");
+
+  // Sync locationInput from form restore
+  useEffect(() => {
+    const saved = watch("city");
+    if (saved && !locationInput) setLocationInput(saved);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Click-outside to close dropdowns
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (locationRef.current && !locationRef.current.contains(e.target as Node))
+        setShowDropdown(false);
+      if (guestRef.current && !guestRef.current.contains(e.target as Node))
+        setShowGuestPicker(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filteredLocations = locationInput
+    ? locations.filter(
+        l =>
+          l.city.toLowerCase().includes(locationInput.toLowerCase()) ||
+          l.region.toLowerCase().includes(locationInput.toLowerCase()),
+      )
+    : locations.filter(l => l.popular);
+
+  const handleLocationSelect = useCallback((loc: Location) => {
+    const val = loc.city === "All Malta" ? "" : loc.city;
+    setValue("city", val);
+    setLocationInput(loc.city === "All Malta" ? "" : loc.city);
+    setShowDropdown(false);
+  }, [setValue]);
+
+  const clearLocation = () => {
+    setValue("city", "");
+    setLocationInput("");
+    setShowDropdown(false);
   };
 
   const handleSearch = async () => {
     setIsSearching(true);
+    const v = getValues();
     const params = new URLSearchParams();
-    if (checkIn) params.set("checkIn", format(checkIn, "yyyy-MM-dd"));
-    if (checkOut) params.set("checkOut", format(checkOut, "yyyy-MM-dd"));
-    if (guests) params.set("guests", guests.toString());
-    if (location) params.set("city", location);
-    
-    // Small delay for UX
-    await new Promise(r => setTimeout(r, 300));
+    if (v.city) params.set("city", v.city);
+    if (v.checkIn) params.set("checkIn", v.checkIn);
+    if (v.checkOut) params.set("checkOut", v.checkOut);
+    if (v.guests) params.set("guests", String(v.guests));
+    await new Promise(r => setTimeout(r, 200));
     setIsSearching(false);
     navigate(`/properties?${params.toString()}`);
   };
 
-  const isHero = variant === "hero";
+  const formatDateDisplay = (d: string) => {
+    if (!d) return null;
+    const parsed = parseISO(d);
+    return isValid(parsed) ? format(parsed, "MMM d") : null;
+  };
+
   const isCompact = variant === "compact";
 
+  // ─── COMPACT (sidebar / properties page) ──────────────────────────────────
   if (isCompact) {
     return (
-      <div className="bg-[#161618] border border-white/10 p-4" data-testid="search-widget-compact">
-        <div className="space-y-4">
-          {/* Location */}
-          <div className="relative" ref={locationRef}>
-            <label className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-2">
-              Location
-            </label>
-              <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1A1AA]" />
-                <input
-                  type="text"
-                  value={locationInput}
-                  onChange={(e) => {
-                    setLocationInput(e.target.value);
-                    setShowLocationDropdown(true);
-                  }}
-                  onFocus={() => setShowLocationDropdown(true)}
-                  placeholder="All Malta"
-                  className="w-full bg-transparent border border-white/10 pl-10 pr-10 py-3 text-[#F5F5F0] placeholder:text-[#71717A] focus:border-[#D4AF37] focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={isListening ? stopListening : startListening}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 ${isListening ? "text-red-500" : "text-[#A1A1AA] hover:text-[#D4AF37]"}`}
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
-              </div>
-            
-            {showLocationDropdown && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[#161618] border border-white/10 max-h-64 overflow-y-auto z-50">
-                {locationInput === "" ? (
-                  <>
-                    <p className="px-4 py-2 text-xs text-[#71717A] uppercase tracking-widest">Popular</p>
-                    {popularLocations.map((loc, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleLocationSelect(loc)}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
-                      >
-                        <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                        <div>
-                          <p className="text-[#F5F5F0]">{loc.city}</p>
-                          <p className="text-xs text-[#71717A]">{loc.region}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </>
-                ) : (
-                  filteredLocations.map((loc, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleLocationSelect(loc)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
-                    >
-                      <MapPin className="w-4 h-4 text-[#A1A1AA]" />
-                      <div>
-                        <p className="text-[#F5F5F0]">{loc.city}</p>
-                        <p className="text-xs text-[#71717A]">{loc.region}</p>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
+      <div className={cn("bg-[#161618] border border-white/10", className)}>
+        {/* Location */}
+        <div className="relative border-b border-white/10" ref={locationRef}>
+          <div className="flex items-center gap-2 px-4 py-3">
+            <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+            <input
+              type="text"
+              value={locationInput}
+              onChange={e => { setLocationInput(e.target.value); setShowDropdown(true); }}
+              onFocus={() => setShowDropdown(true)}
+              placeholder="All Malta"
+              className="flex-1 bg-transparent text-sm text-[#F5F5F0] placeholder:text-[#71717A] outline-none"
+            />
+            {locationInput && (
+              <button onClick={clearLocation} className="text-[#71717A] hover:text-[#F5F5F0]">
+                <X className="w-3 h-3" />
+              </button>
             )}
           </div>
+          {showDropdown && (
+            <LocationDropdown
+              locations={filteredLocations}
+              onSelect={handleLocationSelect}
+              input={locationInput}
+            />
+          )}
+        </div>
 
-          {/* Dates */}
-          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <PopoverTrigger asChild>
-              <button className="w-full text-left" data-testid="date-picker-compact">
-                <label className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-2">
-                  Dates
-                </label>
-                <div className="flex items-center gap-3 border border-white/10 px-4 py-3 hover:border-[#D4AF37]/50 transition-colors">
-                  <Calendar className="w-4 h-4 text-[#A1A1AA]" />
-                  <span className={checkIn ? "text-[#F5F5F0]" : "text-[#71717A]"}>
-                    {checkIn && checkOut
-                      ? `${format(checkIn, "MMM d")} - ${format(checkOut, "MMM d, yyyy")}`
-                      : "Select dates"}
-                  </span>
-                </div>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-[#161618] border-white/10" align="start">
-              <CalendarComponent
-                mode="range"
-                selected={{ from: checkIn, to: checkOut }}
-                onSelect={handleDateSelect}
-                numberOfMonths={1}
-                disabled={{ before: new Date() }}
-                className="bg-[#161618] text-[#F5F5F0]"
+        {/* Dates */}
+        <div className="grid grid-cols-2 border-b border-white/10">
+          <div className="border-r border-white/10 px-4 py-3">
+            <label className="block text-xs text-[#71717A] uppercase tracking-widest mb-1">Check-in</label>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3 h-3 text-[#D4AF37]" />
+              <input
+                type="date"
+                {...register("checkIn")}
+                min={format(new Date(), "yyyy-MM-dd")}
+                className="bg-transparent text-xs text-[#F5F5F0] outline-none w-full"
               />
-            </PopoverContent>
-          </Popover>
-
-          {/* Guests */}
-          <div>
-            <label className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-2">
-              Guests
-            </label>
-            <div className="flex items-center justify-between border border-white/10 px-4 py-3">
-              <span className="text-[#F5F5F0]">{guests} {guests === 1 ? "Guest" : "Guests"}</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="w-8 h-8 rounded-none border-white/20 hover:border-[#D4AF37]"
-                  onClick={() => setGuests(Math.max(1, guests - 1))}
-                >
-                  -
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="w-8 h-8 rounded-none border-white/20 hover:border-[#D4AF37]"
-                  onClick={() => setGuests(Math.min(20, guests + 1))}
-                >
-                  +
-                </Button>
-              </div>
             </div>
           </div>
-
-          {/* Search Button */}
-          <Button
-            onClick={handleSearch}
-            disabled={isSearching}
-            className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest py-4 disabled:opacity-50"
-          >
-            {isSearching ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Search className="w-4 h-4 mr-2" />
-            )}
-            {isSearching ? "Searching..." : "Search"}
-          </Button>
+          <div className="px-4 py-3">
+            <label className="block text-xs text-[#71717A] uppercase tracking-widest mb-1">Check-out</label>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3 h-3 text-[#D4AF37]" />
+              <input
+                type="date"
+                {...register("checkOut")}
+                min={checkIn || format(new Date(), "yyyy-MM-dd")}
+                className="bg-transparent text-xs text-[#F5F5F0] outline-none w-full"
+              />
+            </div>
+          </div>
         </div>
+
+        {/* Guests */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#D4AF37]" />
+            <span className="text-sm text-[#F5F5F0]">{guests} {guests === 1 ? "Guest" : "Guests"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setValue("guests", Math.max(1, guests - 1))}
+              className="w-7 h-7 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+            >-</button>
+            <button
+              onClick={() => setValue("guests", Math.min(20, guests + 1))}
+              className="w-7 h-7 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+            >+</button>
+          </div>
+        </div>
+
+        <Button
+          onClick={handleSearch}
+          disabled={isSearching}
+          className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest py-3 font-semibold"
+        >
+          {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Search className="w-4 h-4 mr-2" />Search</>}
+        </Button>
       </div>
     );
   }
 
+  // ─── HERO (horizontal bar — mobile + desktop) ─────────────────────────────
   return (
     <div
-      className="glass p-4 md:p-6 rounded-none"
+      className={cn(
+        "bg-[#161618]/95 backdrop-blur-md border border-white/10 shadow-2xl",
+        className,
+      )}
       data-testid="search-widget"
     >
-      {/* Horizontal Search Bar Layout */}
-      <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-0">
-        {/* Location Picker */}
-        <div className="relative flex-1 md:border-r md:border-white/10 md:pr-4" ref={locationRef}>
+      <div className="flex flex-col md:flex-row md:items-stretch divide-y md:divide-y-0 md:divide-x divide-white/10">
+
+        {/* Location */}
+        <div className="relative flex-[1.4]" ref={locationRef}>
           <button
-            onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-            className="flex items-center gap-3 text-left w-full group"
-            data-testid="location-trigger"
+            className="w-full h-full px-5 py-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
+            onClick={() => setShowDropdown(v => !v)}
+            type="button"
           >
             <MapPin className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-              <div className="flex-1 min-w-0 relative">
-                <span className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-1">
-                  Location
-                </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Location</p>
+              <input
+                type="text"
+                value={locationInput}
+                onChange={e => { setLocationInput(e.target.value); setShowDropdown(true); }}
+                onFocus={() => setShowDropdown(true)}
+                placeholder="All Malta"
+                className="w-full bg-transparent text-[#F5F5F0] font-medium placeholder:text-[#A1A1AA] outline-none"
+                data-testid="location-input"
+              />
+            </div>
+            {locationInput ? (
+              <button
+                onClick={e => { e.stopPropagation(); clearLocation(); }}
+                className="text-[#71717A] hover:text-[#F5F5F0] flex-shrink-0"
+                type="button"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : (
+              <ChevronDown className="w-4 h-4 text-[#71717A] flex-shrink-0" />
+            )}
+          </button>
+
+          {showDropdown && (
+            <LocationDropdown
+              locations={filteredLocations}
+              onSelect={handleLocationSelect}
+              input={locationInput}
+            />
+          )}
+        </div>
+
+        {/* Check-in */}
+        <div className="flex-1 px-5 py-4 flex items-center gap-3">
+          <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <div className="flex-1">
+            <label className="block text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Check-in</label>
+            <input
+              type="date"
+              {...register("checkIn")}
+              min={format(new Date(), "yyyy-MM-dd")}
+              className="w-full bg-transparent text-[#F5F5F0] font-medium outline-none"
+              data-testid="checkin-input"
+            />
+            {checkIn && (
+              <p className="text-xs text-[#D4AF37] mt-0.5">{formatDateDisplay(checkIn)}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Check-out */}
+        <div className="flex-1 px-5 py-4 flex items-center gap-3">
+          <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <div className="flex-1">
+            <label className="block text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Check-out</label>
+            <input
+              type="date"
+              {...register("checkOut")}
+              min={checkIn || format(new Date(), "yyyy-MM-dd")}
+              className="w-full bg-transparent text-[#F5F5F0] font-medium outline-none"
+              data-testid="checkout-input"
+            />
+            {checkOut && (
+              <p className="text-xs text-[#D4AF37] mt-0.5">{formatDateDisplay(checkOut)}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Guests */}
+        <div className="relative flex-1" ref={guestRef}>
+          <button
+            onClick={() => setShowGuestPicker(v => !v)}
+            className="w-full h-full px-5 py-4 flex items-center gap-3 hover:bg-white/5 transition-colors text-left"
+            type="button"
+            data-testid="guests-trigger"
+          >
+            <Users className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Guests</p>
+              <p className="text-[#F5F5F0] font-medium">{guests} {guests === 1 ? "Guest" : "Guests"}</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-[#71717A] flex-shrink-0" />
+          </button>
+
+          {showGuestPicker && (
+            <div className="absolute top-full left-0 w-64 mt-1 bg-[#161618] border border-white/10 p-4 z-50 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#F5F5F0] font-medium">Guests</p>
+                  <p className="text-xs text-[#71717A]">Eco-tax: €0.50/adult/night</p>
+                </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={locationInput}
-                    onChange={(e) => {
-                      setLocationInput(e.target.value);
-                      setShowLocationDropdown(true);
-                    }}
-                    onFocus={() => setShowLocationDropdown(true)}
-                    placeholder="All Malta"
-                    className="w-full bg-transparent text-[#F5F5F0] placeholder:text-[#A1A1AA] focus:outline-none"
-                  />
                   <button
-                    type="button"
-                    onClick={isListening ? stopListening : startListening}
-                    className={isListening ? "text-red-500" : "text-[#A1A1AA] hover:text-[#D4AF37]"}
-                  >
-                    <Mic className="w-4 h-4" />
-                  </button>
+                    onClick={() => setValue("guests", Math.max(1, guests - 1))}
+                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+                    disabled={guests <= 1}
+                    data-testid="guests-minus"
+                  >-</button>
+                  <span className="w-8 text-center text-[#F5F5F0] font-semibold" data-testid="guests-count">{guests}</span>
+                  <button
+                    onClick={() => setValue("guests", Math.min(20, guests + 1))}
+                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+                    data-testid="guests-plus"
+                  >+</button>
                 </div>
               </div>
-          </button>
-          
-          {showLocationDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#161618] border border-white/10 max-h-72 overflow-y-auto z-50 shadow-2xl">
-              {locationInput === "" ? (
-                <>
-                  <p className="px-4 py-2 text-xs text-[#71717A] uppercase tracking-widest border-b border-white/5">Popular Destinations</p>
-                  {popularLocations.map((loc, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleLocationSelect(loc)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#D4AF37]/10 transition-colors"
-                    >
-                      <MapPin className="w-4 h-4 text-[#D4AF37]" />
-                      <div>
-                        <p className="text-[#F5F5F0] font-medium">{loc.city}</p>
-                        <p className="text-xs text-[#71717A]">{loc.region}, Malta</p>
-                      </div>
-                    </button>
-                  ))}
-                </>
-              ) : filteredLocations.length > 0 ? (
-                filteredLocations.map((loc, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleLocationSelect(loc)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#D4AF37]/10 transition-colors"
-                  >
-                    <MapPin className="w-4 h-4 text-[#A1A1AA]" />
-                    <div>
-                      <p className="text-[#F5F5F0]">{loc.city}</p>
-                      <p className="text-xs text-[#71717A]">{loc.region}, Malta</p>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-6 text-center text-[#71717A]">
-                  No locations found
-                </div>
-              )}
             </div>
           )}
         </div>
 
-        {/* Check-in Date */}
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="flex-1 flex items-center gap-3 text-left w-full group md:px-4 md:border-r md:border-white/10"
-              data-testid="date-picker-trigger"
-            >
-              <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-1">
-                  Check-in
-                </span>
-                <span className="block text-[#F5F5F0] truncate group-hover:text-[#D4AF37] transition-colors">
-                  {checkIn ? format(checkIn, "MMM d, yyyy") : "Add date"}
-                </span>
-              </div>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0 bg-[#161618] border-white/10"
-            align="start"
+        {/* Search */}
+        <div className="flex-shrink-0">
+          <Button
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="w-full md:h-full px-8 py-4 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest font-semibold disabled:opacity-50"
+            data-testid="search-btn"
           >
-            <CalendarComponent
-              mode="range"
-              selected={{ from: checkIn, to: checkOut }}
-              onSelect={handleDateSelect}
-              numberOfMonths={2}
-              disabled={{ before: new Date() }}
-              className="bg-[#161618] text-[#F5F5F0]"
-              data-testid="date-calendar"
-            />
-          </PopoverContent>
-        </Popover>
-
-        {/* Check-out Date */}
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="flex-1 flex items-center gap-3 text-left w-full group md:px-4 md:border-r md:border-white/10"
-              data-testid="checkout-picker-trigger"
-            >
-              <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-1">
-                  Check-out
-                </span>
-                <span className="block text-[#F5F5F0] truncate group-hover:text-[#D4AF37] transition-colors">
-                  {checkOut ? format(checkOut, "MMM d, yyyy") : "Add date"}
-                </span>
-              </div>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0 bg-[#161618] border-white/10"
-            align="start"
-          >
-            <CalendarComponent
-              mode="range"
-              selected={{ from: checkIn, to: checkOut }}
-              onSelect={handleDateSelect}
-              numberOfMonths={2}
-              disabled={{ before: new Date() }}
-              className="bg-[#161618] text-[#F5F5F0]"
-            />
-          </PopoverContent>
-        </Popover>
-
-        {/* Guests Selector */}
-        <Popover open={isGuestsOpen} onOpenChange={setIsGuestsOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className="flex-1 flex items-center gap-3 text-left w-full group md:px-4"
-              data-testid="guests-trigger"
-            >
-              <Users className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
-              <div className="flex-1">
-                <span className="block text-xs uppercase tracking-widest text-[#D4AF37] mb-1">
-                  Guests
-                </span>
-                <span className="block text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors">
-                  {guests} {guests === 1 ? "Guest" : "Guests"}
-                </span>
-              </div>
-              <ChevronDown className="w-4 h-4 text-[#A1A1AA]" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-64 bg-[#161618] border-white/10 p-4"
-            align="start"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[#F5F5F0] font-medium">Adults</span>
-                  <p className="text-xs text-[#71717A]">Ages 13+</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-8 h-8 rounded-full border-white/20 hover:border-[#D4AF37] hover:bg-transparent"
-                    onClick={() => setGuests(Math.max(1, guests - 1))}
-                    data-testid="guests-minus"
-                  >
-                    -
-                  </Button>
-                  <span className="w-8 text-center text-[#F5F5F0] font-medium">{guests}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-8 h-8 rounded-full border-white/20 hover:border-[#D4AF37] hover:bg-transparent"
-                    onClick={() => setGuests(Math.min(20, guests + 1))}
-                    data-testid="guests-plus"
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
-              <p className="text-xs text-[#71717A] pt-2 border-t border-white/5">
-                Eco-tax: €0.50/adult/night (exempt under 18)
-              </p>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        {/* Search Button */}
-        <Button
-          onClick={handleSearch}
-          disabled={isSearching}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold btn-gold-glow disabled:opacity-50 md:ml-4"
-          data-testid="search-btn"
-        >
-          {isSearching ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Search className="w-4 h-4 mr-2" />
-          )}
-          {isSearching ? "Searching..." : "Search"}
-        </Button>
+            {isSearching ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <><Search className="w-5 h-5 mr-2" />Search</>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
+
+// ─── Shared dropdown ──────────────────────────────────────────────────────────
+function LocationDropdown({
+  locations,
+  onSelect,
+  input,
+}: {
+  locations: Location[];
+  onSelect: (l: Location) => void;
+  input: string;
+}) {
+  return (
+    <div className="absolute top-full left-0 right-0 md:min-w-72 mt-1 bg-[#161618] border border-white/10 max-h-72 overflow-y-auto z-50 shadow-2xl">
+      {!input && (
+        <p className="px-4 py-2 text-xs uppercase tracking-widest text-[#71717A] border-b border-white/5">
+          Popular
+        </p>
+      )}
+      {locations.length === 0 ? (
+        <p className="px-4 py-6 text-center text-sm text-[#71717A]">No locations found</p>
+      ) : (
+        locations.map((loc, i) => (
+          <button
+            key={i}
+            onClick={() => onSelect(loc)}
+            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#D4AF37]/10 border-b border-white/5 last:border-0 transition-colors"
+            type="button"
+          >
+            <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[#F5F5F0]">{loc.city}</p>
+              <p className="text-xs text-[#71717A]">{loc.region}</p>
+            </div>
+            {loc.popular && !input && (
+              <span className="text-xs text-[#D4AF37]">Popular</span>
+            )}
+          </button>
+        ))
+      )}
+    </div>
+  );
+}

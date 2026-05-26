@@ -11,6 +11,7 @@ import { Header } from "@/components/Header";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { PropertyOwnerModal } from "@/components/modals/PropertyOwnerModal";
 import { StickyCallToAction } from "@/components/sticky-call-to-action";
+import { CookieConsent } from "@/components/cookie-consent";
 import { Toaster } from "@/components/ui/sonner";
 
 const LandingPage            = lazy(() => import("@/pages/landing-page").then(m => ({ default: m.LandingPage ?? m.default })));
@@ -150,6 +151,7 @@ export default function App() {
               <ContactModal />
               <PropertyOwnerModal />
               <StickyCallToAction />
+              <CookieConsent />
               <Toaster />
             </BrowserRouter>
           </HelmetProvider>
