@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
 };
 
 const TOKEN_URL = "https://booking.guesty.com/oauth2/token";
@@ -28,9 +28,13 @@ function json(data: unknown, status = 200) {
 
 function retryAfterMs(headers: Headers): number | null {
   const raw = headers.get("retry-after");
-  if (!raw) return null;
+  if (!raw) {
+return null;
+}
   const seconds = Number(raw);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  if (Number.isFinite(seconds)) {
+return Math.max(0, seconds * 1000);
+}
   const dateMs = Date.parse(raw);
   return Number.isFinite(dateMs) ? Math.max(0, dateMs - Date.now()) : null;
 }
@@ -52,16 +56,22 @@ async function assertTokenCircuitClosed(admin: ReturnType<typeof createClient>) 
   // Scan newest-first. A more recent success closes the circuit regardless of older errors.
   let row: { status: string; error: string | null; created_at: string } | null = null;
   for (const entry of data ?? []) {
-    if (entry.status === "success") return; // newer success → circuit closed
+    if (entry.status === "success") {
+return;
+} // newer success → circuit closed
     if (entry.status === "error" && !(entry.error || "").includes("token circuit open")) {
       row = entry as typeof row;
       break;
     }
   }
-  if (!row) return;
+  if (!row) {
+return;
+}
   const message = row.error || "";
   const is429 = message.includes("429") || message.toLowerCase().includes("too many");
-  if (!is429) return;
+  if (!is429) {
+return;
+}
   const retryMatch = message.match(/retry_after_ms=(\d+)/);
   const cooldownMs = retryMatch ? Number(retryMatch[1]) : TOKEN_CIRCUIT_COOLDOWN_MS;
   const ageMs = Date.now() - new Date(row.created_at).getTime();
@@ -70,10 +80,23 @@ async function assertTokenCircuitClosed(admin: ReturnType<typeof createClient>) 
   }
 }
 
-export async function fetchFreshToken(): Promise<{ token: string; expiresAt: Date; scope: string }> {
-  const clientId = Deno.env.get("GUESTY_CLIENT_ID");
-  const clientSecret = Deno.env.get("GUESTY_CLIENT_SECRET");
-  if (!clientId || !clientSecret) throw new Error("Guesty Booking Engine credentials are not configured");
+async function getVaultSecret(admin: ReturnType<typeof createClient>, name: string): Promise<string | null> {
+  const { data } = await admin
+    .schema("vault")
+    .from("decrypted_secrets")
+    .select("decrypted_secret")
+    .eq("name", name)
+    .maybeSingle();
+  return (data as { decrypted_secret?: string } | null)?.decrypted_secret ?? null;
+}
+
+export async function fetchFreshToken(admin?: ReturnType<typeof createClient>): Promise<{ token: string; expiresAt: Date; scope: string }> {
+  const supaAdmin = admin ?? createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const clientId = Deno.env.get("GUESTY_BOOKING_ENGINE_ID") ?? await getVaultSecret(supaAdmin, "GUESTY_BOOKING_ENGINE_ID");
+  const clientSecret = Deno.env.get("GUESTY_BOOKING_ENGINE_SECRET") ?? await getVaultSecret(supaAdmin, "GUESTY_BOOKING_ENGINE_SECRET");
+  if (!clientId || !clientSecret) {
+throw new Error("Guesty Booking Engine credentials are not configured");
+}
 
   const body = new URLSearchParams({
     grant_type: "client_credentials",
@@ -95,7 +118,9 @@ export async function fetchFreshToken(): Promise<{ token: string; expiresAt: Dat
   }
 
   const payload = JSON.parse(text);
-  if (!payload.access_token) throw new Error("Booking Engine token response did not include access_token");
+  if (!payload.access_token) {
+throw new Error("Booking Engine token response did not include access_token");
+}
 
   const expiresInMs = Math.max(60, Number(payload.expires_in ?? 86_400)) * 1000;
   return {
@@ -106,7 +131,9 @@ export async function fetchFreshToken(): Promise<{ token: string; expiresAt: Dat
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
 
   const url = new URL(req.url);
   const force = url.searchParams.get("force") === "1" || url.searchParams.get("force") === "true";
@@ -134,8 +161,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!force) await assertTokenCircuitClosed(admin);
-    const { token, expiresAt: safeExpiresAt, scope } = await fetchFreshToken();
+    if (!force) {
+await assertTokenCircuitClosed(admin);
+}
+    const { token, expiresAt: safeExpiresAt, scope } = await fetchFreshToken(admin);
 
     const { error: upErr } = await admin.from("guesty_token_vault").upsert({
       id: 1,
@@ -145,7 +174,9 @@ Deno.serve(async (req) => {
       refresh_count: (vault?.refresh_count ?? 0) + 1,
       last_refreshed_at: new Date().toISOString(),
     });
-    if (upErr) throw upErr;
+    if (upErr) {
+throw upErr;
+}
 
      await logRefresh(admin, "success", { expires_at: safeExpiresAt.toISOString() });
      // Using structured logging would go here

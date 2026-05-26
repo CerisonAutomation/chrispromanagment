@@ -10,7 +10,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
 };
 
 const TOKEN_URL = "https://booking.guesty.com/oauth2/token";
@@ -45,28 +45,38 @@ function json(data: unknown, status = 200, extraHeaders: Record<string, string> 
 }
 
 function sanitizeId(value: string | null, name = "id") {
-  if (!value || !/^[A-Za-z0-9._:-]+$/.test(value)) throw new Error(`Missing or invalid ${name}`);
+  if (!value || !/^[A-Za-z0-9._:-]+$/.test(value)) {
+throw new Error(`Missing or invalid ${name}`);
+}
   return encodeURIComponent(value);
 }
 
 function requireParam(url: URL, key: string) {
   const value = url.searchParams.get(key);
-  if (!value) throw new Error(`Missing ${key}`);
+  if (!value) {
+throw new Error(`Missing ${key}`);
+}
   return value;
 }
 
 function retryAfterMs(headers: Headers): number | null {
   const raw = headers.get("retry-after");
-  if (!raw) return null;
+  if (!raw) {
+return null;
+}
   const seconds = Number(raw);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  if (Number.isFinite(seconds)) {
+return Math.max(0, seconds * 1000);
+}
   const dateMs = Date.parse(raw);
   return Number.isFinite(dateMs) ? Math.max(0, dateMs - Date.now()) : null;
 }
 
 function backoffMs(attempt: number, headers?: Headers) {
   const retryMs = headers ? retryAfterMs(headers) : null;
-  if (retryMs != null) return Math.min(retryMs, MAX_BACKOFF_MS);
+  if (retryMs != null) {
+return Math.min(retryMs, MAX_BACKOFF_MS);
+}
   const exponential = BASE_BACKOFF_MS * 2 ** attempt;
   const jitter = Math.floor(Math.random() * 250);
   return Math.min(exponential + jitter, MAX_BACKOFF_MS);
@@ -75,7 +85,9 @@ function backoffMs(attempt: number, headers?: Headers) {
 async function pacedFetch(input: string, init: RequestInit) {
   const run = async () => {
     const waitMs = Math.max(0, lastUpstreamAt + INTERVAL_MS - Date.now());
-    if (waitMs > 0) await delay(waitMs);
+    if (waitMs > 0) {
+await delay(waitMs);
+}
     lastUpstreamAt = Date.now();
     return fetch(input, init);
   };
@@ -103,28 +115,48 @@ async function isTokenCircuitOpen(): Promise<TokenCircuit> {
   // Newest-first scan: a fresher success closes the circuit even if older 429s exist.
   let row: { status: string; error: string | null; created_at: string } | null = null;
   for (const entry of data ?? []) {
-    if (entry.status === "success") return { open: false, retryAfterMs: 0 };
+    if (entry.status === "success") {
+return { open: false, retryAfterMs: 0 };
+}
     if (entry.status === "error" && !(entry.error || "").includes("token circuit open")) {
       row = entry as typeof row;
       break;
     }
   }
-  if (!row) return { open: false, retryAfterMs: 0 };
+  if (!row) {
+return { open: false, retryAfterMs: 0 };
+}
   const error = row.error || "";
   const is429 = error.includes("429") || error.toLowerCase().includes("too many");
-  if (!is429) return { open: false, retryAfterMs: 0 };
+  if (!is429) {
+return { open: false, retryAfterMs: 0 };
+}
 
   const retryMatch = error.match(/retry_after_ms=(\d+)/);
   const configuredCooldown = retryMatch ? Number(retryMatch[1]) : TOKEN_CIRCUIT_COOLDOWN_MS;
   const ageMs = Date.now() - new Date(row.created_at).getTime();
-  if (ageMs >= configuredCooldown) return { open: false, retryAfterMs: 0 };
+  if (ageMs >= configuredCooldown) {
+return { open: false, retryAfterMs: 0 };
+}
   return { open: true, retryAfterMs: configuredCooldown - ageMs, reason: error };
 }
 
+async function getVaultSecret(name: string): Promise<string | null> {
+  const { data } = await admin
+    .schema("vault")
+    .from("decrypted_secrets")
+    .select("decrypted_secret")
+    .eq("name", name)
+    .maybeSingle();
+  return (data as { decrypted_secret?: string } | null)?.decrypted_secret ?? null;
+}
+
 async function fetchFreshTokenAndStore(): Promise<{ token: string; expiresAt: Date }> {
-  const clientId = Deno.env.get("GUESTY_CLIENT_ID");
-  const clientSecret = Deno.env.get("GUESTY_CLIENT_SECRET");
-  if (!clientId || !clientSecret) throw new Error("Guesty Booking Engine credentials are not configured");
+  const clientId = Deno.env.get("GUESTY_BOOKING_ENGINE_ID") ?? await getVaultSecret("GUESTY_BOOKING_ENGINE_ID");
+  const clientSecret = Deno.env.get("GUESTY_BOOKING_ENGINE_SECRET") ?? await getVaultSecret("GUESTY_BOOKING_ENGINE_SECRET");
+  if (!clientId || !clientSecret) {
+    throw new Error("Guesty Booking Engine credentials are not configured");
+  }
 
   const body = new URLSearchParams({
     grant_type: "client_credentials",
@@ -148,7 +180,9 @@ async function fetchFreshTokenAndStore(): Promise<{ token: string; expiresAt: Da
   }
 
   const payload = JSON.parse(text);
-  if (!payload.access_token) throw new Error("Booking Engine token response did not include access_token");
+  if (!payload.access_token) {
+throw new Error("Booking Engine token response did not include access_token");
+}
 
   const expiresInMs = Math.max(60, Number(payload.expires_in ?? 86_400)) * 1000;
   const safeExpiresAt = new Date(Date.now() + Math.max(60_000, expiresInMs - SAFETY_WINDOW_MS));
@@ -167,7 +201,9 @@ async function fetchFreshTokenAndStore(): Promise<{ token: string; expiresAt: Da
     refresh_count: (cur?.refresh_count ?? 0) + 1,
     last_refreshed_at: new Date().toISOString(),
   });
-  if (upsertError) throw upsertError;
+  if (upsertError) {
+throw upsertError;
+}
 
   await logRefresh("success", { expires_at: safeExpiresAt.toISOString() });
   return { token: payload.access_token, expiresAt: safeExpiresAt };
@@ -175,8 +211,12 @@ async function fetchFreshTokenAndStore(): Promise<{ token: string; expiresAt: Da
 
 async function getToken(forceRefresh = false): Promise<string> {
   const now = Date.now();
-  if (!forceRefresh && memToken && memToken.expiresAt > now) return memToken.value;
-  if (!forceRefresh && inflightToken) return inflightToken;
+  if (!forceRefresh && memToken && memToken.expiresAt > now) {
+return memToken.value;
+}
+  if (!forceRefresh && inflightToken) {
+return inflightToken;
+}
 
   inflightToken = (async () => {
     if (!forceRefresh) {
@@ -242,7 +282,9 @@ async function proxyJson(response: Response) {
   const text = await response.text();
   const retryAfter = response.headers.get("retry-after");
   const headers = retryAfter ? { "Retry-After": retryAfter } : {};
-  if (!text) return json({}, response.status, headers);
+  if (!text) {
+return json({}, response.status, headers);
+}
   try {
     return json(JSON.parse(text), response.status, headers);
   } catch (_) {
@@ -297,8 +339,12 @@ function fallbackPayload(action: string, reason: string) {
   if (action === "listings" || action === "search") {
     return { results: [], data: [], count: 0, pagination: { total: 0 }, ...base };
   }
-  if (action === "cities") return { results: [], data: [], count: 0, ...base };
-  if (action === "calendar") return { days: [], data: [], ...base };
+  if (action === "cities") {
+return { results: [], data: [], count: 0, ...base };
+}
+  if (action === "calendar") {
+return { days: [], data: [], ...base };
+}
   return { data: null, ...base };
 }
 
@@ -318,7 +364,13 @@ async function cachedCall(action: string, url: URL, fetcher: () => Promise<Respo
     const res = await fetcher();
     const text = await res.text();
     let parsed: unknown = {};
-    if (text) { try { parsed = JSON.parse(text); } catch (_) { parsed = { error: text }; } }
+    if (text) {
+ try {
+ parsed = JSON.parse(text); 
+} catch (_) {
+ parsed = { error: text }; 
+} 
+}
     if (res.ok) {
       await writeCache(key, action, parsed, res.status);
       return json(parsed, res.status);
@@ -387,15 +439,21 @@ function buildQuery(url: URL, keys: string[]) {
   const allowed = new Set(keys);
   const qs = new URLSearchParams();
   for (const [rawKey, rawValue] of url.searchParams.entries()) {
-    if (rawKey === "action" || rawValue == null || rawValue === "") continue;
+    if (rawKey === "action" || rawValue == null || rawValue === "") {
+continue;
+}
     const key = QUERY_ALIASES[rawKey] || rawKey;
-    if (allowed.has(key)) qs.set(key, rawValue);
+    if (allowed.has(key)) {
+qs.set(key, rawValue);
+}
   }
   return qs.toString();
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
 
   try {
     const url = new URL(req.url);
@@ -472,7 +530,9 @@ Deno.serve(async (req) => {
           guestsCount: requireParam(url, "guestsCount"),
         });
         const coupon = url.searchParams.get("coupon");
-        if (coupon) qs.set("coupon", coupon);
+        if (coupon) {
+qs.set("coupon", coupon);
+}
         return proxyJson(await beapi(`/reservations/money?${qs}`));
       }
 
