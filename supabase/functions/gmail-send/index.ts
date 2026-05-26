@@ -34,9 +34,6 @@ async function requireAdmin(req: Request): Promise<Response | null> {
   return null;
 }
 
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
 
 function b64url(input: string): string {
   // UTF-8 safe base64url
