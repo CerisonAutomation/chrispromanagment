@@ -28,7 +28,24 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Missing Supabase env vars");
+
+    // Require admin/editor JWT
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const supabase = createClient(supabaseUrl, serviceKey);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) {
+      return new Response(JSON.stringify({ error: "Admin or editor required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
 
     const body = await req.json();
     const { action, section_key, content, setting_key, setting_value, source = "webhook" } = body || {};
