@@ -56,7 +56,7 @@ export default function MaintenancePage() {
           <Input placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} />
           <Textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input placeholder="Property ID" value={propertyId} onChange={e => setPropertyId(e.target.value)} />
-          <Select value={priority} onValueChange={v => setPriority(v as Ticket)}>
+          <Select value={priority} onValueChange={v => setPriority(v as 'low' | 'medium' | 'high')}>
             <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="low">Low</SelectItem>

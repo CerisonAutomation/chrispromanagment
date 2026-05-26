@@ -87,6 +87,19 @@ function PageFallback() {
   );
 }
 
+function NotFound() {
+  return (
+    <div className="min-h-screen bg-[#0F0F10] flex flex-col items-center justify-center text-center px-6">
+      <p className="text-7xl font-bold text-white/10 mb-4">404</p>
+      <h1 className="text-2xl font-semibold text-[#F5F5F0] mb-2">Page not found</h1>
+      <p className="text-[#A1A1AA] mb-8">The page you're looking for doesn't exist.</p>
+      <a href="/" className="px-6 py-3 bg-[#D4AF37] text-[#0A0A0B] font-semibold rounded hover:bg-[#D4AF37]/90 transition-colors">
+        Go home
+      </a>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -125,6 +138,7 @@ export default function App() {
                     <Route path="/pricing"           element={<PricingEnginePage />} />
                     <Route path="/tokens"            element={<PropertyTokensPage />} />
                     <Route path="/tax-reports"       element={<TaxReportsPage />} />
+                    <Route path="*"                  element={<NotFound />} />
                   </Routes>
                 </Suspense>
               </main>

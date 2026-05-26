@@ -8,6 +8,8 @@ interface TaxReport {
   totalRevenue: number;
   vatAmount: number;
   netIncome: number;
+  bookings: number;
+  averageStay: number;
 }
 
 export default function TaxReportsPage() {

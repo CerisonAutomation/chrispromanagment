@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useChat } from '@/hooks/use-chat';
-import ChatWindow from '@/components/chat/ChatWindow';
+import ChatWindow from '@/components/chat/chat-window';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';

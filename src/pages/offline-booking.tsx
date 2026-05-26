@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ export default function OfflineBooking() {
   const [pendingBookings, setPendingBookings] = useState<Record<string, unknown>[]>([]);
   const [form, setForm] = useState({ name: '', email: '', propertyId: '' });
 
-  useState(() => {
+  useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
@@ -17,7 +17,7 @@ export default function OfflineBooking() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  });
+  }, []);
 
   const handleSubmit = () => {
     if (!isOnline) {
