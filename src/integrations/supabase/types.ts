@@ -223,6 +223,78 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          message: string
+          name: string
+          phone: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: never
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: never
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: number
+          max_uses: number | null
+          usage_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value: number
+          expires_at?: string | null
+          id?: never
+          max_uses?: number | null
+          usage_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: never
+          max_uses?: number | null
+          usage_count?: number
+        }
+        Relationships: []
+      }
       guesty_response_cache: {
         Row: {
           action: string
@@ -295,6 +367,60 @@ export type Database = {
           last_refreshed_at?: string
           refresh_count?: number
           scope?: string | null
+        }
+        Relationships: []
+      }
+      owner_inquiries: {
+        Row: {
+          additional_info: string | null
+          bathrooms: string | null
+          bedrooms: string | null
+          created_at: string
+          currently_listed: string | null
+          email: string
+          expected_revenue: string | null
+          id: number
+          location: string | null
+          max_guests: string | null
+          name: string
+          phone: string | null
+          property_type: string | null
+          services_interested: string | null
+          status: string
+        }
+        Insert: {
+          additional_info?: string | null
+          bathrooms?: string | null
+          bedrooms?: string | null
+          created_at?: string
+          currently_listed?: string | null
+          email: string
+          expected_revenue?: string | null
+          id?: never
+          location?: string | null
+          max_guests?: string | null
+          name: string
+          phone?: string | null
+          property_type?: string | null
+          services_interested?: string | null
+          status?: string
+        }
+        Update: {
+          additional_info?: string | null
+          bathrooms?: string | null
+          bedrooms?: string | null
+          created_at?: string
+          currently_listed?: string | null
+          email?: string
+          expected_revenue?: string | null
+          id?: never
+          location?: string | null
+          max_guests?: string | null
+          name?: string
+          phone?: string | null
+          property_type?: string | null
+          services_interested?: string | null
+          status?: string
         }
         Relationships: []
       }
