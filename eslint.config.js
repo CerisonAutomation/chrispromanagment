@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', '.eslintrc.cjs'] },
+  { ignores: ['dist', '.eslintrc.cjs', '.claude/**', '.kilo/**', 'coverage/**', 'mobile/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -53,7 +53,7 @@ export default tseslint.config(
       'no-implied-eval': 'error',
       'no-new-func': 'error',
       'no-script-url': 'error',
-      'no-unsafe-eval': 'error',
+      // 'no-unsafe-eval': 'error', // not a built-in ESLint rule
     },
   },
   {
