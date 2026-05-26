@@ -1,12 +1,40 @@
 // CMS AI Generator — uses Lovable AI Gateway to draft/refine block JSON.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+async function requireEditor(req: Request): Promise<Response | null> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) {
+    return new Response(JSON.stringify({ error: "Admin or editor required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  return null;
+}
+
 interface Body {
   sectionKey: string;
+  sectionLabel?: string;
+  currentContent?: unknown;
+  prompt: string;
+  mode?: "rewrite" | "generate" | "translate" | "refine";
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const guard = await requireEditor(req);
+  if (guard) return guard;
+
   sectionLabel?: string;
   currentContent?: unknown;
   prompt: string;

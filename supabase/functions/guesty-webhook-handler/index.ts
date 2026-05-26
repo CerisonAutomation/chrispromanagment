@@ -27,10 +27,11 @@ function err(msg: string, status = 400) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
-  // Verify webhook secret
+  // Verify webhook secret — fail closed if not configured
   const sig = req.headers.get("x-guesty-signature");
   const secret = Deno.env.get("GUESTY_WEBHOOK_SECRET");
-  if (secret && sig !== secret) return err("Unauthorized", 401);
+  if (!secret) return err("Webhook secret not configured", 500);
+  if (sig !== secret) return err("Unauthorized", 401);
 
   let body: Record<string, unknown>;
   try {

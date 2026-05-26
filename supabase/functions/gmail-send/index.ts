@@ -5,6 +5,8 @@
 // Requires LOVABLE_API_KEY + GOOGLE_MAIL_API_KEY env vars (auto-injected
 // when the Gmail connector is linked).
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
 const corsHeaders = {
@@ -18,6 +20,20 @@ function json(data: unknown, status = 200) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+async function requireAdmin(req: Request): Promise<Response | null> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return json({ error: "Unauthorized" }, 401);
+  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles?.some((r: { role: string }) => r.role === "admin")) return json({ error: "Admin required" }, 403);
+  return null;
+}
+
 
 function b64url(input: string): string {
   // UTF-8 safe base64url
@@ -48,6 +64,8 @@ function buildRaw({
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  const guard = await requireAdmin(req);
+  if (guard) return guard;
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const GOOGLE_MAIL_API_KEY = Deno.env.get("GOOGLE_MAIL_API_KEY");

@@ -3,6 +3,21 @@
 // Returns per-attempt status so we can tell whether 429 is per-endpoint,
 // per-scope, or tenant-wide, and whether credentials work at all.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+async function requireAdmin(req: Request): Promise<Response | null> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles?.some((r: { role: string }) => r.role === "admin")) return new Response(JSON.stringify({ error: "Admin required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return null;
+}
+
 
 type Attempt = {
   label: string;
@@ -66,6 +81,9 @@ async function attempt(
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const guard = await requireAdmin(req);
+  if (guard) return guard;
+
 
   const clientId = Deno.env.get("GUESTY_CLIENT_ID") || "";
   const clientSecret = Deno.env.get("GUESTY_CLIENT_SECRET") || "";
