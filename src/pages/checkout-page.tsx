@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
 import { buildBreakdown, formatMoney, describeCancellationPolicy } from "@/lib/guestyPricing";
-import { StripeInlinePayment } from "@/components/stripeinline/payment";
+import { StripeInlinePayment } from "@/components/stripe-inline-payment";
 import CheckoutExtrasPanel from "@/components/checkout-extras-panel";
 import { guesty } from "@/lib/guesty";
 

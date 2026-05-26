@@ -3,7 +3,7 @@ import { connectWallet, mintPropertyNFT } from '@/lib/web3';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PropertyTokensPage() {
   const [walletAddress, setWalletAddress] = useState('');

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PropertyCard } from "@/components/property/card";
+import { PropertyCard } from "@/components/property-card";
 import { SearchWidget } from "@/components/search-widget";
 import { guesty } from "@/lib/guesty";
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ARViewer from '@/components/ar/ARViewer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Property {
   id: string;

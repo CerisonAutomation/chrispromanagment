@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface PropertyPricingInput {
   property_id: string;

@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { CMSProvider } from '@/context/cmscontext';
 import { ModalProvider } from '@/context/modal-context';
-import { ErrorBoundary } from '@/components/error/boundary';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 function AllProviders({ children }) {
   return (

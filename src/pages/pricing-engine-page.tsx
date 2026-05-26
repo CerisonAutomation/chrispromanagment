@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { pricingEngine } from '@/lib/pricing-engine';
-import PricingChart from '@/components/pricing/PricingChart';
-import ForecastTable from '@/components/pricing/ForecastTable';
+import PricingChart from '@/components/pricing/pricing-chart';
+import ForecastTable from '@/components/pricing/forecast-table';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PricingEnginePage() {
   const [propertyId, setPropertyId] = useState('');

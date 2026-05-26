@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { analyticsEngine } from '@/lib/analytics-engine';
-import RevenueChart from '@/components/analytics/RevenueChart';
-import OccupancyChart from '@/components/analytics/OccupancyChart';
-import BookingsChart from '@/components/analytics/BookingsChart';
-import TopPropertiesTable from '@/components/analytics/TopPropertiesTable';
+import RevenueChart from '@/components/analytics/revenue-chart';
+import OccupancyChart from '@/components/analytics/occupancy-chart';
+import BookingsChart from '@/components/analytics/bookings-chart';
+import TopPropertiesTable from '@/components/analytics/top-properties-table';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 

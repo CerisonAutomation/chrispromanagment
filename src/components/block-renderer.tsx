@@ -4,7 +4,7 @@
 // `switch (block.type)` statements. Existing renderers in LiveBlocks.jsx
 // remain untouched — call sites can migrate incrementally to this
 // component without a big-bang refactor.
-import { SCHEMAS } from "@/lib/blocks.jsx";
+import { SCHEMAS } from "@/lib/blocks";
 
 export function BlockRenderer({ type, content, fallback = null, ...rest }) {
   const schema = SCHEMAS?.[type];
