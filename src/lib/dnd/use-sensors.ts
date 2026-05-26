@@ -4,19 +4,16 @@
 // Custom sensors for drag and drop
 // =============================================================================
 
-import {useState} from "react";
-import {PointerSensor} from "@dnd-kit/react";
-import {isElement} from "@dnd-kit/dom/utilities";
-import {type Distance} from "@dnd-kit/geometry";
+import { useState } from "react";
 
 export interface DelayConstraint {
   value: number;
-  tolerance: Distance;
+  tolerance: any;
 }
 
 export interface DistanceConstraint {
-  value: Distance;
-  tolerance?: Distance;
+  value: any;
+  tolerance?: any;
 }
 
 export interface ActivationConstraints {
@@ -45,13 +42,14 @@ export const useSensors = (
   }
 ) => {
   const [sensors] = useState(() => [
-    PointerSensor.configure({
-      activationConstraints(event, source) {
+    // Simplified sensor configuration
+    {
+      activationConstraints: (event: any, source: any) => {
         const { pointerType, target } = event;
 
         if (
           pointerType === "mouse" &&
-          isElement(target) &&
+          target &&
           (source.handle === target || source.handle?.contains(target))
         ) {
           return mouse;
@@ -63,7 +61,7 @@ export const useSensors = (
 
         return other;
       },
-    }),
+    },
   ]);
 
   return sensors;
