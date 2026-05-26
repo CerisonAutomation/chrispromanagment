@@ -1,7 +1,7 @@
 import "@/App.css";
-import { useEffect, lazy, Suspense, useState } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/store/auth";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { CMSProvider } from "@/context/cmscontext";
 import { ModalProvider } from "@/context/modal-context";
@@ -106,24 +106,15 @@ function NotFound() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const [checked, setChecked] = useState(false);
-  const [authed, setAuthed] = useState(false);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setAuthed(!!data.session);
-      setChecked(true);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setAuthed(!!session);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
-  if (!checked) return <PageFallback />;
-  if (!authed) return <Navigate to="/auth" replace />;
+  const { session, isLoading } = useAuthStore();
+  if (isLoading) return <PageFallback />;
+  if (!session) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 }
 
 export default function App() {
+  useEffect(() => useAuthStore.getState().init(), []);
+
   return (
     <ErrorBoundary>
       <CMSProvider>

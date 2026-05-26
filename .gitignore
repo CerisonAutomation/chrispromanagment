@@ -34,3 +34,4 @@ ruvector.db
 .env.local
 .env.*.local
 .env.example
+.vercel
