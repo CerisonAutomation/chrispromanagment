@@ -30,9 +30,24 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes("node_modules")) {
-            return "vendor";
-          }
+          if (!id.includes("node_modules")) return;
+          if (id.includes("react-dom") || id.includes("react/")) return "react";
+          if (id.includes("@radix-ui") || id.includes("cmdk") || id.includes("vaul") || id.includes("sonner")) return "ui";
+          if (id.includes("leaflet") || id.includes("react-leaflet")) return "map";
+          if (id.includes("ethers") || id.includes("web3") || id.includes("xrpl")) return "web3";
+          if (id.includes("@supabase")) return "supabase";
+          if (id.includes("date-fns")) return "date-fns";
+          if (id.includes("framer-motion") || id.includes("lucide")) return "motion-icons";
+          if (id.includes("@tiptap") || id.includes("prosemirror")) return "editor";
+          if (id.includes("@tensorflow")) return "tensorflow";
+          if (id.includes("recharts") || id.includes("d3-") || id.includes("victory")) return "charts";
+          if (id.includes("@dnd-kit") || id.includes("@hello-pangea")) return "dnd";
+          if (id.includes("@stripe")) return "stripe";
+          if (id.includes("swiper") || id.includes("embla")) return "carousel";
+          if (id.includes("@tanstack")) return "query";
+          if (id.includes("socket.io")) return "socket";
+          if (id.includes("zustand") || id.includes("zod") || id.includes("axios")) return "utils";
+          return "vendor";
         },
       },
     },

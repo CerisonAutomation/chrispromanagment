@@ -1,4 +1,4 @@
-import ethers from 'ethers';
+import * as ethers from 'ethers';
 
 export const POLYGON_CHAIN_ID = 137;
 export const POLYGON_RPC_URL = 'https://polygon-rpc.com';

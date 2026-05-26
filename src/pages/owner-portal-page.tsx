@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Users, Plus, RefreshCw, Trash2, FileText, Mail, Phone } from 'lucide-react';
+import { Users, Plus, RefreshCw, Trash2, FileText, Mail, Phone, Send } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const BLANK: Omit<Owner, 'id' | 'created_at'> = {
   full_name: '',
@@ -48,6 +49,19 @@ export default function OwnerPortalPage() {
     try {
       await remove(id);
       toast.success('Owner removed');
+    } catch (e: unknown) {
+      toast.error((e as Error).message);
+    }
+  };
+
+  const handleSendReportLink = async (owner: Owner) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: owner.email,
+        options: { emailRedirectTo: `${window.location.origin}/owner-view` },
+      });
+      if (error) throw error;
+      toast.success(`Magic link sent to ${owner.email}`);
     } catch (e: unknown) {
       toast.error((e as Error).message);
     }
@@ -134,6 +148,10 @@ export default function OwnerPortalPage() {
                         {o.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{o.phone}</span>}
                       </div>
                     </div>
+                    <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); handleSendReportLink(o); }}
+                      className="text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Send report link">
+                      <Send className="w-4 h-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); handleDelete(o.id); }}
                       className="text-red-400 hover:bg-red-500/10">
                       <Trash2 className="w-4 h-4" />
