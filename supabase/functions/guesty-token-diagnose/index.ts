@@ -81,6 +81,9 @@ async function attempt(
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const guard = await requireAdmin(req);
+  if (guard) return guard;
+
 
   const clientId = Deno.env.get("GUESTY_CLIENT_ID") || "";
   const clientSecret = Deno.env.get("GUESTY_CLIENT_SECRET") || "";
