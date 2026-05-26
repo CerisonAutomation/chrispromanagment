@@ -30,5 +30,7 @@ ruvector.db
 *.bak
 
 # Environment secrets
+.env
 .env.local
 .env.*.local
+.env.example

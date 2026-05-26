@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface SpeechRecognitionEvent {
   results: Array<Array<{ transcript: string }>>;
 }

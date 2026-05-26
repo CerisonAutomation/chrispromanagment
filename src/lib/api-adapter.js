@@ -7,6 +7,7 @@
  */
 import axios from "axios";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 /* ─── helpers ─────────────────────────────────────────────────────────── */
 const ok = (data, config) => ({
@@ -251,7 +252,7 @@ const routes = [
           status: "received",
         });
       } catch (e) {
-        console.warn("[contact log]", e);
+        logger.warn("[contact log] failed", { error: e });
       }
       return { ok: true, message: "Submission received" };
     },
@@ -312,14 +313,14 @@ async function adapter(config) {
   }
   const matched = matchRoute(config);
   if (!matched) {
-    console.warn("[api-adapter] unmatched", config.method, url);
+    logger.warn("[api-adapter] unmatched route", { method: config.method, url });
     return ok({}, config);
   }
   try {
     const result = await matched.route.handler(config, matched.params);
     return ok(result, config);
   } catch (e) {
-    console.error("[api-adapter] handler error", url, e);
+    logger.error("[api-adapter] handler error", { url, error: e });
     return err(500, e?.message || "adapter error", config);
   }
 }
@@ -377,4 +378,4 @@ window.fetch = async function patchedFetch(input, init = {}) {
   }
 };
 
-console.log("[api-adapter] axios + fetch routed to Lovable Cloud");
+logger.info("[api-adapter] axios + fetch routed to Lovable Cloud");

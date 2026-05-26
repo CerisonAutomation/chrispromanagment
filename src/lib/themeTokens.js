@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 export const THEME_TOKEN_ALLOWLIST = [
   "--gold", "--gold-light", "--gold-dark",
@@ -35,7 +36,7 @@ export async function loadThemeTokens() {
       .maybeSingle();
     return data?.setting_value ?? null;
   } catch (e) {
-    console.warn("loadThemeTokens failed", e);
+    logger.warn("loadThemeTokens failed", { error: e });
     return null;
   }
 }

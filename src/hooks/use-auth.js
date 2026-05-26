@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 /**
  * Returns { session, user, isAdmin, isEditor, isLoading }.
@@ -43,7 +44,7 @@ export function useAuth() {
         .eq("user_id", userId);
       if (!active) return;
       if (error) {
-        console.warn("[auth] role fetch failed:", error.message);
+        logger.warn("[auth] role fetch failed", { error: error.message });
         setRoles([]);
       } else {
         setRoles((data || []).map((r) => r.role));
