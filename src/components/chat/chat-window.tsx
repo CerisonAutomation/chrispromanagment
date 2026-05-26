@@ -5,19 +5,23 @@ import TypingIndicator from './TypingIndicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { Send, RefreshCw } from 'lucide-react';
 
 interface ChatWindowProps {
   roomId: string;
 }
 
 export default function ChatWindow({ roomId }: ChatWindowProps) {
-  const { messages, sendMessage } = useChat(roomId);
+  const { messages, sendMessage, loading } = useChat(roomId);
   const [newMessage, setNewMessage] = useState('');
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [sending, setSending] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { data: user } = supabase.auth.getUser();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -27,49 +31,64 @@ export default function ChatWindow({ roomId }: ChatWindowProps) {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
-
-    await sendMessage(newMessage, roomId);
-    setNewMessage('');
+    if (!newMessage.trim() || sending) return;
+    setSending(true);
+    try {
+      await sendMessage(newMessage.trim(), roomId);
+      setNewMessage('');
+    } finally {
+      setSending(false);
+    }
   };
 
+  const firstSender = messages[0]?.sender_name || 'Guest';
+
   return (
-    <div className="flex flex-col h-full border rounded-lg">
-      <div className="p-4 border-b flex items-center gap-3">
-        <Avatar>
-          <AvatarImage src={messages[0]?.sender?.avatar_url} />
-          <AvatarFallback>
-            {messages[0]?.sender?.full_name?.charAt(0) || 'U'}
-          </AvatarFallback>
-        </Avatar>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-[#161618]">
+        <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-sm font-bold">
+          {firstSender.charAt(0).toUpperCase()}
+        </div>
         <div>
-          <h3 className="font-semibold">
-            {messages[0]?.sender?.full_name || 'Chat'}
-          </h3>
+          <h3 className="text-[#F5F5F0] font-semibold text-sm">{firstSender}</h3>
         </div>
       </div>
 
+      {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-4">
-          {messages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              isOwn={msg.sender_id === user?.user?.id}
-            />
-          ))}
-          {typingUsers.length > 0 && <TypingIndicator users={typingUsers} />}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <RefreshCw className="w-5 h-5 text-[#D4AF37] animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
+          <p className="text-center text-[#71717A] text-sm py-8">No messages yet — start the conversation.</p>
+        ) : (
+          <div className="space-y-3">
+            {messages.map(msg => (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                isOwn={msg.sender_id === userId}
+              />
+            ))}
+          </div>
+        )}
       </ScrollArea>
 
-      <form onSubmit={handleSend} className="p-4 border-t flex gap-2">
+      {/* Input */}
+      <form onSubmit={handleSend} className="p-3 border-t border-white/10 flex gap-2 bg-[#161618]">
         <Input
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-1"
+          onChange={e => setNewMessage(e.target.value)}
+          placeholder="Type a message…"
+          className="flex-1 bg-[#0a0a0b] border-white/10 text-[#F5F5F0] text-sm"
+          disabled={sending}
         />
-        <Button type="submit">Send</Button>
+        <Button type="submit" disabled={sending || !newMessage.trim()}
+          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] px-3">
+          {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        </Button>
       </form>
     </div>
   );
