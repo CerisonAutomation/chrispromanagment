@@ -1929,9 +1929,11 @@ export default function AdminPage() {
   if (!isAdmin) return (
     <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]">
       <div className="max-w-sm w-full px-6 text-center">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#a08550] flex items-center justify-center shadow-lg">
-          <Sparkles className="w-8 h-8 text-[#0a0a0b]" />
-        </div>
+        <img
+          src={cms?.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png"}
+          alt={cms?.brand?.name || "Christiano Property Management"}
+          className="h-16 w-auto mx-auto mb-6 object-contain"
+        />
         <h1 className="text-2xl font-bold text-[#f0ede8] mb-2">Studio Pro</h1>
         <p className="text-sm text-[#5a5a5e] mb-6">
           {!session

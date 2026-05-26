@@ -89,7 +89,7 @@ export const ContactModal = memo(function ContactModal() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, cms?.contact?.email, API]);
+  }, [form, cms?.contact?.email]);
 
   const handleClose = useCallback(() => {
     closeContactModal();
