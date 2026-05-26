@@ -303,7 +303,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
             />
           </div>
         );
-      }
+      } }
       case "features": {
         const featuresData = localCms.features || [];
         return (
