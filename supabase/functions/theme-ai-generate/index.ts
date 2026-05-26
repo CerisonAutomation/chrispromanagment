@@ -1,4 +1,5 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const ALLOWED_TOKENS = [
   "--gold", "--gold-light", "--gold-dark",
@@ -11,8 +12,23 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const HSL_RE = /^\d{1,3}\s+\d{1,3}%\s+\d{1,3}%$/;
 const isValid = (v: unknown) => typeof v === "string" && (HEX_RE.test(v) || HSL_RE.test(v));
 
+async function requireEditor(req: Request): Promise<Response | null> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return json({ error: "Unauthorized" }, 401);
+  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) return json({ error: "Admin or editor required" }, 403);
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const guard = await requireEditor(req);
+  if (guard) return guard;
 
   try {
     const { prompt, currentTokens = {} } = await req.json();
