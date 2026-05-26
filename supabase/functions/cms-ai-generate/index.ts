@@ -35,14 +35,6 @@ Deno.serve(async (req) => {
   const guard = await requireEditor(req);
   if (guard) return guard;
 
-  sectionLabel?: string;
-  currentContent?: unknown;
-  prompt: string;
-  mode?: "rewrite" | "generate" | "translate" | "refine";
-}
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
