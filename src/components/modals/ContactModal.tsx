@@ -104,8 +104,9 @@ export const ContactModal = memo(function ContactModal() {
 
       setIsSuccess(true);
       toast.success("Message sent successfully!");
-      } catch (error: Error) {
-      toast.error(error?.message || "Failed to send message. Please try again.");
+      } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to send message. Please try again.";
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

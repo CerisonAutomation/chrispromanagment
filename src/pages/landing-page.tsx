@@ -10,9 +10,7 @@ import { SearchWidget } from "@/components/search-widget";
 import { PropertyCard } from "@/components/property-card";
 import { useModal } from "@/context/modal-context";
 import { useCMS } from "@/context/cmscontext";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import { guesty } from "@/lib/guesty";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -48,11 +46,10 @@ export const LandingPage = () => {
 
   const fetchListings = async () => {
     try {
-      const response = await fetch(`${API}/listings?limit=6`);
-      const data = await response.json();
+      const data = await guesty.listings({ limit: 6 });
       setListings(data.results || []);
-    } catch (error) {
-      
+    } catch {
+      // edge function unavailable — render empty grid gracefully
     } finally {
       setIsLoading(false);
     }

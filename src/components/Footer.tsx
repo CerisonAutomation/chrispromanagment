@@ -120,10 +120,10 @@ export const Footer = memo(function Footer() {
                 <Mail className="w-3 h-3" />
                 {cms.contact?.email}
               </a>
-              <p className="flex items-start gap-2 text-xs text-[#71717A]">
+              <address className="not-italic flex items-start gap-2 text-xs text-[#71717A]">
                 <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                <span>St Julian's, Malta</span>
-              </p>
+                <span>The Fives - Unit A7<br />Triq Charles Sciberras<br />San Ġiljan, Malta</span>
+              </address>
             </div>
           </div>
         </div>
@@ -178,11 +178,11 @@ export const Footer = memo(function Footer() {
             {/* Legal Links */}
             <div className="flex gap-3 text-xs">
               <Link to="/privacy-policy" className="text-[#71717A] hover:text-[#D4AF37] transition-colors">
-                Privacy
+                Privacy Policy
               </Link>
               <span className="text-[#71717A]">·</span>
               <Link to="/terms" className="text-[#71717A] hover:text-[#D4AF37] transition-colors">
-                Terms
+                Terms &amp; Conditions
               </Link>
             </div>
           </div>

@@ -246,6 +246,10 @@ export const Header = memo(function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-4">
+            {/* Currency indicator */}
+            <span className="text-xs text-[#A1A1AA] border border-white/10 px-2 py-1 select-none" title="Currency: Euro">
+              EUR €
+            </span>
             <a
               href={`tel:${cms.contact?.phone || '+35679790202'}`}
               className="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-[#F5F5F0] transition-colors"
@@ -285,7 +289,7 @@ export const Header = memo(function Header() {
             <SheetContent side="right" className="bg-[#0F0F10] border-l border-white/10 w-full sm:max-w-sm p-0">
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-white/5">
-                  <OptimizedImage src={WHITE_LOGO} alt={cms.brand?.name} className="h-12 w-auto" objectFit="contain" />
+                  <img src={WHITE_LOGO} alt={cms.brand?.name || "Christiano Property Management"} className="h-12 w-auto object-contain" />
                 </div>
 
                 <nav className="flex-1 p-6 overflow-y-auto" aria-label="Mobile navigation">

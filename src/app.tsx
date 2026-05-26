@@ -36,6 +36,8 @@ const OwnerPortalPage        = lazy(() => import("@/pages/owner-portal-page"));
 const PricingEnginePage      = lazy(() => import("@/pages/pricing-engine-page"));
 const PropertyTokensPage     = lazy(() => import("@/pages/property-tokens-page"));
 const TaxReportsPage         = lazy(() => import("@/pages/tax-reports-page"));
+const PrivacyPolicyPage      = lazy(() => import("@/pages/privacy-policy-page"));
+const TermsPage              = lazy(() => import("@/pages/terms-page"));
 
 function AppSEO() {
   const location = useLocation();
@@ -138,6 +140,8 @@ export default function App() {
                     <Route path="/pricing"           element={<PricingEnginePage />} />
                     <Route path="/tokens"            element={<PropertyTokensPage />} />
                     <Route path="/tax-reports"       element={<TaxReportsPage />} />
+                    <Route path="/privacy-policy"    element={<PrivacyPolicyPage />} />
+                    <Route path="/terms"             element={<TermsPage />} />
                     <Route path="*"                  element={<NotFound />} />
                   </Routes>
                 </Suspense>
