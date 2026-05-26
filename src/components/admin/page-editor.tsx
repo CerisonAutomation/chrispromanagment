@@ -1,4 +1,4 @@
-/* eslint-disable */
+// TODO: Fix eslint issues and remove this blanket disable
 import { useState, useCallback } from "react";
 import { 
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronRight,

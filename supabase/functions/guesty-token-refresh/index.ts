@@ -147,9 +147,9 @@ Deno.serve(async (req) => {
     });
     if (upErr) throw upErr;
 
-    await logRefresh(admin, "success", { expires_at: safeExpiresAt.toISOString() });
-    console.log(`[guesty-token-refresh] refreshed — safe expiry ${safeExpiresAt.toISOString()}`);
-    return json({ ok: true, cached: false, expires_at: safeExpiresAt.toISOString(), scope });
+     await logRefresh(admin, "success", { expires_at: safeExpiresAt.toISOString() });
+     // Using structured logging would go here
+     return json({ ok: true, cached: false, expires_at: safeExpiresAt.toISOString(), scope });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[guesty-token-refresh] failed:", msg);

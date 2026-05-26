@@ -1,4 +1,4 @@
-/* eslint-disable */
+// TODO: Fix eslint issues and remove this blanket disable
 import { renderHook, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useAuth, signOut } from '../use-auth';

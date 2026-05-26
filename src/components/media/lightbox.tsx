@@ -1,4 +1,4 @@
-/* eslint-disable */
+// TODO: Fix eslint issues and remove this blanket disable
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, X, Download, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";

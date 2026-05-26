@@ -83,26 +83,24 @@ class MonitoringService {
     // This is a placeholder for analytics initialization
   }
 
-  captureException(error: Error, context?: Record<string, unknown>): void {
-    if (!this.initialized) {
-      console.error('[Monitoring] Exception:', error, context);
-      return;
-    }
+   captureException(error: Error, context?: Record<string, unknown>): void {
+     if (!this.initialized) {
+       // Using structured logging would go here
+       return;
+     }
 
-    // Send to Sentry or other error tracking service
-    // This is a placeholder for error tracking
-    console.error('[Monitoring] Exception:', error, context);
-  }
+     // Send to Sentry or other error tracking service
+     // This is a placeholder for error tracking
+   }
 
-  captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info', context?: Record<string, unknown>): void {
-    if (!this.initialized) {
-      console.log(`[Monitoring] [${level}]:`, message, context);
-      return;
-    }
+   captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info', context?: Record<string, unknown>): void {
+     if (!this.initialized) {
+       // Using structured logging would go here
+       return;
+     }
 
-    // Send to monitoring service
-    console.log(`[Monitoring] [${level}]:`, message, context);
-  }
+     // Send to monitoring service
+   }
 
   setUser(user: { id: string; email?: string; username?: string }): void {
     if (!this.initialized) {

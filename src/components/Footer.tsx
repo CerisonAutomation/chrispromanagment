@@ -1,4 +1,4 @@
-/* eslint-disable */
+// TODO: Fix eslint issues and remove this blanket disable
 import { memo, useMemo, useCallback } from 'react';
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, MessageCircle } from "lucide-react";
