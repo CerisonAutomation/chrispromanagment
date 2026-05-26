@@ -103,7 +103,7 @@ export default function CacheDebugPanel() {
   );
 }
 
-function Stat({ label, value, ok }) {
+function Stat({ label, value, ok }: { label: any; value: any; ok?: any }) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
