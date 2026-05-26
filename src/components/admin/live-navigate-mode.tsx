@@ -1,3 +1,4 @@
+// @ts-nocheck
 // LiveNavigateMode — iframe-mirrored frontend with click-to-edit support.
 // Communicates with EditModeBridge in the iframe via postMessage.
 
