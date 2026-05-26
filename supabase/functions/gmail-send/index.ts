@@ -64,6 +64,8 @@ function buildRaw({
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  const guard = await requireAdmin(req);
+  if (guard) return guard;
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const GOOGLE_MAIL_API_KEY = Deno.env.get("GOOGLE_MAIL_API_KEY");
