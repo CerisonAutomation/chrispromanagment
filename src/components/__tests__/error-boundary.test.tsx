@@ -1,5 +1,5 @@
 import { render, screen, within } from '@/test/utils';
-import ErrorBoundary from '../ErrorBoundary';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 // Component that throws an error
 function ThrowError({ shouldThrow }) {

@@ -16,7 +16,8 @@ const POLL_MS = 1500;
  */
 export default function CacheDebugPanel() {
   const [stats, setStats] = useState(getCacheStats());
-  const { status, loading, refresh } = useGuestyTokenStatus();
+  const { status: rawStatus, loading, refresh } = useGuestyTokenStatus();
+  const status: any = rawStatus;
 
   useEffect(() => {
     const id = setInterval(() => setStats(getCacheStats()), POLL_MS);
@@ -46,11 +47,12 @@ export default function CacheDebugPanel() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {Object.entries(stats).map(([name, s]) => (
+            {Object.entries(stats).map(([name, s]: [string, any]) => (
               <div key={name} className="rounded-lg border bg-card p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="font-medium capitalize">{name}</div>
-                  <Badge variant="outline">{s.size} keys</Badge>
+                  <Badge variant="outline" className="">{s.size} keys</Badge>
+
                 </div>
                 <div className="text-sm text-muted-foreground space-y-1">
                   <div>Hits: <span className="font-mono text-foreground">{s.hits}</span></div>
@@ -101,7 +103,7 @@ export default function CacheDebugPanel() {
   );
 }
 
-function Stat({ label, value, ok }) {
+function Stat({ label, value, ok }: { label: any; value: any; ok?: any }) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
