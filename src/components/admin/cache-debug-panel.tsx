@@ -16,7 +16,8 @@ const POLL_MS = 1500;
  */
 export default function CacheDebugPanel() {
   const [stats, setStats] = useState(getCacheStats());
-  const { status, loading, refresh } = useGuestyTokenStatus();
+  const { status: rawStatus, loading, refresh } = useGuestyTokenStatus();
+  const status: any = rawStatus;
 
   useEffect(() => {
     const id = setInterval(() => setStats(getCacheStats()), POLL_MS);
