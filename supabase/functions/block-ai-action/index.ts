@@ -12,6 +12,8 @@
 //     context?: { siteName?:string; targetLanguage?:string; extra?:string }
 //   }
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -25,6 +27,20 @@ function json(data: unknown, status = 200) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+async function requireEditor(req: Request): Promise<Response | null> {
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return json({ error: "Unauthorized" }, 401);
+  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
+  const { data: { user } } = await userClient.auth.getUser();
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
+  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) return json({ error: "Admin or editor required" }, 403);
+  return null;
+}
+
 
 function fieldsToJsonSchema(fields: Record<string, { type: string }>) {
   const properties: Record<string, unknown> = {};
