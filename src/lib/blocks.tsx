@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 // ============================================================
 // CVPM BLOCKS — Optimized & Consolidated Block System
@@ -81,7 +82,7 @@ export const SCHEMAS = {
       sticky:{ type:"boolean", label:"Sticky Header" },
     },
     defaults: {
-      logoUrl:"https://customer-assets.emergentagent.com/job_malta-stays-direct/artifacts/ta7za4jp_cv_logo_no_bg_gold.png",
+      logoUrl:"https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png",
       brandName:"Christiano Vincenti PM",
       phone:"+356 7979 0202",
       ctaText:"Book Now",

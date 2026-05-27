@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 /**
  * LiveBlocks.jsx — Exact mirror renderers of every frontend section
@@ -10,8 +11,8 @@ import {
   Building, Home, ChevronRight, MessageCircle, Quote, HeartHandshake,
   Phone, Mail, MapPin, Camera, Shield, Award, Zap, BadgePercent,
   ChevronDown, Instagram, Facebook, Play, Calendar as CalendarIcon,
-  Search, Wifi, ExternalLink, BedDouble, Bath, RefreshCw, AlertCircle,
-  Plus, Minus, BarChart3, Wrench, Clock
+  Search, ExternalLink, BedDouble, Bath, RefreshCw, AlertCircle,
+  Plus, Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +60,7 @@ const resolveRating = (l) => {
 return null;
 }
   const avg = r.avg ?? r.averageRating ?? null;
-  if (avg == null) {
+  if (avg === null || avg === undefined) {
 return null;
 }
   return avg > 5 ? +(avg / 2).toFixed(1) : +avg.toFixed(1);
@@ -817,17 +818,29 @@ export const LiveFooter = memo(({ d, onEdit }) => (
 ));
 
 // ─── 15. HEADER PREVIEW ──────────────────────────────────────────────────────
+const WHITE_LOGO = "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png";
 export const LiveHeader = memo(({ d }) => (
   <header className="bg-[#0F0F10]/95 border-b border-white/5 py-3 px-6 flex items-center justify-between">
-    <div className="h-10 w-32 bg-[#C9A84C]/10 flex items-center justify-center rounded">
-      <span className="text-[#C9A84C] text-xs font-semibold tracking-widest uppercase">LOGO</span>
+    <div className="flex items-center gap-3">
+      <img
+        src={d?.logoUrl || WHITE_LOGO}
+        alt={d?.siteName || "Logo"}
+        className="h-10 md:h-12 w-auto object-contain brightness-0 invert"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
     </div>
     <nav className="hidden md:flex items-center gap-6">
-      {["For Owners","Book a Stay","Contact"].map((l,i) => (
-        <span key={i} className="text-xs uppercase tracking-widest text-[#A1A1AA] hover:text-[#F5F5F0] cursor-pointer transition-colors">{l}</span>
+      {(d?.navLinks || ["For Owners","Book a Stay","Contact"]).map((l, i) => (
+        <span key={i} className="text-xs uppercase tracking-widest text-[#A1A1AA] hover:text-[#F5F5F0] cursor-pointer transition-colors">
+          {typeof l === "string" ? l : l.label}
+        </span>
       ))}
     </nav>
-    <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-4 py-2 font-semibold">Book Now</Button>
+    <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-4 py-2 font-semibold">
+      {d?.ctaText || "Book Now"}
+    </Button>
   </header>
 ));
 
@@ -844,7 +857,7 @@ export const LiveDivider = memo(({ d }) => (
 ));
 
 // ─── 17. LOGOS / TRUST BAR ───────────────────────────────────────────────────
-export const LiveLogos = memo(({ d, onEdit }) => (
+export const LiveLogos = memo(({ d, onEdit: _onEdit }) => (
   <section className="py-12 bg-[#0A0A0B] border-y border-white/5">
     <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-20">
       {d.label && <p className="text-center text-xs uppercase tracking-widest text-[#71717A] mb-8">{d.label}</p>}
@@ -1347,7 +1360,7 @@ export const LiveTwoCol = memo(({ d, onEdit }) => (
 ));
 
 // ─── 34. ICON ROW ────────────────────────────────────────────────────────────
-export const LiveIconRow = memo(({ d, onEdit }) => (
+export const LiveIconRow = memo(({ d, onEdit: _onEdit }) => (
   <section className="py-12 bg-[#0A0A0B] border-y border-white/5">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">

@@ -1291,7 +1291,14 @@ return <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-cent
       {/* Header */}
       <header className="h-12 bg-[#0a0a0b] border-b border-[#1a1a1e] flex items-center px-4 gap-2 shrink-0">
         <div className="flex items-center gap-2 pr-3 border-r border-[#1a1a1e]">
-          <div className="w-7 h-7 bg-gradient-to-br from-[#C9A84C] to-[#a08550] flex items-center justify-center font-bold text-sm rounded text-[#0a0a0b]">C</div>
+          <img
+            src={cms?.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png"}
+            alt="Logo"
+            className="h-7 w-auto object-contain brightness-0 invert"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
           <span className="text-[#f0ede8] text-sm font-semibold hidden sm:block">Studio <em className="text-[#C9A84C] not-italic font-normal">Pro</em></span>
         </div>
         
