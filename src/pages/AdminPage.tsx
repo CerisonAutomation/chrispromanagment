@@ -44,15 +44,17 @@ const AIAssistant = memo(({ block, onApply, isGenerating }) => {
   const [expanded, setExpanded] = useState(false);
 
   const runAI = async () => {
-    if (!prompt.trim() || !block) return;
+    if (!prompt.trim() || !block) {
+return;
+}
     onApply(prompt);
     setPrompt("");
   };
 
   return (
     <div className="border-b border-[#1e1e22]">
-      <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#f0ede8] hover:text-[#D4AF37] transition-colors">
-        <span className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#D4AF37]" />AI Assistant</span>
+      <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center justify-between p-4 text-sm font-medium text-[#f0ede8] hover:text-[#C9A84C] transition-colors">
+        <span className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-[#C9A84C]" />AI Assistant</span>
         {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
       {expanded && (
@@ -61,16 +63,16 @@ const AIAssistant = memo(({ block, onApply, isGenerating }) => {
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             placeholder="e.g. Make the headline more urgent and action-oriented. Keep the luxurious tone."
-            className="bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[80px] resize-none focus:border-[#D4AF37]/50"
+            className="bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[80px] resize-none focus:border-[#C9A84C]/50"
           />
           <div className="grid grid-cols-3 gap-2">
             {["Shorter", "More Luxury", "Action Words"].map(q => (
-              <button key={q} onClick={() => setPrompt(p => p + (p ? ". " : "") + q)} className="px-2 py-1.5 text-[9px] bg-[#0e0e10] border border-[#1e1e22] rounded text-[#6a6a6e] hover:text-[#D4AF37] hover:border-[#D4AF37]/30">
+              <button key={q} onClick={() => setPrompt(p => p + (p ? ". " : "") + q)} className="px-2 py-1.5 text-[9px] bg-[#0e0e10] border border-[#1e1e22] rounded text-[#6a6a6e] hover:text-[#C9A84C] hover:border-[#C9A84C]/30">
                 {q}
               </button>
             ))}
           </div>
-          <Button onClick={runAI} disabled={isGenerating || !prompt.trim()} className="w-full bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b] h-9 text-xs font-semibold">
+          <Button onClick={runAI} disabled={isGenerating || !prompt.trim()} className="w-full bg-[#C9A84C] hover:bg-[#D4B85C] text-[#0a0a0b] h-9 text-xs font-semibold">
             {isGenerating ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Generating...</> : <><Wand2 className="w-3.5 h-3.5 mr-2" />Generate Draft</>}
           </Button>
         </div>
@@ -87,21 +89,31 @@ const JSONEditor = memo(({ block, onUpdate }) => {
   const [valid, setValid] = useState(true);
 
   useEffect(() => {
-    if (block) setDraft(JSON.stringify(block.data, null, 2));
+    if (block) {
+setDraft(JSON.stringify(block.data, null, 2));
+}
   }, [block]);
 
   const handleChange = (val) => {
     setDraft(val);
-    try { JSON.parse(val); setValid(true); } catch { setValid(false); }
+    try {
+ JSON.parse(val); setValid(true); 
+} catch {
+ setValid(false); 
+}
   };
 
   const applyChanges = () => {
-    if (!valid) return;
+    if (!valid) {
+return;
+}
     try {
       const parsed = JSON.parse(draft);
       Object.keys(parsed).forEach(key => onUpdate(key, parsed[key]));
       toast.success("JSON changes applied");
-    } catch { toast.error("Invalid JSON"); }
+    } catch {
+ toast.error("Invalid JSON"); 
+}
   };
 
   const dirty = block && draft !== JSON.stringify(block.data, null, 2);
@@ -122,7 +134,7 @@ const JSONEditor = memo(({ block, onUpdate }) => {
         <Button variant="outline" onClick={() => setDraft(JSON.stringify(block?.data, null, 2))} disabled={!dirty} className="flex-1 h-8 text-xs border-[#2a2a2e] text-[#6a6a6e]">
           <RotateCcw className="w-3 h-3 mr-1" />Reset
         </Button>
-        <Button onClick={applyChanges} disabled={!valid || !dirty} className="flex-1 h-8 text-xs bg-[#D4AF37] text-[#0a0a0b]">
+        <Button onClick={applyChanges} disabled={!valid || !dirty} className="flex-1 h-8 text-xs bg-[#C9A84C] text-[#0a0a0b]">
           <Check className="w-3 h-3 mr-1" />Apply
         </Button>
       </div>
@@ -136,23 +148,25 @@ const JSONEditor = memo(({ block, onUpdate }) => {
 const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
   const schema = SCHEMAS[block?.type];
   
-  if (!block) return (
+  if (!block) {
+return (
     <div className="flex flex-col items-center justify-center h-full text-[#5a5a5e] text-xs p-6">
       <MousePointer className="w-10 h-10 mb-4 opacity-30" />
       <p className="text-center">Click a block on the canvas to edit its content</p>
     </div>
   );
+}
 
   // ── Field renderer for schema-defined fields ──
   const renderField = (key, f, val) => {
-    const common = "h-9 text-xs bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] focus:border-[#D4AF37]/50";
+    const common = "h-9 text-xs bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] focus:border-[#C9A84C]/50";
     if (f.type === "array") {
       const items = val || [];
       return (
         <div key={key} className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-wider text-[#5a5a5e] font-medium">{f.label}</span>
-            <button onClick={() => onUpdate(key, [...items, {}])} className="p-1 text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded"><Plus className="w-3.5 h-3.5" /></button>
+            <button onClick={() => onUpdate(key, [...items, {}])} className="p-1 text-[#C9A84C] hover:bg-[#C9A84C]/10 rounded"><Plus className="w-3.5 h-3.5" /></button>
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {items.map((item, i) => (
@@ -164,7 +178,9 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
                 {(f.itemFields || Object.keys(item)).map(sf => (
                   <div key={sf} className="mb-1">
                     <p className="text-[9px] text-[#4a4a4e] mb-0.5">{sf}</p>
-                    <Input value={item[sf] || ""} onChange={e => { const n = [...items]; n[i] = { ...n[i], [sf]: e.target.value }; onUpdate(key, n); }} placeholder={sf} className={`${common} h-7 text-[10px]`} />
+                    <Input value={item[sf] || ""} onChange={e => {
+ const n = [...items]; n[i] = { ...n[i], [sf]: e.target.value }; onUpdate(key, n); 
+}} placeholder={sf} className={`${common} h-7 text-[10px]`} />
                   </div>
                 ))}
               </div>
@@ -177,12 +193,12 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
       <div key={key} className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] uppercase tracking-wider text-[#5a5a5e] font-medium">{f.label}</span>
-          {f.ai && <button onClick={() => onAI(key, f.label)} disabled={isGenerating} className="p-1 text-[#D4AF37]/60 hover:text-[#D4AF37] transition-colors"><Sparkles className="w-3 h-3" /></button>}
+          {f.ai && <button onClick={() => onAI(key, f.label)} disabled={isGenerating} className="p-1 text-[#C9A84C]/60 hover:text-[#C9A84C] transition-colors"><Sparkles className="w-3 h-3" /></button>}
         </div>
         {f.type === "textarea" ? <Textarea value={val || ""} onChange={e => onUpdate(key, e.target.value)} className={`${common} min-h-[70px] resize-none`} />
         : f.type === "select" ? <select value={val || f.options?.[0]} onChange={e => onUpdate(key, e.target.value)} className={`${common} w-full rounded-md px-3`}>{(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}</select>
         : f.type === "number" ? <Input type="number" value={val || 0} onChange={e => onUpdate(key, parseInt(e.target.value) || 0)} className={common} />
-        : f.type === "boolean" ? <input type="checkbox" checked={!!val} onChange={e => onUpdate(key, e.target.checked)} className="w-5 h-5 accent-[#D4AF37]" />
+        : f.type === "boolean" ? <input type="checkbox" checked={!!val} onChange={e => onUpdate(key, e.target.checked)} className="w-5 h-5 accent-[#C9A84C]" />
         : <Input value={val || ""} onChange={e => onUpdate(key, e.target.value)} className={common} />}
       </div>
     );
@@ -194,12 +210,12 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
     return (
       <div>
         <div className="flex items-center gap-3 p-4 border-b border-[#1e1e22]">
-          <div className="w-9 h-9 rounded bg-[#D4AF37]/15 flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-[#D4AF37]" /></div>
+          <div className="w-9 h-9 rounded bg-[#C9A84C]/15 flex items-center justify-center flex-shrink-0"><Icon className="w-5 h-5 text-[#C9A84C]" /></div>
           <div className="flex-1 min-w-0">
             <span className="text-sm font-semibold text-[#f0ede8] block truncate">{schema.label}</span>
             <span className="text-[9px] text-[#4a4a4e]">{block.type}</span>
           </div>
-          <button onClick={() => onAI("_all", "all")} disabled={isGenerating} className="px-2.5 py-1.5 text-[9px] bg-[#D4AF37]/10 text-[#D4AF37] rounded hover:bg-[#D4AF37]/20 font-medium flex items-center gap-1 shrink-0">
+          <button onClick={() => onAI("_all", "all")} disabled={isGenerating} className="px-2.5 py-1.5 text-[9px] bg-[#C9A84C]/10 text-[#C9A84C] rounded hover:bg-[#C9A84C]/20 font-medium flex items-center gap-1 shrink-0">
             <Wand2 className="w-3 h-3" />{isGenerating ? "..." : "AI All"}
           </button>
         </div>
@@ -215,13 +231,13 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
   const blockTypeLabel = block.type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   const renderSmartField = (key, val) => {
-    const common = "h-9 text-xs bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] focus:border-[#D4AF37]/50";
+    const common = "h-9 text-xs bg-[#0a0a0b] border-[#1e1e22] text-[#f0ede8] focus:border-[#C9A84C]/50";
     if (Array.isArray(val)) {
       return (
         <div key={key} className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-wider text-[#5a5a5e] font-medium">{key}</span>
-            <button onClick={() => onUpdate(key, [...val, {}])} className="p-1 text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded"><Plus className="w-3.5 h-3.5" /></button>
+            <button onClick={() => onUpdate(key, [...val, {}])} className="p-1 text-[#C9A84C] hover:bg-[#C9A84C]/10 rounded"><Plus className="w-3.5 h-3.5" /></button>
           </div>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {val.map((item, i) => (
@@ -233,10 +249,14 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
                 {typeof item === "object" ? Object.entries(item).map(([sf, sv]) => (
                   <div key={sf} className="mb-1">
                     <p className="text-[9px] text-[#4a4a4e] mb-0.5">{sf}</p>
-                    <Input value={sv || ""} onChange={e => { const n = [...val]; n[i] = { ...n[i], [sf]: e.target.value }; onUpdate(key, n); }} className={`${common} h-7 text-[10px]`} />
+                    <Input value={sv || ""} onChange={e => {
+ const n = [...val]; n[i] = { ...n[i], [sf]: e.target.value }; onUpdate(key, n); 
+}} className={`${common} h-7 text-[10px]`} />
                   </div>
                 )) : (
-                  <Input value={item || ""} onChange={e => { const n = [...val]; n[i] = e.target.value; onUpdate(key, n); }} className={`${common} h-7 text-[10px]`} />
+                  <Input value={item || ""} onChange={e => {
+ const n = [...val]; n[i] = e.target.value; onUpdate(key, n); 
+}} className={`${common} h-7 text-[10px]`} />
                 )}
               </div>
             ))}
@@ -248,7 +268,7 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
       return (
         <div key={key} className="flex items-center gap-3 mb-3">
           <span className="text-[10px] uppercase tracking-wider text-[#5a5a5e] font-medium flex-1">{key}</span>
-          <input type="checkbox" checked={!!val} onChange={e => onUpdate(key, e.target.checked)} className="w-4 h-4 accent-[#D4AF37]" />
+          <input type="checkbox" checked={!!val} onChange={e => onUpdate(key, e.target.checked)} className="w-4 h-4 accent-[#C9A84C]" />
         </div>
       );
     }
@@ -265,7 +285,7 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
       <div key={key} className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] uppercase tracking-wider text-[#5a5a5e] font-medium">{key}</span>
-          <button onClick={() => onAI(key, key)} disabled={isGenerating} className="p-1 text-[#D4AF37]/40 hover:text-[#D4AF37] transition-colors" title="AI generate">
+          <button onClick={() => onAI(key, key)} disabled={isGenerating} className="p-1 text-[#C9A84C]/40 hover:text-[#C9A84C] transition-colors" title="AI generate">
             <Sparkles className="w-3 h-3" />
           </button>
         </div>
@@ -280,14 +300,14 @@ const PropsEditor = memo(({ block, onUpdate, onAI, isGenerating }) => {
   return (
     <div>
       <div className="flex items-center gap-3 p-4 border-b border-[#1e1e22]">
-        <div className="w-9 h-9 rounded bg-[#D4AF37]/15 flex items-center justify-center shrink-0">
-          <Layout className="w-5 h-5 text-[#D4AF37]" />
+        <div className="w-9 h-9 rounded bg-[#C9A84C]/15 flex items-center justify-center shrink-0">
+          <Layout className="w-5 h-5 text-[#C9A84C]" />
         </div>
         <div className="flex-1 min-w-0">
           <span className="text-sm font-semibold text-[#f0ede8] block truncate">{blockTypeLabel}</span>
           <span className="text-[9px] text-[#4a4a4e]">{block.type}</span>
         </div>
-        <button onClick={() => onAI("_all", "all")} disabled={isGenerating} className="px-2.5 py-1.5 text-[9px] bg-[#D4AF37]/10 text-[#D4AF37] rounded hover:bg-[#D4AF37]/20 font-medium flex items-center gap-1 shrink-0">
+        <button onClick={() => onAI("_all", "all")} disabled={isGenerating} className="px-2.5 py-1.5 text-[9px] bg-[#C9A84C]/10 text-[#C9A84C] rounded hover:bg-[#C9A84C]/20 font-medium flex items-center gap-1 shrink-0">
           <Wand2 className="w-3 h-3" />{isGenerating ? "..." : "AI All"}
         </button>
       </div>
@@ -337,7 +357,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
 
   const run = async (overridePrompt) => {
     const p = overridePrompt || prompt;
-    if (!p.trim()) return;
+    if (!p.trim()) {
+return;
+}
     setLoading(true); setStreaming(true); setResult("");
 
     try {
@@ -352,7 +374,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
       };
 
       const { data, error } = await supabase.functions.invoke("ai-generate", { body });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       const text = data?.content || data?.text || "";
 
       let displayed = "";
@@ -370,7 +394,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
   };
 
   const applyResult = () => {
-    if (!result) return;
+    if (!result) {
+return;
+}
     if (mode === "page") {
       try {
         const raw = result.replace(/```json\n?|```/g, "").trim();
@@ -380,7 +406,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
           onReplaceBlocks(parsed.map(b => ({ id: uid(), type: b.type, data: b.data || {}, visible: true })));
           toast.success(`Page built: ${parsed.length} blocks`);
         }
-      } catch { toast.error("Could not parse page blocks JSON"); }
+      } catch {
+ toast.error("Could not parse page blocks JSON"); 
+}
     } else if (mode === "field" && block) {
       try {
         const raw = result.replace(/```json\n?|```/g, "").trim();
@@ -392,7 +420,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
           // Single field — apply to first text field
           const schema = block.data;
           const firstTextField = Object.keys(schema).find(k => typeof schema[k] === "string" && k !== "backgroundImage");
-          if (firstTextField) { onApplyBlock(firstTextField, raw); toast.success(`Applied to "${firstTextField}"`); }
+          if (firstTextField) {
+ onApplyBlock(firstTextField, raw); toast.success(`Applied to "${firstTextField}"`); 
+}
         }
       } catch {
         navigator.clipboard?.writeText(result);
@@ -418,7 +448,7 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
             <p className="text-[11px] font-semibold text-[#f0ede8]">Enterprise AI</p>
             <p className="text-[9px] text-[#4a4a4e]">GPT-4o via Emergent LLM</p>
           </div>
-          <button onClick={() => setShowHist(h => !h)} className="ml-auto p-1.5 text-[#4a4a4e] hover:text-[#D4AF37]" title="History">
+          <button onClick={() => setShowHist(h => !h)} className="ml-auto p-1.5 text-[#4a4a4e] hover:text-[#C9A84C]" title="History">
             <Clock className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -426,7 +456,7 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
         {/* Mode selector */}
         <div className="flex gap-1 p-0.5 bg-[#0e0e10] rounded">
           {[["field","Field"],["page","Page"],["critique","Audit"]].map(([m,l]) => (
-            <button key={m} onClick={() => setMode(m)} className={`flex-1 py-1 text-[9px] font-medium rounded transition-all ${mode===m ? "bg-[#1a1a1e] text-[#D4AF37]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>{l}</button>
+            <button key={m} onClick={() => setMode(m)} className={`flex-1 py-1 text-[9px] font-medium rounded transition-all ${mode===m ? "bg-[#1a1a1e] text-[#C9A84C]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>{l}</button>
           ))}
         </div>
       </div>
@@ -436,7 +466,9 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
         <div className="border-b border-[#1a1a1e] max-h-48 overflow-y-auto bg-[#060608]">
           <p className="text-[9px] text-[#4a4a4e] px-3 py-2 uppercase tracking-wider">Recent generations</p>
           {history.map((h, i) => (
-            <button key={i} onClick={() => { setPrompt(h.prompt); setResult(h.result); setMode(h.mode); setShowHist(false); }} className="w-full text-left px-3 py-2 hover:bg-[#1a1a1e] border-b border-[#1a1a1e] last:border-0">
+            <button key={i} onClick={() => {
+ setPrompt(h.prompt); setResult(h.result); setMode(h.mode); setShowHist(false); 
+}} className="w-full text-left px-3 py-2 hover:bg-[#1a1a1e] border-b border-[#1a1a1e] last:border-0">
               <p className="text-[10px] text-[#f0ede8] truncate">{h.prompt.slice(0,55)}</p>
               <p className="text-[9px] text-[#4a4a4e] mt-0.5">{h.mode} · {new Date(h.ts).toLocaleTimeString()}</p>
             </button>
@@ -447,7 +479,7 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
       <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
         {/* Context indicator */}
         {mode === "field" && (
-          <div className={`text-[9px] px-2 py-1.5 rounded flex items-center gap-2 ${block ? "bg-[#D4AF37]/10 text-[#D4AF37]" : "bg-[#1a1a1e] text-[#5a5a5e]"}`}>
+          <div className={`text-[9px] px-2 py-1.5 rounded flex items-center gap-2 ${block ? "bg-[#C9A84C]/10 text-[#C9A84C]" : "bg-[#1a1a1e] text-[#5a5a5e]"}`}>
             <Layout className="w-3 h-3 shrink-0" />
             {block ? `Target: ${block.type.replace(/_/g," ")}` : "Select a block on canvas to target it"}
           </div>
@@ -467,12 +499,16 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
           <div className="flex flex-wrap gap-1.5">
             {mode === "page"
               ? Object.entries(PAGE_BUILD_TEMPLATES).map(([k, v]) => (
-                  <button key={k} onClick={() => { setPrompt(v); run(v); }} className="px-2 py-1 text-[9px] border border-[#1e1e22] rounded text-[#6a6a6e] hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all capitalize">{k}</button>
+                  <button key={k} onClick={() => {
+ setPrompt(v); run(v); 
+}} className="px-2 py-1 text-[9px] border border-[#1e1e22] rounded text-[#6a6a6e] hover:border-[#C9A84C]/40 hover:text-[#C9A84C] transition-all capitalize">{k}</button>
                 ))
               : mode === "critique"
               ? <button onClick={() => run("Critique this page structure.")} className="px-3 py-1.5 text-[9px] border border-[#7c6af5]/30 rounded text-[#a89ff8] bg-[#7c6af5]/10 hover:bg-[#7c6af5]/20 transition-all">Run page audit now</button>
               : AI_QUICK_PROMPTS.map((qp, i) => (
-                  <button key={i} onClick={() => { setPrompt(qp.prompt); }} className={`px-2 py-1 text-[9px] border rounded transition-all ${prompt === qp.prompt ? "border-[#D4AF37]/50 bg-[#D4AF37]/10 text-[#D4AF37]" : "border-[#1e1e22] text-[#6a6a6e] hover:border-[#D4AF37]/30 hover:text-[#f0ede8]"}`}>{qp.label}</button>
+                  <button key={i} onClick={() => {
+ setPrompt(qp.prompt); 
+}} className={`px-2 py-1 text-[9px] border rounded transition-all ${prompt === qp.prompt ? "border-[#C9A84C]/50 bg-[#C9A84C]/10 text-[#C9A84C]" : "border-[#1e1e22] text-[#6a6a6e] hover:border-[#C9A84C]/30 hover:text-[#f0ede8]"}`}>{qp.label}</button>
                 ))
             }
           </div>
@@ -484,10 +520,14 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run(); }}
+            onKeyDown={e => {
+ if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+run();
+} 
+}}
             placeholder={mode === "page" ? "Describe the page you want to build..." : mode === "critique" ? "Add specific concerns to audit..." : "Describe what to generate or how to improve..."}
             rows={4}
-            className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] p-2 resize-none focus:outline-none focus:border-[#D4AF37]/40 leading-relaxed"
+            className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] p-2 resize-none focus:outline-none focus:border-[#C9A84C]/40 leading-relaxed"
           />
           <p className="text-[8px] text-[#3a3a3e] mt-0.5">⌘↵ to generate</p>
         </div>
@@ -496,7 +536,7 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
         <button
           onClick={() => run()}
           disabled={loading || !prompt.trim()}
-          className={`w-full py-2.5 rounded flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-wider transition-all ${loading ? "bg-[#7c6af5]/20 text-[#a89ff8] cursor-wait" : "bg-[#D4AF37] text-[#0a0a0b] hover:bg-[#E5C158]"}`}
+          className={`w-full py-2.5 rounded flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-wider transition-all ${loading ? "bg-[#7c6af5]/20 text-[#a89ff8] cursor-wait" : "bg-[#C9A84C] text-[#0a0a0b] hover:bg-[#D4B85C]"}`}
         >
           {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating…</> : <><Sparkles className="w-3.5 h-3.5" />Generate</>}
         </button>
@@ -517,13 +557,17 @@ const EnterpriseAIPanel = memo(({ block, blocks, onApplyBlock, onReplaceBlocks, 
               <pre className="text-[10px] text-[#c0bdb5] whitespace-pre-wrap font-mono leading-relaxed break-all">{result}</pre>
             </div>
             <div className="flex gap-2 p-2 border-t border-[#1a1a1e]">
-              <button onClick={applyResult} disabled={streaming} className="flex-1 py-1.5 text-[9px] bg-[#D4AF37]/15 text-[#D4AF37] rounded hover:bg-[#D4AF37]/25 font-medium disabled:opacity-40">
+              <button onClick={applyResult} disabled={streaming} className="flex-1 py-1.5 text-[9px] bg-[#C9A84C]/15 text-[#C9A84C] rounded hover:bg-[#C9A84C]/25 font-medium disabled:opacity-40">
                 Apply
               </button>
-              <button onClick={() => { navigator.clipboard?.writeText(result); toast.success("Copied"); }} className="flex-1 py-1.5 text-[9px] bg-[#1a1a1e] text-[#6a6a6e] rounded hover:text-[#f0ede8]">
+              <button onClick={() => {
+ navigator.clipboard?.writeText(result); toast.success("Copied"); 
+}} className="flex-1 py-1.5 text-[9px] bg-[#1a1a1e] text-[#6a6a6e] rounded hover:text-[#f0ede8]">
                 Copy
               </button>
-              <button onClick={() => { setResult(""); setPrompt(""); }} className="px-2 py-1.5 text-[9px] text-[#3a3a3e] hover:text-[#6a6a6e]">Clear</button>
+              <button onClick={() => {
+ setResult(""); setPrompt(""); 
+}} className="px-2 py-1.5 text-[9px] text-[#3a3a3e] hover:text-[#6a6a6e]">Clear</button>
             </div>
           </div>
         )}
@@ -543,14 +587,28 @@ const SEOPanel = memo(({ blocks, page }) => {
   // SEO score
   const score = (() => {
     let s = 0;
-    if (seo.title?.length >= 30 && seo.title?.length <= 60) s += 25; else if (seo.title) s += 10;
-    if (seo.description?.length >= 120 && seo.description?.length <= 160) s += 25; else if (seo.description) s += 10;
-    if (seo.keywords) s += 15;
-    if (seo.ogImage) s += 10;
-    if (blocks.some(b => b.data?.headline || b.data?.title || b.data?.badge)) s += 25;
+    if (seo.title?.length >= 30 && seo.title?.length <= 60) {
+s += 25;
+} else if (seo.title) {
+s += 10;
+}
+    if (seo.description?.length >= 120 && seo.description?.length <= 160) {
+s += 25;
+} else if (seo.description) {
+s += 10;
+}
+    if (seo.keywords) {
+s += 15;
+}
+    if (seo.ogImage) {
+s += 10;
+}
+    if (blocks.some(b => b.data?.headline || b.data?.title || b.data?.badge)) {
+s += 25;
+}
     return Math.min(100, s);
   })();
-  const scoreColor = score >= 80 ? "#52c27a" : score >= 50 ? "#E5C158" : "#e05252";
+  const scoreColor = score >= 80 ? "#52c27a" : score >= 50 ? "#D4B85C" : "#e05252";
 
   const checks = [
     { ok: seo.title?.length >= 30 && seo.title?.length <= 60, label:"Title 30-60 chars", detail: `${seo.title?.length||0} chars` },
@@ -566,13 +624,23 @@ const SEOPanel = memo(({ blocks, page }) => {
       const { data, error } = await supabase.functions.invoke("ai-generate", {
         body: { prompt: `Generate SEO meta title, description, and keywords for the "${page}" page of a luxury Malta property management company called Christiano Property Management. Return JSON: { title, description, keywords }`, mode: "seo" },
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       const parsed = typeof data?.content === "string" ? JSON.parse(data.content.replace(/```json\n?|```/g, "").trim()) : data;
-      if (parsed?.title)       setSeo(s => ({ ...s, title:       parsed.title }));
-      if (parsed?.description) setSeo(s => ({ ...s, description: parsed.description }));
-      if (parsed?.keywords)    setSeo(s => ({ ...s, keywords:    parsed.keywords }));
+      if (parsed?.title)       {
+setSeo(s => ({ ...s, title:       parsed.title }));
+}
+      if (parsed?.description) {
+setSeo(s => ({ ...s, description: parsed.description }));
+}
+      if (parsed?.keywords)    {
+setSeo(s => ({ ...s, keywords:    parsed.keywords }));
+}
       toast.success("SEO auto-filled by AI");
-    } catch { toast.error("AI SEO requires the ai-generate edge function to be deployed"); }
+    } catch {
+ toast.error("AI SEO requires the ai-generate edge function to be deployed"); 
+}
     setLoading(false);
   };
 
@@ -585,10 +653,14 @@ const SEOPanel = memo(({ blocks, page }) => {
         meta_keywords: seo.keywords || null,
         og_image: seo.ogImage || null,
       }, { onConflict: "page_slug" });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setSaved(true); setTimeout(() => setSaved(false), 2000);
       toast.success("SEO saved");
-    } catch { toast.error("SEO save failed"); }
+    } catch {
+ toast.error("SEO save failed"); 
+}
   };
 
   return (
@@ -612,8 +684,8 @@ const SEOPanel = memo(({ blocks, page }) => {
         <div key={f.key}>
           <p className="text-[10px] uppercase tracking-wider text-[#5a5a5e] mb-1.5 font-medium">{f.label}</p>
           {f.multi
-            ? <textarea rows={3} value={seo[f.key]||""} onChange={e => setSeo(s=>({...s,[f.key]:e.target.value}))} placeholder={f.ph} className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] p-2 resize-none focus:outline-none focus:border-[#D4AF37]/40 leading-relaxed" />
-            : <input  type="text" value={seo[f.key]||""} onChange={e => setSeo(s=>({...s,[f.key]:e.target.value}))} placeholder={f.ph} className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] px-2 h-9 focus:outline-none focus:border-[#D4AF37]/40" />
+            ? <textarea rows={3} value={seo[f.key]||""} onChange={e => setSeo(s=>({...s,[f.key]:e.target.value}))} placeholder={f.ph} className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] p-2 resize-none focus:outline-none focus:border-[#C9A84C]/40 leading-relaxed" />
+            : <input  type="text" value={seo[f.key]||""} onChange={e => setSeo(s=>({...s,[f.key]:e.target.value}))} placeholder={f.ph} className="w-full bg-[#0e0e10] border border-[#1e1e22] rounded text-[11px] text-[#f0ede8] px-2 h-9 focus:outline-none focus:border-[#C9A84C]/40" />
           }
         </div>
       ))}
@@ -633,7 +705,7 @@ const SEOPanel = memo(({ blocks, page }) => {
         <button onClick={autoFill} disabled={loading} className="flex-1 py-2 text-[9px] bg-[#7c6af5]/15 text-[#a89ff8] rounded font-semibold uppercase tracking-wider hover:bg-[#7c6af5]/25 disabled:opacity-50 flex items-center justify-center gap-1.5">
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} AI Fill
         </button>
-        <button onClick={saveSEO} className={`flex-1 py-2 text-[9px] rounded font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 ${saved ? "bg-green-500/20 text-green-400" : "bg-[#D4AF37] text-[#0a0a0b] hover:bg-[#E5C158]"}`}>
+        <button onClick={saveSEO} className={`flex-1 py-2 text-[9px] rounded font-semibold uppercase tracking-wider flex items-center justify-center gap-1.5 ${saved ? "bg-green-500/20 text-green-400" : "bg-[#C9A84C] text-[#0a0a0b] hover:bg-[#D4B85C]"}`}>
           {saved ? <><Check className="w-3 h-3" />Saved</> : <><Save className="w-3 h-3" />Save SEO</>}
         </button>
       </div>
@@ -669,14 +741,22 @@ const SuggestPanel = memo(({ blocks, onAdd, onAI, selected }) => {
           section: "page", mode: "critique"
         },
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       const raw = (data?.content || "").replace(/```json\n?|```/g, "").trim();
-      try { setCritique(JSON.parse(raw)); } catch { setCritique([{ type: "warn", title: "Parse error", detail: "AI returned unstructured feedback." }]); }
-    } catch { setCritique([{ type: "warn", title: "AI unavailable", detail: "Deploy the ai-generate edge function with an Anthropic API key to enable AI critique." }]); }
+      try {
+ setCritique(JSON.parse(raw)); 
+} catch {
+ setCritique([{ type: "warn", title: "Parse error", detail: "AI returned unstructured feedback." }]); 
+}
+    } catch {
+ setCritique([{ type: "warn", title: "AI unavailable", detail: "Deploy the ai-generate edge function with an Anthropic API key to enable AI critique." }]); 
+}
     setLoading(false);
   };
 
-  const color = { good:"#52c27a", warn:"#E5C158", improve:"#7c6af5" };
+  const color = { good:"#52c27a", warn:"#D4B85C", improve:"#7c6af5" };
 
   const missing = MISSING_BLOCK_SUGGESTIONS.filter(s => !existing.has(s.type));
 
@@ -730,12 +810,14 @@ const SuggestPanel = memo(({ blocks, onAdd, onAI, selected }) => {
           <p className="text-[9px] uppercase tracking-wider text-[#5a5a5e] mb-2 font-medium">Recommended Additions</p>
           <div className="space-y-1.5">
             {missing.slice(0, 6).map(s => (
-              <div key={s.type} className="flex items-center gap-2 p-2.5 bg-[#0e0e10] rounded border border-[#1a1a1e] hover:border-[#D4AF37]/20 group">
+              <div key={s.type} className="flex items-center gap-2 p-2.5 bg-[#0e0e10] rounded border border-[#1a1a1e] hover:border-[#C9A84C]/20 group">
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] font-medium text-[#f0ede8]">{s.label}</p>
                   <p className="text-[9px] text-[#5a5a5e] truncate">{s.reason}</p>
                 </div>
-                <button onClick={() => { onAdd(s.type); toast.success(`${s.label} added`); }} className="px-2.5 py-1 text-[8px] bg-[#D4AF37]/10 text-[#D4AF37] rounded font-semibold uppercase tracking-wider hover:bg-[#D4AF37]/20 shrink-0">
+                <button onClick={() => {
+ onAdd(s.type); toast.success(`${s.label} added`); 
+}} className="px-2.5 py-1 text-[8px] bg-[#C9A84C]/10 text-[#C9A84C] rounded font-semibold uppercase tracking-wider hover:bg-[#C9A84C]/20 shrink-0">
                   Add
                 </button>
               </div>
@@ -776,7 +858,7 @@ const BlockCategorySection = memo(({ cat, onAdd }) => {
     <div>
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between py-1.5 text-[8px] uppercase tracking-wider text-[#4a4a4e] font-semibold hover:text-[#D4AF37] transition-colors"
+        className="w-full flex items-center justify-between py-1.5 text-[8px] uppercase tracking-wider text-[#4a4a4e] font-semibold hover:text-[#C9A84C] transition-colors"
       >
         <span>{cat.label}</span>
         <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -788,9 +870,9 @@ const BlockCategorySection = memo(({ cat, onAdd }) => {
               key={type}
               onClick={() => onAdd(type)}
               title={desc}
-              className="flex flex-col items-start gap-1 p-2 bg-[#0e0e10] border border-[#1a1a1e] rounded hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5 group text-left"
+              className="flex flex-col items-start gap-1 p-2 bg-[#0e0e10] border border-[#1a1a1e] rounded hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 group text-left"
             >
-              <Layout className="w-3.5 h-3.5 text-[#5a5a5e] group-hover:text-[#D4AF37]" />
+              <Layout className="w-3.5 h-3.5 text-[#5a5a5e] group-hover:text-[#C9A84C]" />
               <span className="text-[8px] text-[#6a6a6e] group-hover:text-[#f0ede8] font-medium truncate w-full">{label}</span>
             </button>
           ))}
@@ -881,7 +963,9 @@ const AdminDashboard = memo(({ adminKey }) => {
         .gte("check_in", thisMonth);
       const monthly: Record<string, number> = {};
       data?.forEach(r => {
-        if (!r.check_in) return;
+        if (!r.check_in) {
+return;
+}
         const m = r.check_in.slice(0, 7);
         monthly[m] = (monthly[m] || 0) + (r.total_price || 0);
       });
@@ -899,7 +983,9 @@ const AdminDashboard = memo(({ adminKey }) => {
     });
   }, [load]);
 
-  useEffect(() => { refreshAll(); }, [refreshAll]);
+  useEffect(() => {
+ refreshAll(); 
+}, [refreshAll]);
 
   const TABS = [
     { id: "overview", icon: ChartBar, label: "Overview" },
@@ -924,7 +1010,7 @@ const AdminDashboard = memo(({ adminKey }) => {
   const health = data.health || {};
 
   const statCards = [
-    { label: "Active Listings", value: stats.active_listings || 0, color: "text-[#D4AF37]", icon: Building },
+    { label: "Active Listings", value: stats.active_listings || 0, color: "text-[#C9A84C]", icon: Building },
     { label: "Total Bookings", value: stats.confirmed_bookings || 0, color: "text-green-400", icon: Check },
     { label: "Revenue", value: `€${(stats.total_revenue || 0).toLocaleString()}`, color: "text-blue-400", icon: TrendingUp },
     { label: "New This Week", value: stats.recent_bookings_7d || 0, color: "text-purple-400", icon: ArrowUp },
@@ -932,7 +1018,15 @@ const AdminDashboard = memo(({ adminKey }) => {
     { label: "Contacts", value: (stats.contacts || 0) + (stats.owner_inquiries || 0), color: "text-pink-400", icon: MessageCircle },
   ];
 
-  const formatDate = (d) => { if (!d) return "—"; try { return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }); } catch { return d; } };
+  const formatDate = (d) => {
+ if (!d) {
+return "—";
+} try {
+ return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }); 
+} catch {
+ return d; 
+} 
+};
 
   const STATUS_COLOR = {
     confirmed: "text-green-400 bg-green-400/10",
@@ -949,18 +1043,24 @@ const AdminDashboard = memo(({ adminKey }) => {
   const [couponSaving, setCouponSaving] = useState(false);
 
   const createCoupon = async () => {
-    if (!newCoupon.code) return;
+    if (!newCoupon.code) {
+return;
+}
     setCouponSaving(true);
     try {
       const { error } = await supabase.from("coupons").insert({ ...newCoupon, code: newCoupon.code.toUpperCase() });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       toast.success("Coupon created!");
       setNewCoupon({ code: "", description: "", discount_type: "percentage", discount_value: 10, active: true });
       load("coupons", async () => {
         const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
         return { coupons: data || [] };
       });
-    } catch (e: unknown) { toast.error(`Failed: ${e instanceof Error ? e.message.slice(0, 80) : String(e)}`); }
+    } catch (e: unknown) {
+ toast.error(`Failed: ${e instanceof Error ? e.message.slice(0, 80) : String(e)}`); 
+}
     setCouponSaving(false);
   };
 
@@ -973,7 +1073,9 @@ const AdminDashboard = memo(({ adminKey }) => {
   };
 
   const deleteCoupon = async (id: number) => {
-    if (!window.confirm("Delete coupon?")) return;
+    if (!window.confirm("Delete coupon?")) {
+return;
+}
     await supabase.from("coupons").delete().eq("id", id);
     load("coupons", async () => {
       const { data } = await supabase.from("coupons").select("*").order("created_at", { ascending: false });
@@ -995,9 +1097,13 @@ const AdminDashboard = memo(({ adminKey }) => {
         meta_title: seoData.title || null,
         meta_description: seoData.description || null,
       }, { onConflict: "page_slug" });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       toast.success("SEO saved!");
-    } catch { toast.error("Save failed"); }
+    } catch {
+ toast.error("Save failed"); 
+}
     setSeoSaving(false);
   };
 
@@ -1007,7 +1113,9 @@ const AdminDashboard = memo(({ adminKey }) => {
   const [mediaLoading, setMediaLoading] = useState(false);
 
   const fetchMedia = useCallback(async (lid) => {
-    if (!lid) return;
+    if (!lid) {
+return;
+}
     setMediaLoading(true);
     try {
       const { data } = await supabase
@@ -1030,7 +1138,9 @@ const AdminDashboard = memo(({ adminKey }) => {
   }, [tab, properties, mediaListing]);
 
   useEffect(() => {
-    if (mediaListing) fetchMedia(mediaListing);
+    if (mediaListing) {
+fetchMedia(mediaListing);
+}
   }, [mediaListing]);
 
   return (
@@ -1039,10 +1149,10 @@ const AdminDashboard = memo(({ adminKey }) => {
       <div className="h-10 bg-[#0e0e10] border-b border-[#1a1a1e] flex items-center px-4 gap-1 overflow-x-auto shrink-0">
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium rounded whitespace-nowrap transition-all ${tab === t.id ? "bg-[#D4AF37]/15 text-[#D4AF37]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium rounded whitespace-nowrap transition-all ${tab === t.id ? "bg-[#C9A84C]/15 text-[#C9A84C]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>
             <t.icon className="w-3.5 h-3.5" />{t.label}
             {t.id === "inbox" && (data.inbox?.unread > 0) && (
-              <span className="bg-[#D4AF37] text-[#0a0a0b] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="bg-[#C9A84C] text-[#0a0a0b] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {data.inbox.unread}
               </span>
             )}
@@ -1075,7 +1185,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                 {/* Recent Bookings */}
                 <div className="grid lg:grid-cols-2 gap-6">
                   <div className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-[#f0ede8] mb-4 flex items-center gap-2"><ClipboardList className="w-4 h-4 text-[#D4AF37]" />Recent Bookings</h3>
+                    <h3 className="text-sm font-semibold text-[#f0ede8] mb-4 flex items-center gap-2"><ClipboardList className="w-4 h-4 text-[#C9A84C]" />Recent Bookings</h3>
                     <div className="space-y-2">
                       {bookings.slice(0, 5).map((b, i) => (
                         <div key={i} className="flex items-center justify-between py-2 border-b border-[#1a1a1e] last:border-0">
@@ -1085,7 +1195,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                           </div>
                           <div className="text-right">
                             <span className={`text-[9px] font-medium px-2 py-0.5 rounded ${getStatusColor(b.status)}`}>{b.status?.replace('_', ' ')}</span>
-                            <p className="text-xs text-[#D4AF37] mt-1">€{(b.amount || 0).toFixed(0)}</p>
+                            <p className="text-xs text-[#C9A84C] mt-1">€{(b.amount || 0).toFixed(0)}</p>
                           </div>
                         </div>
                       ))}
@@ -1094,7 +1204,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                   </div>
 
                   <div className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-4">
-                    <h3 className="text-sm font-semibold text-[#f0ede8] mb-4 flex items-center gap-2"><Star className="w-4 h-4 text-[#D4AF37]" />Latest Reviews</h3>
+                    <h3 className="text-sm font-semibold text-[#f0ede8] mb-4 flex items-center gap-2"><Star className="w-4 h-4 text-[#C9A84C]" />Latest Reviews</h3>
                     <div className="space-y-3">
                       {reviews.slice(0, 4).map((r, i) => {
                         const raw = r.rawReview || {};
@@ -1103,7 +1213,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                         return (
                           <div key={i} className="py-2 border-b border-[#1a1a1e] last:border-0">
                             <div className="flex items-center gap-2 mb-1">
-                              {score && <span className="text-xs font-bold text-[#D4AF37]">★ {score}</span>}
+                              {score && <span className="text-xs font-bold text-[#C9A84C]">★ {score}</span>}
                               <span className="text-[10px] text-[#5a5a5e]">{r.channelId}</span>
                             </div>
                             <p className="text-xs text-[#A1A1AA] line-clamp-2">{text}</p>
@@ -1124,7 +1234,9 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Bookings Hub</h2>
-              <button onClick={() => load("bookings", async () => { const { data } = await supabase.from("reservations_cache").select("guesty_id, listing_id, guest_name, guest_email, check_in, check_out, nights, guests, total_price, currency, status, channel, created_at").order("created_at", { ascending: false }).limit(50); return { bookings: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("bookings", async () => {
+ const { data } = await supabase.from("reservations_cache").select("guesty_id, listing_id, guest_name, guest_email, check_in, check_out, nights, guests, total_price, currency, status, channel, created_at").order("created_at", { ascending: false }).limit(50); return { bookings: data || [] }; 
+})} className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#D4B85C]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.bookings ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1148,7 +1260,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                           </td>
                           <td className="px-4 py-3 text-[#A1A1AA]">{formatDate(b.check_in)}</td>
                           <td className="px-4 py-3 text-[#A1A1AA]">{formatDate(b.check_out)}</td>
-                          <td className="px-4 py-3 text-[#D4AF37] font-semibold">€{(b.amount || 0).toFixed(2)}</td>
+                          <td className="px-4 py-3 text-[#C9A84C] font-semibold">€{(b.amount || 0).toFixed(2)}</td>
                           <td className="px-4 py-3">
                             <span className={`text-[9px] font-medium px-2 py-1 rounded ${getStatusColor(b.status)}`}>{b.status?.replace(/_/g, ' ') || '—'}</span>
                           </td>
@@ -1188,7 +1300,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                         {(revenue.monthly || []).map((m, i) => (
                           <tr key={i} className="border-b border-[#1a1a1e]/50 hover:bg-[#1a1a1e]/30">
                             <td className="px-3 py-2.5 text-[#f0ede8]">{m.month}</td>
-                            <td className="px-3 py-2.5 text-[#D4AF37] font-semibold">€{m.revenue?.toLocaleString()}</td>
+                            <td className="px-3 py-2.5 text-[#C9A84C] font-semibold">€{m.revenue?.toLocaleString()}</td>
                             <td className="px-3 py-2.5 text-[#A1A1AA]">{m.count}</td>
                             <td className="px-3 py-2.5 text-[#A1A1AA]">€{m.avg?.toFixed(0)}</td>
                           </tr>
@@ -1208,7 +1320,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                         <div key={i} className="flex justify-between items-center py-2 border-b border-[#1a1a1e]/50 last:border-0">
                           <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(s.status)}`}>{s.status?.replace(/_/g, ' ')}</span>
                           <div className="text-right">
-                            <p className="text-xs text-[#D4AF37]">€{(s.revenue || 0).toLocaleString()}</p>
+                            <p className="text-xs text-[#C9A84C]">€{(s.revenue || 0).toLocaleString()}</p>
                             <p className="text-[10px] text-[#5a5a5e]">{s.count} bookings</p>
                           </div>
                         </div>
@@ -1222,7 +1334,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                         <div key={i} className="flex justify-between items-center py-2 border-b border-[#1a1a1e]/50 last:border-0">
                           <span className="text-xs text-[#A1A1AA] truncate max-w-[160px]">{p.listing_id}</span>
                           <div className="text-right">
-                            <p className="text-xs text-[#D4AF37]">€{(p.revenue || 0).toLocaleString()}</p>
+                            <p className="text-xs text-[#C9A84C]">€{(p.revenue || 0).toLocaleString()}</p>
                             <p className="text-[10px] text-[#5a5a5e]">{p.bookings} bookings</p>
                           </div>
                         </div>
@@ -1241,30 +1353,32 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Property Manager</h2>
-              <button onClick={() => load("properties", async () => { const { data } = await supabase.from("guesty_properties_cache").select("guesty_id, title, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, active, last_synced_at").order("title"); return { properties: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("properties", async () => {
+ const { data } = await supabase.from("guesty_properties_cache").select("guesty_id, title, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, active, last_synced_at").order("title"); return { properties: data || [] }; 
+})} className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#D4B85C]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.properties ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {properties.map((p, i) => (
-                  <div key={i} className="bg-[#111318] border border-[#1a1a1e] rounded-lg overflow-hidden hover:border-[#D4AF37]/30 transition-all">
+                  <div key={i} className="bg-[#111318] border border-[#1a1a1e] rounded-lg overflow-hidden hover:border-[#C9A84C]/30 transition-all">
                     {p.picture?.thumbnail && (
                       <OptimizedImage src={p.picture.thumbnail} alt="p.title" className="" objectFit="cover" loading="lazy" />
                     )}
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <h4 className="text-sm font-semibold text-[#f0ede8] line-clamp-2">{p.title}</h4>
-                        {p.reviews?.avg && <span className="text-[#D4AF37] text-xs shrink-0">★ {(p.reviews.avg / 2).toFixed(1)}</span>}
+                        {p.reviews?.avg && <span className="text-[#C9A84C] text-xs shrink-0">★ {(p.reviews.avg / 2).toFixed(1)}</span>}
                       </div>
                       <p className="text-xs text-[#5a5a5e] mb-3">{p.address?.city}, {p.address?.country}</p>
                       <div className="grid grid-cols-3 gap-2 text-[10px] text-center mb-3">
                         <div className="bg-[#0a0a0b] rounded p-2">
-                          <p className="text-[#D4AF37] font-semibold">{p.accommodates}</p>
+                          <p className="text-[#C9A84C] font-semibold">{p.accommodates}</p>
                           <p className="text-[#5a5a5e]">Guests</p>
                         </div>
                         <div className="bg-[#0a0a0b] rounded p-2">
-                          <p className="text-[#D4AF37] font-semibold">{p.bedrooms}</p>
+                          <p className="text-[#C9A84C] font-semibold">{p.bedrooms}</p>
                           <p className="text-[#5a5a5e]">Beds</p>
                         </div>
                         <div className="bg-[#0a0a0b] rounded p-2">
@@ -1273,10 +1387,10 @@ const AdminDashboard = memo(({ adminKey }) => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#D4AF37]">€{p.prices?.basePrice}/night</span>
+                        <span className="text-[#C9A84C]">€{p.prices?.basePrice}/night</span>
                         <span className="text-green-400">€{p.local_revenue?.toFixed(0)} revenue</span>
                       </div>
-                      <a href={`/property/${p._id}`} target="_blank" rel="noreferrer" className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-[#D4AF37]/10 text-[#D4AF37] text-xs rounded hover:bg-[#D4AF37]/20 transition-colors">
+                      <a href={`/property/${p._id}`} target="_blank" rel="noreferrer" className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-[#C9A84C]/10 text-[#C9A84C] text-xs rounded hover:bg-[#C9A84C]/20 transition-colors">
                         <ExternalLink className="w-3.5 h-3.5" />View Listing
                       </a>
                     </div>
@@ -1293,7 +1407,7 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Reviews Feed</h2>
-              <button onClick={() => refreshAll()} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => refreshAll()} className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#D4B85C]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.reviews ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
@@ -1308,7 +1422,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                     <div key={i} className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] font-bold text-sm">{reviewer[0]?.toUpperCase()}</div>
+                          <div className="w-8 h-8 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] font-bold text-sm">{reviewer[0]?.toUpperCase()}</div>
                           <div>
                             <p className="text-sm font-semibold text-[#f0ede8]">{reviewer}</p>
                             <p className="text-[10px] text-[#5a5a5e]">{r.channelId}</p>
@@ -1316,8 +1430,8 @@ const AdminDashboard = memo(({ adminKey }) => {
                         </div>
                         {score && (
                           <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-[#D4AF37] fill-current" />
-                            <span className="text-[#D4AF37] font-bold">{score}</span>
+                            <Star className="w-4 h-4 text-[#C9A84C] fill-current" />
+                            <span className="text-[#C9A84C] font-bold">{score}</span>
                           </div>
                         )}
                       </div>
@@ -1344,23 +1458,25 @@ const AdminDashboard = memo(({ adminKey }) => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">Guest Inbox
-                {data.inbox?.unread > 0 && <span className="ml-2 bg-[#D4AF37] text-[#0a0a0b] text-xs font-bold px-2 py-0.5 rounded-full">{data.inbox.unread} unread</span>}
+                {data.inbox?.unread > 0 && <span className="ml-2 bg-[#C9A84C] text-[#0a0a0b] text-xs font-bold px-2 py-0.5 rounded-full">{data.inbox.unread} unread</span>}
               </h2>
-              <button onClick={() => load("inbox", async () => { const { data } = await supabase.from("contact_submissions").select("id, name, email, subject, message, status, created_at").order("created_at", { ascending: false }).limit(20); return { messages: data || [] }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+              <button onClick={() => load("inbox", async () => {
+ const { data } = await supabase.from("contact_submissions").select("id, name, email, subject, message, status, created_at").order("created_at", { ascending: false }).limit(20); return { messages: data || [] }; 
+})} className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#D4B85C]"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
             </div>
             {loading.inbox ? (
               <div className="flex items-center gap-2 text-[#5a5a5e]"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
             ) : (
               <div className="space-y-3">
                 {inbox.map((msg, i) => (
-                  <div key={i} className={`bg-[#111318] border rounded-lg p-4 transition-all ${msg.read ? "border-[#1a1a1e]" : "border-[#D4AF37]/30"}`}>
+                  <div key={i} className={`bg-[#111318] border rounded-lg p-4 transition-all ${msg.read ? "border-[#1a1a1e]" : "border-[#C9A84C]/30"}`}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`text-[9px] font-medium px-2 py-0.5 rounded ${msg.type === "contact" ? "bg-blue-400/10 text-blue-400" : "bg-purple-400/10 text-purple-400"}`}>
                             {msg.type === "contact" ? "Contact" : "Owner Inquiry"}
                           </span>
-                          {!msg.read && <span className="w-2 h-2 rounded-full bg-[#D4AF37]" />}
+                          {!msg.read && <span className="w-2 h-2 rounded-full bg-[#C9A84C]" />}
                           <span className="text-[10px] text-[#5a5a5e]">{formatDate(msg.created_at)}</span>
                         </div>
                         <p className="text-sm font-semibold text-[#f0ede8]">{msg.name || msg.first_name || "Anonymous"}</p>
@@ -1418,7 +1534,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                 </div>
               </div>
               <Button onClick={createCoupon} disabled={!newCoupon.code || couponSaving}
-                className="bg-[#D4AF37] text-[#0a0a0b] hover:bg-[#E5C158] text-xs h-9">
+                className="bg-[#C9A84C] text-[#0a0a0b] hover:bg-[#D4B85C] text-xs h-9">
                 {couponSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Plus className="w-3.5 h-3.5 mr-1" />}
                 Create Coupon
               </Button>
@@ -1436,7 +1552,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                 <tbody>
                   {coupons.map((c, i) => (
                     <tr key={i} className="border-b border-[#1a1a1e] hover:bg-[#1a1a1e]/30">
-                      <td className="px-4 py-3 font-mono text-[#D4AF37] font-bold">{c.code}</td>
+                      <td className="px-4 py-3 font-mono text-[#C9A84C] font-bold">{c.code}</td>
                       <td className="px-4 py-3 text-[#A1A1AA]">{c.discount_type}</td>
                       <td className="px-4 py-3 text-[#f0ede8]">{c.discount_type === "percentage" ? `${c.discount_value}%` : `€${c.discount_value}`}</td>
                       <td className="px-4 py-3 text-[#5a5a5e]">{c.description || "—"}</td>
@@ -1448,7 +1564,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2">
-                          <button onClick={() => toggleCoupon(c.id)} className="text-[#D4AF37] hover:text-[#E5C158] text-[10px] underline">Toggle</button>
+                          <button onClick={() => toggleCoupon(c.id)} className="text-[#C9A84C] hover:text-[#D4B85C] text-[10px] underline">Toggle</button>
                           <button onClick={() => deleteCoupon(c.id)} className="text-red-400 hover:text-red-300 text-[10px] underline">Delete</button>
                         </div>
                       </td>
@@ -1486,7 +1602,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                     </div>
                   ))}
                 </div>
-                <Button onClick={saveSEO} disabled={seoSaving} className="w-full mt-4 bg-[#D4AF37] text-[#0a0a0b] hover:bg-[#E5C158] text-xs h-9">
+                <Button onClick={saveSEO} disabled={seoSaving} className="w-full mt-4 bg-[#C9A84C] text-[#0a0a0b] hover:bg-[#D4B85C] text-xs h-9">
                   {seoSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Save className="w-3.5 h-3.5 mr-1" />}
                   Save SEO
                 </Button>
@@ -1535,7 +1651,7 @@ const AdminDashboard = memo(({ adminKey }) => {
             ) : mediaData ? (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
                 {mediaData.pictures?.map((pic, i) => (
-                  <div key={i} className="group relative bg-[#111318] rounded overflow-hidden border border-[#1a1a1e] hover:border-[#D4AF37]/30 transition-all">
+                  <div key={i} className="group relative bg-[#111318] rounded overflow-hidden border border-[#1a1a1e] hover:border-[#C9A84C]/30 transition-all">
                     <OptimizedImage src={pic.thumbnail || pic.original} alt="`Photo ${i + 1" className="" objectFit="cover" loading="lazy" />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <a href={pic.original} target="_blank" rel="noreferrer" className="p-2 bg-white/10 rounded hover:bg-white/20">
@@ -1565,7 +1681,9 @@ const AdminDashboard = memo(({ adminKey }) => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-[#f0ede8]">System Health</h2>
               <div className="flex gap-2">
-                <button onClick={() => load("health", async () => { const { error } = await supabase.from("guesty_properties_cache").select("guesty_id", { head: true, count: "exact" }); return { supabase: !error ? "ok" : "error", guesty_webhook: "webhook-based", version: "1.0" }; })} className="flex items-center gap-1.5 text-xs text-[#D4AF37] hover:text-[#E5C158]">
+                <button onClick={() => load("health", async () => {
+ const { error } = await supabase.from("guesty_properties_cache").select("guesty_id", { head: true, count: "exact" }); return { supabase: !error ? "ok" : "error", guesty_webhook: "webhook-based", version: "1.0" }; 
+})} className="flex items-center gap-1.5 text-xs text-[#C9A84C] hover:text-[#D4B85C]">
                   <RefreshCw className="w-3.5 h-3.5" />Refresh
                 </button>
                 <button onClick={() => toast.success("Cache cleared — webhook-synced data doesn't cache")} className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300">
@@ -1597,7 +1715,7 @@ const AdminDashboard = memo(({ adminKey }) => {
                 ].map((section, i) => (
                   <div key={i} className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <section.icon className="w-4 h-4 text-[#D4AF37]" />
+                      <section.icon className="w-4 h-4 text-[#C9A84C]" />
                       <h3 className="text-sm font-semibold text-[#f0ede8]">{section.title}</h3>
                     </div>
                     <div className="space-y-2">
@@ -1615,10 +1733,10 @@ const AdminDashboard = memo(({ adminKey }) => {
                 ))}
                 <div className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Code className="w-4 h-4 text-[#D4AF37]" />
+                    <Code className="w-4 h-4 text-[#C9A84C]" />
                     <h3 className="text-sm font-semibold text-[#f0ede8]">SDK Info</h3>
                   </div>
-                  <p className="text-xs text-[#A1A1AA]">Contract version: <span className="text-[#D4AF37]">{health.sdk_version}</span></p>
+                  <p className="text-xs text-[#A1A1AA]">Contract version: <span className="text-[#C9A84C]">{health.sdk_version}</span></p>
                   <p className="text-[10px] text-[#5a5a5e] mt-2">BEAPI hard deprecation: 31 March 2026</p>
                 </div>
               </div>
@@ -1655,10 +1773,10 @@ const AdminDashboard = memo(({ adminKey }) => {
 // ============================================
 export default function AdminPage() {
   const navigate = useNavigate();
-  const { cms, isAdmin, session, verifyAdmin, logout, updateSection } = useCMS();
-  
+  const { cms, isAdmin, isLoading: cmsLoading, isRolesLoading, session, verifyAdmin, logout, updateSection } = useCMS();
+
   const [adminKey, setAdminKey] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading = cmsLoading || isRolesLoading;
   const [mode, setMode] = useState("studio"); // 'studio' | 'dashboard'
   const [page, setPage] = useState("home");
   const [leftTab, setLeftTab] = useState("blocks");
@@ -1677,7 +1795,9 @@ export default function AdminPage() {
   // Load blocks: try saved page from backend, fall back to template + CMS merge
   useEffect(() => {
     const adminKey = localStorage.getItem("cvpm_admin_key");
-    if (!adminKey) return; // wait for auth
+    if (!adminKey) {
+return;
+} // wait for auth
 
     const loadPage = async () => {
       try {
@@ -1710,18 +1830,38 @@ export default function AdminPage() {
         const baseData = { ...block.data };
         // Merge live CMS content where available
         if (block.type === "hero" && cms.hero) {
-          if (cms.hero.headline)         baseData.headline         = cms.hero.headline;
-          if (cms.hero.headlineAccent)   baseData.headlineAccent   = cms.hero.headlineAccent;
-          if (cms.hero.subheadline)      baseData.subheadline      = cms.hero.subheadline;
-          if (cms.hero.backgroundImage)  baseData.backgroundImage  = cms.hero.backgroundImage;
-          if (cms.hero.cta1Text)         baseData.cta1Text         = cms.hero.cta1Text;
-          if (cms.hero.cta2Text)         baseData.cta2Text         = cms.hero.cta2Text;
+          if (cms.hero.headline)         {
+baseData.headline         = cms.hero.headline;
+}
+          if (cms.hero.headlineAccent)   {
+baseData.headlineAccent   = cms.hero.headlineAccent;
+}
+          if (cms.hero.subheadline)      {
+baseData.subheadline      = cms.hero.subheadline;
+}
+          if (cms.hero.backgroundImage)  {
+baseData.backgroundImage  = cms.hero.backgroundImage;
+}
+          if (cms.hero.cta1Text)         {
+baseData.cta1Text         = cms.hero.cta1Text;
+}
+          if (cms.hero.cta2Text)         {
+baseData.cta2Text         = cms.hero.cta2Text;
+}
         }
         if (block.type === "about" && cms.about) {
-          if (cms.about.label)       baseData.label       = cms.about.subtitle || cms.about.label;
-          if (cms.about.title)       baseData.title       = cms.about.title;
-          if (cms.about.paragraphs)  baseData.paragraphs  = cms.about.paragraphs.map(t => ({ text: t }));
-          if (cms.about.image)       baseData.image       = cms.about.image;
+          if (cms.about.label)       {
+baseData.label       = cms.about.subtitle || cms.about.label;
+}
+          if (cms.about.title)       {
+baseData.title       = cms.about.title;
+}
+          if (cms.about.paragraphs)  {
+baseData.paragraphs  = cms.about.paragraphs.map(t => ({ text: t }));
+}
+          if (cms.about.image)       {
+baseData.image       = cms.about.image;
+}
         }
         if (block.type === "testimonials" && cms.testimonials?.length) {
           baseData.items = cms.testimonials;
@@ -1734,11 +1874,17 @@ export default function AdminPage() {
           }));
         }
         if (block.type === "header") {
-          if (cms.brand?.logoGold) baseData.logoUrl   = cms.brand.logoGold;
-          if (cms.brand?.name)     baseData.brandName = cms.brand.name;
+          if (cms.brand?.logoGold) {
+baseData.logoUrl   = cms.brand.logoGold;
+}
+          if (cms.brand?.name)     {
+baseData.brandName = cms.brand.name;
+}
         }
         if (block.type === "footer") {
-          if (cms.brand?.name) baseData.brand = cms.brand.name;
+          if (cms.brand?.name) {
+baseData.brand = cms.brand.name;
+}
         }
         if (block.type === "features" && cms.features?.length) {
           baseData.items = cms.features.map(f => ({ icon: f.icon, title: f.title, body: f.description }));
@@ -1753,28 +1899,43 @@ export default function AdminPage() {
    
   }, [cms, page]);
 
-  useEffect(() => {
-    const k = localStorage.getItem("cvpm_admin_key");
-    if (k) verifyAdmin(k).then(v => { setIsLoading(false); if (!v) localStorage.removeItem("cvpm_admin_key"); });
-    else setIsLoading(false);
-  }, [verifyAdmin]);
 
   useEffect(() => {
     const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) { e.preventDefault(); doUndo(); }
-      if ((e.metaKey || e.ctrlKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) { e.preventDefault(); doRedo(); }
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); saveAll(); }
-      if (e.key === "Escape") setSelected(null);
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+ e.preventDefault(); doUndo(); 
+}
+      if ((e.metaKey || e.ctrlKey) && (e.key === "y" || (e.key === "z" && e.shiftKey))) {
+ e.preventDefault(); doRedo(); 
+}
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+ e.preventDefault(); saveAll(); 
+}
+      if (e.key === "Escape") {
+setSelected(null);
+}
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [blocks, undo, redo]);
 
-  const snapshot = useCallback(() => { setUndo(u => [...u.slice(-29), JSON.stringify(blocks)]); setRedo([]); }, [blocks]);
-  const doUndo = useCallback(() => { if (!undo.length) return; setRedo(r => [...r, JSON.stringify(blocks)]); setBlocks(JSON.parse(undo.at(-1))); setUndo(u => u.slice(0, -1)); toast.info("Undo"); }, [undo, blocks, setBlocks, setUndo, setRedo]);
-  const doRedo = useCallback(() => { if (!redo.length) return; setUndo(u => [...u, JSON.stringify(blocks)]); setBlocks(JSON.parse(redo.at(-1))); setRedo(r => r.slice(0, -1)); toast.info("Redo"); }, [redo, blocks, setBlocks, setUndo, setRedo]);
+  const snapshot = useCallback(() => {
+ setUndo(u => [...u.slice(-29), JSON.stringify(blocks)]); setRedo([]); 
+}, [blocks]);
+  const doUndo = useCallback(() => {
+ if (!undo.length) {
+return;
+} setRedo(r => [...r, JSON.stringify(blocks)]); setBlocks(JSON.parse(undo.at(-1))); setUndo(u => u.slice(0, -1)); toast.info("Undo"); 
+}, [undo, blocks, setBlocks, setUndo, setRedo]);
+  const doRedo = useCallback(() => {
+ if (!redo.length) {
+return;
+} setUndo(u => [...u, JSON.stringify(blocks)]); setBlocks(JSON.parse(redo.at(-1))); setRedo(r => r.slice(0, -1)); toast.info("Redo"); 
+}, [redo, blocks, setBlocks, setUndo, setRedo]);
 
-  const updateBlock = useCallback((id, field, value) => { snapshot(); setBlocks(b => b.map(x => x.id === id ? { ...x, data: { ...x.data, [field]: value } } : x)); }, [snapshot]);
+  const updateBlock = useCallback((id, field, value) => {
+ snapshot(); setBlocks(b => b.map(x => x.id === id ? { ...x, data: { ...x.data, [field]: value } } : x)); 
+}, [snapshot]);
   const addBlock = (type) => { 
     snapshot(); 
     const b = { 
@@ -1787,14 +1948,34 @@ export default function AdminPage() {
     setSelected(b.id); 
     toast.success(`Added ${SCHEMAS[type]?.label || type}`); 
   };
-  const deleteBlock = (id) => { snapshot(); setBlocks(b => b.filter(x => x.id !== id)); if (selected === id) setSelected(null); };
-  const duplicateBlock = (id) => { snapshot(); const b = blocks.find(x => x.id === id); if (!b) return; const idx = blocks.findIndex(x => x.id === id); const n = { ...b, id: `${b.type}_${Date.now()}`, data: { ...b.data } }; setBlocks(bs => [...bs.slice(0, idx + 1), n, ...bs.slice(idx + 1)]); };
-  const moveBlock = (idx, dir) => { if ((dir === -1 && idx === 0) || (dir === 1 && idx === blocks.length - 1)) return; snapshot(); const items = [...blocks]; [items[idx], items[idx + dir]] = [items[idx + dir], items[idx]]; setBlocks(items); };
-  const onDragEnd = (result) => { if (!result.destination) return; snapshot(); const items = [...blocks]; const [moved] = items.splice(result.source.index, 1); items.splice(result.destination.index, 0, moved); setBlocks(items); };
-  const toggleVisibility = (id) => { snapshot(); setBlocks(b => b.map(x => x.id === id ? { ...x, visible: !x.visible } : x)); };
+  const deleteBlock = (id) => {
+ snapshot(); setBlocks(b => b.filter(x => x.id !== id)); if (selected === id) {
+setSelected(null);
+} 
+};
+  const duplicateBlock = (id) => {
+ snapshot(); const b = blocks.find(x => x.id === id); if (!b) {
+return;
+} const idx = blocks.findIndex(x => x.id === id); const n = { ...b, id: `${b.type}_${Date.now()}`, data: { ...b.data } }; setBlocks(bs => [...bs.slice(0, idx + 1), n, ...bs.slice(idx + 1)]); 
+};
+  const moveBlock = (idx, dir) => {
+ if ((dir === -1 && idx === 0) || (dir === 1 && idx === blocks.length - 1)) {
+return;
+} snapshot(); const items = [...blocks]; [items[idx], items[idx + dir]] = [items[idx + dir], items[idx]]; setBlocks(items); 
+};
+  const onDragEnd = (result) => {
+ if (!result.destination) {
+return;
+} snapshot(); const items = [...blocks]; const [moved] = items.splice(result.source.index, 1); items.splice(result.destination.index, 0, moved); setBlocks(items); 
+};
+  const toggleVisibility = (id) => {
+ snapshot(); setBlocks(b => b.map(x => x.id === id ? { ...x, visible: !x.visible } : x)); 
+};
 
   const generateAI = async (field, label) => {
-    if (!selected) return;
+    if (!selected) {
+return;
+}
     setGenerating(true);
     try {
       const block = blocks.find(b => b.id === selected);
@@ -1811,22 +1992,31 @@ export default function AdminPage() {
           const { data, error } = await supabase.functions.invoke("ai-generate", {
             body: { prompt: `Generate ${f.label || k} for a ${blockLabel} section. Luxury Malta property style. Keep it concise and professional.`, section: block.type, field: k }
           });
-          if (!error && data?.content) updateBlock(selected, k, data.content.replace(/^["']|["']$/g, ''));
+          if (!error && data?.content) {
+updateBlock(selected, k, data.content.replace(/^["']|["']$/g, ''));
+}
         }
         toast.success("AI generated all fields!");
       } else {
         const { data, error } = await supabase.functions.invoke("ai-generate", {
           body: { prompt: `Generate ${label} for luxury Malta property ${blockLabel} section. Concise and elegant.`, section: block.type, field }
         });
-        if (!error && data?.content) { updateBlock(selected, field, data.content.replace(/^["']|["']$/g, '')); toast.success(`Generated ${label}`); }
-        else if (error) toast.error("AI generation requires the ai-generate edge function");
+        if (!error && data?.content) {
+ updateBlock(selected, field, data.content.replace(/^["']|["']$/g, '')); toast.success(`Generated ${label}`); 
+} else if (error) {
+toast.error("AI generation requires the ai-generate edge function");
+}
       }
-    } catch { toast.error("AI generation failed"); }
+    } catch {
+ toast.error("AI generation failed"); 
+}
     setGenerating(false);
   };
 
   const generateFromPrompt = async (prompt) => {
-    if (!selected) return;
+    if (!selected) {
+return;
+}
     setGenerating(true);
     try {
       const block = blocks.find(b => b.id === selected);
@@ -1837,7 +2027,9 @@ export default function AdminPage() {
           mode: "refine"
         }
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       if (data?.content) {
         try {
           const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
@@ -1847,7 +2039,9 @@ export default function AdminPage() {
           toast.error("Could not parse AI response");
         }
       }
-    } catch { toast.error("AI generation requires the ai-generate edge function to be deployed"); }
+    } catch {
+ toast.error("AI generation requires the ai-generate edge function to be deployed"); 
+}
     setGenerating(false);
   };
 
@@ -1877,11 +2071,21 @@ export default function AdminPage() {
       const pricing = blocks.find(b => b.type === "pricing");
       const about = blocks.find(b => b.type === "about");
       const faq = blocks.find(b => b.type === "faq");
-      if (hero) await updateSection("hero", hero.data).catch(() => {});
-      if (testimonials?.data?.items) await updateSection("testimonials", testimonials.data.items).catch(() => {});
-      if (pricing?.data?.plans) await updateSection("pricing", pricing.data).catch(() => {});
-      if (about?.data) await updateSection("about", about.data).catch(() => {});
-      if (faq?.data?.items) await updateSection("faq", faq.data).catch(() => {});
+      if (hero) {
+await updateSection("hero", hero.data).catch(() => {});
+}
+      if (testimonials?.data?.items) {
+await updateSection("testimonials", testimonials.data.items).catch(() => {});
+}
+      if (pricing?.data?.plans) {
+await updateSection("pricing", pricing.data).catch(() => {});
+}
+      if (about?.data) {
+await updateSection("about", about.data).catch(() => {});
+}
+      if (faq?.data?.items) {
+await updateSection("faq", faq.data).catch(() => {});
+}
 
       // Mark as published in Supabase
       await supabase.from("cms_page_drafts").upsert({
@@ -1924,53 +2128,33 @@ export default function AdminPage() {
   const isCMSPage = currentPageConfig.type === "cms";
   const previewUrl = `${window.location.origin}${currentPageConfig.url}`;
 
-  if (isLoading) return <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]"><div className="animate-spin w-10 h-10 border-2 border-[#D4AF37] border-t-transparent rounded-full" /></div>;
+  if (isLoading) {
+return <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]"><div className="animate-spin w-10 h-10 border-2 border-[#C9A84C] border-t-transparent rounded-full" /></div>;
+}
 
-  if (!isAdmin) return (
-    <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]">
-      <div className="max-w-sm w-full px-6 text-center">
-        <img
-          src={cms?.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png"}
-          alt={cms?.brand?.name || "Christiano Property Management"}
-          className="h-16 w-auto mx-auto mb-6 object-contain"
-        />
-        <h1 className="text-2xl font-bold text-[#f0ede8] mb-2">Studio Pro</h1>
-        <p className="text-sm text-[#5a5a5e] mb-6">
-          {!session
-            ? "Sign in to access the editor."
-            : "Your account does not have admin access. Ask an existing admin to grant the role in user_roles."}
-        </p>
-        <Button
-          onClick={() => navigate("/auth")}
-          className="w-full bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b] h-11 font-semibold"
-        >
-          Sign In
-        </Button>
-        <p className="text-[10px] text-[#3a3a3e] mt-4">
-          First user: sign up, then have an existing admin assign the <code>admin</code> role in the database.
-        </p>
-      </div>
-    </div>
-  );
+  if (!isAdmin) {
+    navigate("/auth", { replace: true });
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0b] flex flex-col z-[9999] overflow-hidden" data-testid="admin-editor">
       {/* Header */}
       <header className="h-12 bg-[#0a0a0b] border-b border-[#1a1a1e] flex items-center px-4 gap-2 shrink-0">
         <div className="flex items-center gap-2 pr-3 border-r border-[#1a1a1e]">
-          <div className="w-7 h-7 bg-gradient-to-br from-[#D4AF37] to-[#a08550] flex items-center justify-center font-bold text-sm rounded text-[#0a0a0b]">C</div>
-          <span className="text-[#f0ede8] text-sm font-semibold hidden sm:block">Studio <em className="text-[#D4AF37] not-italic font-normal">Pro</em></span>
+          <div className="w-7 h-7 bg-gradient-to-br from-[#C9A84C] to-[#a08550] flex items-center justify-center font-bold text-sm rounded text-[#0a0a0b]">C</div>
+          <span className="text-[#f0ede8] text-sm font-semibold hidden sm:block">Studio <em className="text-[#C9A84C] not-italic font-normal">Pro</em></span>
         </div>
         
         {/* Mode Toggle */}
         <div className="flex items-center gap-1 border border-[#1a1a1e] rounded p-0.5 mr-2">
-          <button onClick={() => setMode("studio")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "studio" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
+          <button onClick={() => setMode("studio")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "studio" ? "bg-[#C9A84C] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
             <Layout className="w-3 h-3 inline mr-1" />Studio
           </button>
-          <button onClick={() => setMode("live")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "live" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
+          <button onClick={() => setMode("live")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "live" ? "bg-[#C9A84C] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
             <Eye className="w-3 h-3 inline mr-1" />Live
           </button>
-          <button onClick={() => setMode("dashboard")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "dashboard" ? "bg-[#D4AF37] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
+          <button onClick={() => setMode("dashboard")} className={`px-2.5 py-1 text-[9px] font-medium rounded transition-all ${mode === "dashboard" ? "bg-[#C9A84C] text-[#0a0a0b]" : "text-[#6a6a6e] hover:text-[#f0ede8]"}`}>
             <ChartBar className="w-3 h-3 inline mr-1" />Dashboard
           </button>
         </div>
@@ -1985,7 +2169,7 @@ export default function AdminPage() {
                 className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap ${
                   page === p.id
                     ? p.type === "cms"
-                      ? "bg-[#D4AF37]/15 text-[#D4AF37]"
+                      ? "bg-[#C9A84C]/15 text-[#C9A84C]"
                       : "bg-blue-400/15 text-blue-400"
                     : "text-[#6a6a6e] hover:text-[#f0ede8]"
                 }`}
@@ -2002,7 +2186,7 @@ export default function AdminPage() {
         {mode === "studio" && (
           <div className="flex items-center gap-1 border-r border-[#1a1a1e] pr-2 mr-2">
             {[{ m: "desktop", i: Monitor }, { m: "tablet", i: Tablet }, { m: "mobile", i: Smartphone }].map(({ m, i: I }) => (
-              <button key={m} onClick={() => setView(m)} className={`p-1.5 rounded ${view === m ? "bg-[#D4AF37]/15 text-[#D4AF37]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}><I className="w-3.5 h-3.5" /></button>
+              <button key={m} onClick={() => setView(m)} className={`p-1.5 rounded ${view === m ? "bg-[#C9A84C]/15 text-[#C9A84C]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}><I className="w-3.5 h-3.5" /></button>
             ))}
           </div>
         )}
@@ -2020,13 +2204,15 @@ export default function AdminPage() {
         <button onClick={() => setShowKeys(true)} className="p-1.5 text-[#6a6a6e] hover:text-[#f0ede8] rounded hover:bg-[#1a1a1e]" title="API Keys"><Key className="w-3.5 h-3.5" /></button>
         
         {mode === "studio" && (
-          <button onClick={saveAll} disabled={saving} className="ml-2 px-3 py-1.5 text-[10px] bg-[#D4AF37] text-[#0a0a0b] font-semibold rounded hover:bg-[#E5C158] flex items-center gap-1.5">
+          <button onClick={saveAll} disabled={saving} className="ml-2 px-3 py-1.5 text-[10px] bg-[#C9A84C] text-[#0a0a0b] font-semibold rounded hover:bg-[#D4B85C] flex items-center gap-1.5">
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
             Publish
           </button>
         )}
         
-        <button onClick={() => { logout(); navigate("/"); }} className="p-1.5 text-[#6a6a6e] hover:text-red-400 rounded hover:bg-red-400/10 ml-1" title="Logout"><LogOut className="w-3.5 h-3.5" /></button>
+        <button onClick={() => {
+ logout(); navigate("/"); 
+}} className="p-1.5 text-[#6a6a6e] hover:text-red-400 rounded hover:bg-red-400/10 ml-1" title="Logout"><LogOut className="w-3.5 h-3.5" /></button>
       </header>
 
       {/* Dashboard Mode */}
@@ -2053,7 +2239,7 @@ export default function AdminPage() {
             <>
               <div className="flex border-b border-[#1a1a1e]">
                 {[{ id: "blocks", icon: Plus, label: "Add" }, { id: "layers", icon: Layers, label: "Layers" }].map(t => (
-                  <button key={t.id} onClick={() => setLeftTab(t.id)} className={`flex-1 py-2.5 text-[9px] font-medium flex flex-col items-center gap-1 ${leftTab === t.id ? "text-[#D4AF37] bg-[#D4AF37]/5" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>
+                  <button key={t.id} onClick={() => setLeftTab(t.id)} className={`flex-1 py-2.5 text-[9px] font-medium flex flex-col items-center gap-1 ${leftTab === t.id ? "text-[#C9A84C] bg-[#C9A84C]/5" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>
                     <t.icon className="w-4 h-4" />{t.label}
                   </button>
                 ))}
@@ -2070,22 +2256,32 @@ export default function AdminPage() {
                   <div className="space-y-0.5">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[8px] uppercase tracking-wider text-[#4a4a4e] font-semibold">Blocks · {blocks.length}</p>
-                      <button onClick={() => { const t = LIVE_PAGE_TEMPLATES[page]||[]; setBlocks(t.map((b,i)=>({id:`${b.type}_${page}_${i}`,type:b.type,data:{...b.data},visible:true}))); setSelected(null); toast.info("Page reset"); }} className="text-[8px] text-[#4a4a4e] hover:text-[#D4AF37]">Reset</button>
+                      <button onClick={() => {
+ const t = LIVE_PAGE_TEMPLATES[page]||[]; setBlocks(t.map((b,i)=>({id:`${b.type}_${page}_${i}`,type:b.type,data:{...b.data},visible:true}))); setSelected(null); toast.info("Page reset"); 
+}} className="text-[8px] text-[#4a4a4e] hover:text-[#C9A84C]">Reset</button>
                     </div>
                     {blocks.map((block, idx) => {
                       const schema = SCHEMAS[block.type];
                       const blockLabel = schema?.label || block.type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
                       const isVisible = block.visible !== false;
                       return (
-                        <div key={block.id} onClick={() => { setSelected(block.id); setRightTab("props"); }} className={`flex items-center gap-2 p-2 rounded cursor-pointer group transition-all ${selected === block.id ? "bg-[#D4AF37]/15 text-[#D4AF37]" : "hover:bg-[#1a1a1e] text-[#6a6a6e]"}`}>
+                        <div key={block.id} onClick={() => {
+ setSelected(block.id); setRightTab("props"); 
+}} className={`flex items-center gap-2 p-2 rounded cursor-pointer group transition-all ${selected === block.id ? "bg-[#C9A84C]/15 text-[#C9A84C]" : "hover:bg-[#1a1a1e] text-[#6a6a6e]"}`}>
                           <GripVertical className="w-3 h-3 opacity-40 cursor-grab" />
                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isVisible ? "bg-green-500" : "bg-[#3a3a3e]"}`} />
                           <Layout className="w-3.5 h-3.5 shrink-0" />
                           <span className="flex-1 text-[10px] font-medium truncate">{blockLabel}</span>
                           <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={e => { e.stopPropagation(); toggleVisibility(block.id); }} className="p-0.5 hover:text-[#f0ede8]">{isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button>
-                            <button onClick={e => { e.stopPropagation(); moveBlock(idx, -1); }} disabled={idx === 0} className="p-0.5 hover:text-[#f0ede8] disabled:opacity-30"><ArrowUp className="w-3 h-3" /></button>
-                            <button onClick={e => { e.stopPropagation(); deleteBlock(block.id); }} className="p-0.5 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
+                            <button onClick={e => {
+ e.stopPropagation(); toggleVisibility(block.id); 
+}} className="p-0.5 hover:text-[#f0ede8]">{isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button>
+                            <button onClick={e => {
+ e.stopPropagation(); moveBlock(idx, -1); 
+}} disabled={idx === 0} className="p-0.5 hover:text-[#f0ede8] disabled:opacity-30"><ArrowUp className="w-3 h-3" /></button>
+                            <button onClick={e => {
+ e.stopPropagation(); deleteBlock(block.id); 
+}} className="p-0.5 hover:text-red-400"><Trash2 className="w-3 h-3" /></button>
                           </div>
                         </div>
                       );
@@ -2113,9 +2309,11 @@ export default function AdminPage() {
                     { label: "Palazzo Ducoss 8", url: "/property/693abb6d80cd6e002d2e8763" },
                     { label: "Villa with Pool", url: "/property/69ceb988571e1b00149f3c8b" },
                   ].map((link, i) => (
-                    <button key={i} onClick={() => { window.open(`${window.location.origin}${link.url}`, "_blank"); }} className="w-full text-left text-[9px] text-[#D4AF37] hover:text-[#E5C158] truncate">→ {link.label}</button>
+                    <button key={i} onClick={() => {
+ window.open(`${window.location.origin}${link.url}`, "_blank"); 
+}} className="w-full text-left text-[9px] text-[#C9A84C] hover:text-[#D4B85C] truncate">→ {link.label}</button>
                   ))}
-                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="flex items-center gap-1 text-[9px] text-[#D4AF37] hover:text-[#E5C158]">
+                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="flex items-center gap-1 text-[9px] text-[#C9A84C] hover:text-[#D4B85C]">
                     <ExternalLink className="w-3 h-3" /> Open in new tab
                   </button>
                 </div>
@@ -2143,7 +2341,7 @@ export default function AdminPage() {
               {isCMSPage && (
                 <button
                   onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")}
-                  className="flex items-center gap-1 text-[9px] text-[#5a5a5e] hover:text-[#D4AF37] border border-[#1e1e22] rounded px-2 py-0.5 transition-colors"
+                  className="flex items-center gap-1 text-[9px] text-[#5a5a5e] hover:text-[#C9A84C] border border-[#1e1e22] rounded px-2 py-0.5 transition-colors"
                   title="Open live preview in new tab"
                 >
                   <Eye className="w-3 h-3" />Live
@@ -2153,7 +2351,7 @@ export default function AdminPage() {
               {isCMSPage && (
                 <button
                   onClick={() => setPauseEdit(p => !p)}
-                  className={`flex items-center gap-1 text-[9px] border rounded px-2 py-0.5 transition-colors ${pauseEdit ? "bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#D4AF37]" : "border-[#1e1e22] text-[#5a5a5e] hover:text-[#f0ede8]"}`}
+                  className={`flex items-center gap-1 text-[9px] border rounded px-2 py-0.5 transition-colors ${pauseEdit ? "bg-[#C9A84C]/15 border-[#C9A84C]/40 text-[#C9A84C]" : "border-[#1e1e22] text-[#5a5a5e] hover:text-[#f0ede8]"}`}
                   title={pauseEdit ? "Click to resume editing" : "Pause editing to preview cleanly"}
                 >
                   {pauseEdit ? <><Play className="w-3 h-3" />Edit</> : <><EyeOff className="w-3 h-3" />Preview</>}
@@ -2167,7 +2365,11 @@ export default function AdminPage() {
                 </>
               )}
               {!isCMSPage && (
-                <button onClick={() => { const iframe = document.getElementById("preview-iframe"); if (iframe) { const src = iframe.src; (iframe as HTMLIFrameElement).src = src; } }} className="flex items-center gap-1 text-[9px] text-[#5a5a5e] hover:text-[#f0ede8]">
+                <button onClick={() => {
+ const iframe = document.getElementById("preview-iframe"); if (iframe) {
+ const src = iframe.src; (iframe as HTMLIFrameElement).src = src; 
+} 
+}} className="flex items-center gap-1 text-[9px] text-[#5a5a5e] hover:text-[#f0ede8]">
                   <RefreshCw className="w-3 h-3" />Refresh
                 </button>
               )}
@@ -2194,31 +2396,45 @@ export default function AdminPage() {
                         <div {...provided.droppableProps} ref={provided.innerRef}>
                           {blocks.filter(b => b.visible !== false).map((block, idx) => {
                             const Comp = BLOCKS[block.type];
-                            if (!Comp) return (
-                              <div key={block.id} className="p-4 bg-[#1a1a1e] border-l-2 border-[#D4AF37]/30 m-1">
+                            if (!Comp) {
+return (
+                              <div key={block.id} className="p-4 bg-[#1a1a1e] border-l-2 border-[#C9A84C]/30 m-1">
                                 <p className="text-[10px] text-[#4a4a4e]">Unknown block: {block.type}</p>
                               </div>
                             );
+}
                             return (
                               <Draggable key={block.id} draggableId={block.id} index={idx}>
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    onClick={() => { if (!pauseEdit) { setSelected(block.id); setRightTab("props"); } }}
-                                    className={`relative group ${!pauseEdit && selected === block.id ? "ring-2 ring-[#D4AF37] ring-inset" : !pauseEdit ? "hover:ring-1 hover:ring-[#D4AF37]/30 hover:ring-inset" : ""} ${snapshot.isDragging ? "opacity-90 shadow-2xl" : ""}`}
+                                    onClick={() => {
+ if (!pauseEdit) {
+ setSelected(block.id); setRightTab("props"); 
+} 
+}}
+                                    className={`relative group ${!pauseEdit && selected === block.id ? "ring-2 ring-[#C9A84C] ring-inset" : !pauseEdit ? "hover:ring-1 hover:ring-[#C9A84C]/30 hover:ring-inset" : ""} ${snapshot.isDragging ? "opacity-90 shadow-2xl" : ""}`}
                                   >
                                     {/* Block toolbar overlay — hidden in pause/preview mode */}
-                                    <div className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-1.5 bg-[#D4AF37] text-[#0a0a0b] text-[9px] font-semibold uppercase tracking-wide ${!pauseEdit && selected === block.id ? "opacity-100" : !pauseEdit ? "opacity-0 group-hover:opacity-100" : "hidden"} transition-opacity`}>
+                                    <div className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 py-1.5 bg-[#C9A84C] text-[#0a0a0b] text-[9px] font-semibold uppercase tracking-wide ${!pauseEdit && selected === block.id ? "opacity-100" : !pauseEdit ? "opacity-0 group-hover:opacity-100" : "hidden"} transition-opacity`}>
                                       <span {...provided.dragHandleProps} className="flex items-center gap-1.5 cursor-grab">
                                         <GripVertical className="w-3 h-3" />
                                         {SCHEMAS[block.type]?.label || block.type.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase())}
                                       </span>
                                       <div className="flex gap-1">
-                                        <button onClick={e => { e.stopPropagation(); duplicateBlock(block.id); }} className="p-0.5 hover:bg-black/10 rounded" title="Duplicate"><Copy className="w-3 h-3" /></button>
-                                        <button onClick={e => { e.stopPropagation(); moveBlock(idx, -1); }} disabled={idx===0} className="p-0.5 hover:bg-black/10 rounded disabled:opacity-30" title="Move up"><ArrowUp className="w-3 h-3" /></button>
-                                        <button onClick={e => { e.stopPropagation(); moveBlock(idx, 1); }} disabled={idx===blocks.filter(b=>b.visible!==false).length-1} className="p-0.5 hover:bg-black/10 rounded disabled:opacity-30" title="Move down"><ArrowDown className="w-3 h-3" /></button>
-                                        <button onClick={e => { e.stopPropagation(); deleteBlock(block.id); }} className="p-0.5 hover:bg-red-500/20 rounded text-red-700" title="Delete"><Trash2 className="w-3 h-3" /></button>
+                                        <button onClick={e => {
+ e.stopPropagation(); duplicateBlock(block.id); 
+}} className="p-0.5 hover:bg-black/10 rounded" title="Duplicate"><Copy className="w-3 h-3" /></button>
+                                        <button onClick={e => {
+ e.stopPropagation(); moveBlock(idx, -1); 
+}} disabled={idx===0} className="p-0.5 hover:bg-black/10 rounded disabled:opacity-30" title="Move up"><ArrowUp className="w-3 h-3" /></button>
+                                        <button onClick={e => {
+ e.stopPropagation(); moveBlock(idx, 1); 
+}} disabled={idx===blocks.filter(b=>b.visible!==false).length-1} className="p-0.5 hover:bg-black/10 rounded disabled:opacity-30" title="Move down"><ArrowDown className="w-3 h-3" /></button>
+                                        <button onClick={e => {
+ e.stopPropagation(); deleteBlock(block.id); 
+}} className="p-0.5 hover:bg-red-500/20 rounded text-red-700" title="Delete"><Trash2 className="w-3 h-3" /></button>
                                       </div>
                                     </div>
                                     <BlockErrorBoundary blockType={block.type} blockId={block.id}>
@@ -2255,7 +2471,7 @@ export default function AdminPage() {
                   <div className="flex-1 bg-[#1a1a1e] rounded text-[9px] text-[#5a5a5e] px-3 py-1 font-mono">
                     {window.location.host}{currentPageConfig.url}
                   </div>
-                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="text-[#5a5a5e] hover:text-[#D4AF37]">
+                  <button onClick={() => window.open(`${window.location.origin}${currentPageConfig.url}`, "_blank")} className="text-[#5a5a5e] hover:text-[#C9A84C]">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -2282,11 +2498,13 @@ export default function AdminPage() {
                 { id:"suggest", label:"Suggest" },
                 { id:"json",    label:"JSON" },
               ].map(t => (
-                <button key={t.id} onClick={() => setRightTab(t.id)} className={`flex-1 py-2.5 text-[9px] font-medium uppercase tracking-wide shrink-0 ${rightTab === t.id ? "text-[#D4AF37] bg-[#D4AF37]/5 border-b-2 border-[#D4AF37]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>{t.label}</button>
+                <button key={t.id} onClick={() => setRightTab(t.id)} className={`flex-1 py-2.5 text-[9px] font-medium uppercase tracking-wide shrink-0 ${rightTab === t.id ? "text-[#C9A84C] bg-[#C9A84C]/5 border-b-2 border-[#C9A84C]" : "text-[#5a5a5e] hover:text-[#f0ede8]"}`}>{t.label}</button>
               ))}
             </div>
             <div className="flex-1 overflow-y-auto">
-              {rightTab === "ai"      && <EnterpriseAIPanel block={selectedBlock} blocks={blocks} onApplyBlock={(f,v) => selectedBlock && updateBlock(selected, f, v)} onReplaceBlocks={(bs) => { snapshot(); setBlocks(bs); }} page={page} />}
+              {rightTab === "ai"      && <EnterpriseAIPanel block={selectedBlock} blocks={blocks} onApplyBlock={(f,v) => selectedBlock && updateBlock(selected, f, v)} onReplaceBlocks={(bs) => {
+ snapshot(); setBlocks(bs); 
+}} page={page} />}
               {rightTab === "props"   && <PropsEditor block={selectedBlock} onUpdate={(f, v) => updateBlock(selected, f, v)} onAI={generateAI} isGenerating={generating} />}
               {rightTab === "seo"     && <SEOPanel blocks={blocks} page={page} />}
               {rightTab === "suggest" && <SuggestPanel blocks={blocks} onAdd={addBlock} onAI={generateFromPrompt} selected={selectedBlock} />}
@@ -2320,7 +2538,7 @@ export default function AdminPage() {
               <div><p className="text-[11px] text-[#5a5a5e] mb-1">Guesty API</p><span className="text-[10px] text-green-500 flex items-center gap-1"><Check className="w-3 h-3" />Connected</span></div>
               <div><p className="text-[11px] text-[#5a5a5e] mb-1">Stripe</p><span className="text-[10px] text-green-500 flex items-center gap-1"><Check className="w-3 h-3" />Configured</span></div>
             </div>
-            <Button onClick={() => setShowKeys(false)} className="w-full mt-6 bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b]">Close</Button>
+            <Button onClick={() => setShowKeys(false)} className="w-full mt-6 bg-[#C9A84C] hover:bg-[#D4B85C] text-[#0a0a0b]">Close</Button>
           </div>
         </div>
       )}

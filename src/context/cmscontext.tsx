@@ -239,8 +239,8 @@ const DEFAULT_CMS = {
   },
   theme: {
     colors: {
-      gold: "#D4AF37",
-      goldHover: "#E5C158",
+      gold: "#C9A84C",
+      goldHover: "#D4B85C",
       bgDark: "#0F0F10",
       bgCard: "#161618",
       bgAlt: "#0A0A0B",
@@ -268,6 +268,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const CMSProvider = ({ children }) => {
   const [cms, setCms] = useState(DEFAULT_CMS);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [roles, setRoles] = useState([]);
 
@@ -284,11 +285,16 @@ export const CMSProvider = ({ children }) => {
         setTimeout(() => loadRoles(sess.user.id), 0);
       } else {
         setRoles([]);
+        setIsRolesLoading(false);
       }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session?.user) loadRoles(data.session.user.id);
+      if (data.session?.user) {
+        loadRoles(data.session.user.id);
+      } else {
+        setIsRolesLoading(false);
+      }
     });
 
     // Real-time mirror
@@ -313,7 +319,10 @@ export const CMSProvider = ({ children }) => {
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
-    if (!error) setRoles((data || []).map((r) => r.role));
+    if (!error) {
+      setRoles((data || []).map((r) => r.role));
+    }
+    setIsRolesLoading(false);
   };
 
   const loadCMS = async () => {
@@ -322,7 +331,9 @@ export const CMSProvider = ({ children }) => {
         .from("cms_content")
         .select("section_key, content")
         .order("sort_order", { ascending: true });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       if (data && data.length > 0) {
         const merged = { ...DEFAULT_CMS };
         data.forEach((row) => {
@@ -350,7 +361,9 @@ export const CMSProvider = ({ children }) => {
         },
         { onConflict: "section_key" }
       );
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setCms((prev) => ({ ...prev, [section]: data }));
       return true;
     } catch (error) {
@@ -372,6 +385,7 @@ export const CMSProvider = ({ children }) => {
       value={{
         cms,
         isLoading,
+        isRolesLoading,
         session,
         user: session?.user ?? null,
         roles,
@@ -391,7 +405,9 @@ export const CMSProvider = ({ children }) => {
 
 export const useCMS = () => {
   const context = useContext(CMSContext);
-  if (!context) throw new Error("useCMS must be used within CMSProvider");
+  if (!context) {
+throw new Error("useCMS must be used within CMSProvider");
+}
   return context;
 };
 

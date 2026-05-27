@@ -29,9 +29,17 @@ dist-ssr
 ruvector.db
 *.bak
 
+# Runtime state / agent infrastructure
+.claude-flow/
+.swarm/
+.claude/skills-archived/
+.claude/agents-archived/
+.claude/memory.db
+
 # Environment secrets
 .env
 .env.local
 .env.*.local
 .env.example
 .vercel
+.env*.local

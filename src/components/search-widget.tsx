@@ -42,7 +42,9 @@ function useLiveLocations() {
       .eq("active", true)
       .not("city", "is", null)
       .then(({ data }) => {
-        if (!data?.length) return;
+        if (!data?.length) {
+return;
+}
         const unique = [...new Set(data.map(r => r.city as string))].sort();
         const live: Location[] = [
           { city: "All Malta", region: "All Locations", popular: true },
@@ -93,17 +95,21 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
   // Sync locationInput from form restore
   useEffect(() => {
     const saved = watch("city");
-    if (saved && !locationInput) setLocationInput(saved);
+    if (saved && !locationInput) {
+setLocationInput(saved);
+}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Click-outside to close dropdowns
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (locationRef.current && !locationRef.current.contains(e.target as Node))
-        setShowDropdown(false);
-      if (guestRef.current && !guestRef.current.contains(e.target as Node))
-        setShowGuestPicker(false);
+      if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
+setShowDropdown(false);
+}
+      if (guestRef.current && !guestRef.current.contains(e.target as Node)) {
+setShowGuestPicker(false);
+}
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -134,104 +140,91 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
     setIsSearching(true);
     const v = getValues();
     const params = new URLSearchParams();
-    if (v.city) params.set("city", v.city);
-    if (v.checkIn) params.set("checkIn", v.checkIn);
-    if (v.checkOut) params.set("checkOut", v.checkOut);
-    if (v.guests) params.set("guests", String(v.guests));
+    if (v.city) {
+params.set("city", v.city);
+}
+    if (v.checkIn) {
+params.set("checkIn", v.checkIn);
+}
+    if (v.checkOut) {
+params.set("checkOut", v.checkOut);
+}
+    if (v.guests) {
+params.set("guests", String(v.guests));
+}
     await new Promise(r => setTimeout(r, 200));
     setIsSearching(false);
     navigate(`/properties?${params.toString()}`);
   };
 
   const formatDateDisplay = (d: string) => {
-    if (!d) return null;
+    if (!d) {
+return null;
+}
     const parsed = parseISO(d);
     return isValid(parsed) ? format(parsed, "MMM d") : null;
   };
 
   const isCompact = variant === "compact";
 
-  // ─── COMPACT (sidebar / properties page) ──────────────────────────────────
+  // ─── COMPACT (horizontal bar) ─────────────────────────────────────────────
   if (isCompact) {
     return (
-      <div className={cn("bg-[#161618] border border-white/10", className)}>
-        {/* Location */}
-        <div className="relative border-b border-white/10" ref={locationRef}>
-          <div className="flex items-center gap-2 px-4 py-3">
-            <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+      <div className={cn("flex items-stretch bg-[#161618] border border-white/10 divide-x divide-white/10", className)}>
+        {/* Check-in */}
+        <div className="flex items-center gap-2 px-4 py-3 flex-1">
+          <Calendar className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
+          <div>
+            <label className="block text-[10px] text-[#71717A] uppercase tracking-widest mb-0.5">Check-in</label>
             <input
-              type="text"
-              value={locationInput}
-              onChange={e => { setLocationInput(e.target.value); setShowDropdown(true); }}
-              onFocus={() => setShowDropdown(true)}
-              placeholder="All Malta"
-              className="flex-1 bg-transparent text-sm text-[#F5F5F0] placeholder:text-[#71717A] outline-none"
+              type="date"
+              {...register("checkIn")}
+              min={format(new Date(), "yyyy-MM-dd")}
+              className="bg-transparent text-sm text-[#F5F5F0] outline-none w-full"
             />
-            {locationInput && (
-              <button onClick={clearLocation} className="text-[#71717A] hover:text-[#F5F5F0]">
-                <X className="w-3 h-3" />
-              </button>
-            )}
           </div>
-          {showDropdown && (
-            <LocationDropdown
-              locations={filteredLocations}
-              onSelect={handleLocationSelect}
-              input={locationInput}
-            />
-          )}
         </div>
 
-        {/* Dates */}
-        <div className="grid grid-cols-2 border-b border-white/10">
-          <div className="border-r border-white/10 px-4 py-3">
-            <label className="block text-xs text-[#71717A] uppercase tracking-widest mb-1">Check-in</label>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-3 h-3 text-[#D4AF37]" />
-              <input
-                type="date"
-                {...register("checkIn")}
-                min={format(new Date(), "yyyy-MM-dd")}
-                className="bg-transparent text-xs text-[#F5F5F0] outline-none w-full"
-              />
-            </div>
-          </div>
-          <div className="px-4 py-3">
-            <label className="block text-xs text-[#71717A] uppercase tracking-widest mb-1">Check-out</label>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-3 h-3 text-[#D4AF37]" />
-              <input
-                type="date"
-                {...register("checkOut")}
-                min={checkIn || format(new Date(), "yyyy-MM-dd")}
-                className="bg-transparent text-xs text-[#F5F5F0] outline-none w-full"
-              />
-            </div>
+        {/* Check-out */}
+        <div className="flex items-center gap-2 px-4 py-3 flex-1">
+          <Calendar className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
+          <div>
+            <label className="block text-[10px] text-[#71717A] uppercase tracking-widest mb-0.5">Check-out</label>
+            <input
+              type="date"
+              {...register("checkOut")}
+              min={checkIn || format(new Date(), "yyyy-MM-dd")}
+              className="bg-transparent text-sm text-[#F5F5F0] outline-none w-full"
+            />
           </div>
         </div>
 
         {/* Guests */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#D4AF37]" />
-            <span className="text-sm text-[#F5F5F0]">{guests} {guests === 1 ? "Guest" : "Guests"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setValue("guests", Math.max(1, guests - 1))}
-              className="w-7 h-7 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
-            >-</button>
-            <button
-              onClick={() => setValue("guests", Math.min(20, guests + 1))}
-              className="w-7 h-7 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
-            >+</button>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <Users className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
+          <div>
+            <p className="text-[10px] text-[#71717A] uppercase tracking-widest mb-0.5">Guests</p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setValue("guests", Math.max(1, guests - 1))}
+                className="w-6 h-6 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#C9A84C] transition-colors text-sm leading-none"
+              >−</button>
+              <span className="text-sm text-[#F5F5F0] w-4 text-center font-medium">{guests}</span>
+              <button
+                type="button"
+                onClick={() => setValue("guests", Math.min(20, guests + 1))}
+                className="w-6 h-6 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#C9A84C] transition-colors text-sm leading-none"
+              >+</button>
+            </div>
           </div>
         </div>
 
+        {/* Search */}
         <Button
           onClick={handleSearch}
           disabled={isSearching}
-          className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest py-3 font-semibold"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-6 font-semibold self-stretch"
         >
           {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Search className="w-4 h-4 mr-2" />Search</>}
         </Button>
@@ -257,13 +250,15 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
             onClick={() => setShowDropdown(v => !v)}
             type="button"
           >
-            <MapPin className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+            <MapPin className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Location</p>
               <input
                 type="text"
                 value={locationInput}
-                onChange={e => { setLocationInput(e.target.value); setShowDropdown(true); }}
+                onChange={e => {
+ setLocationInput(e.target.value); setShowDropdown(true); 
+}}
                 onFocus={() => setShowDropdown(true)}
                 placeholder="All Malta"
                 className="w-full bg-transparent text-[#F5F5F0] font-medium placeholder:text-[#A1A1AA] outline-none"
@@ -272,7 +267,9 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
             </div>
             {locationInput ? (
               <button
-                onClick={e => { e.stopPropagation(); clearLocation(); }}
+                onClick={e => {
+ e.stopPropagation(); clearLocation(); 
+}}
                 className="text-[#71717A] hover:text-[#F5F5F0] flex-shrink-0"
                 type="button"
               >
@@ -294,7 +291,7 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
 
         {/* Check-in */}
         <div className="flex-1 px-5 py-4 flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <Calendar className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div className="flex-1">
             <label className="block text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Check-in</label>
             <input
@@ -305,14 +302,14 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
               data-testid="checkin-input"
             />
             {checkIn && (
-              <p className="text-xs text-[#D4AF37] mt-0.5">{formatDateDisplay(checkIn)}</p>
+              <p className="text-xs text-[#C9A84C] mt-0.5">{formatDateDisplay(checkIn)}</p>
             )}
           </div>
         </div>
 
         {/* Check-out */}
         <div className="flex-1 px-5 py-4 flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <Calendar className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div className="flex-1">
             <label className="block text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Check-out</label>
             <input
@@ -323,7 +320,7 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
               data-testid="checkout-input"
             />
             {checkOut && (
-              <p className="text-xs text-[#D4AF37] mt-0.5">{formatDateDisplay(checkOut)}</p>
+              <p className="text-xs text-[#C9A84C] mt-0.5">{formatDateDisplay(checkOut)}</p>
             )}
           </div>
         </div>
@@ -336,7 +333,7 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
             type="button"
             data-testid="guests-trigger"
           >
-            <Users className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+            <Users className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
             <div className="flex-1">
               <p className="text-xs uppercase tracking-widest text-[#71717A] mb-0.5">Guests</p>
               <p className="text-[#F5F5F0] font-medium">{guests} {guests === 1 ? "Guest" : "Guests"}</p>
@@ -354,14 +351,14 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setValue("guests", Math.max(1, guests - 1))}
-                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#C9A84C] transition-colors"
                     disabled={guests <= 1}
                     data-testid="guests-minus"
                   >-</button>
                   <span className="w-8 text-center text-[#F5F5F0] font-semibold" data-testid="guests-count">{guests}</span>
                   <button
                     onClick={() => setValue("guests", Math.min(20, guests + 1))}
-                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#D4AF37] transition-colors"
+                    className="w-8 h-8 flex items-center justify-center border border-white/10 text-[#F5F5F0] hover:border-[#C9A84C] transition-colors"
                     data-testid="guests-plus"
                   >+</button>
                 </div>
@@ -375,7 +372,7 @@ export const SearchWidget = ({ variant = "hero", initialFilters = {}, className 
           <Button
             onClick={handleSearch}
             disabled={isSearching}
-            className="w-full md:h-full px-8 py-4 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest font-semibold disabled:opacity-50"
+            className="w-full md:h-full px-8 py-4 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest font-semibold disabled:opacity-50"
             data-testid="search-btn"
           >
             {isSearching ? (
@@ -414,16 +411,16 @@ function LocationDropdown({
           <button
             key={i}
             onClick={() => onSelect(loc)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#D4AF37]/10 border-b border-white/5 last:border-0 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#C9A84C]/10 border-b border-white/5 last:border-0 transition-colors"
             type="button"
           >
-            <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+            <MapPin className="w-4 h-4 text-[#C9A84C] flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-[#F5F5F0]">{loc.city}</p>
               <p className="text-xs text-[#71717A]">{loc.region}</p>
             </div>
             {loc.popular && !input && (
-              <span className="text-xs text-[#D4AF37]">Popular</span>
+              <span className="text-xs text-[#C9A84C]">Popular</span>
             )}
           </button>
         ))

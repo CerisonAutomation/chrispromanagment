@@ -1,9 +1,9 @@
 // TODO: Fix eslint issues and remove this blanket disable
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { 
-  SlidersHorizontal, Grid, List, MapPin, Bed, Bath, Users, 
-  ChevronDown, X, Loader2, AlertCircle, RefreshCw, Search,
+import {
+  SlidersHorizontal, Grid, List, MapPin, Bed, Bath,
+  X, Loader2, AlertCircle, RefreshCw, Search,
   Wifi, Car, Snowflake, Utensils, Tv, WashingMachine
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,26 +12,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Checkbox } from "@/components/ui/checkbox";
 import { PropertyCard } from "@/components/property-card";
 import { SearchWidget } from "@/components/search-widget";
-import { guesty } from "@/lib/guesty";
 import { useGuestyListingsQuery } from "@/hooks/use-guesty";
 
-// Malta locations for filtering
-const MALTA_CITIES = [
-  "All Locations",
-  "Valletta",
-  "St. Julian's",
-  "Sliema",
-  "Gzira",
-  "Msida",
-  "Pieta",
-  "Swieqi",
-  "San Gwann",
-  "Pembroke",
-  "Bahar ic-Caghaq",
-  "Mellieha",
-  "Madliena",
-  "Gozo",
-];
 
 // Amenity filters
 const AMENITY_FILTERS = [
@@ -46,10 +28,12 @@ const AMENITY_FILTERS = [
 export const PropertiesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [sortBy, setSortBy] = useState("default");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Filters from URL
   const filters = useMemo(() => ({
-    city: searchParams.get("city") || "",
     checkIn: searchParams.get("checkIn") || "",
     checkOut: searchParams.get("checkOut") || "",
     guests: searchParams.get("guests") || "",
@@ -63,24 +47,51 @@ export const PropertiesPage = () => {
 
   // React Query for listings
   const { data, isLoading, error } = useGuestyListingsQuery(filters);
+  const loading = isLoading;
   const listings = data?.listings || [];
   const totalCount = data?.total || 0;
+  const degraded = data?.degraded as { stale?: boolean; fetchedAt?: string } | undefined;
+
+  const applyFilters = useCallback((f: Partial<typeof filters & { amenities: string[] }>) => {
+    const next = { ...filters, ...f };
+    const params: Record<string, string> = {};
+    if (next.checkIn) {
+params.checkIn = next.checkIn;
+}
+    if (next.checkOut) {
+params.checkOut = next.checkOut;
+}
+    if (next.guests) {
+params.guests = next.guests;
+}
+    if (next.bedrooms) {
+params.bedrooms = next.bedrooms;
+}
+    if (next.bathrooms) {
+params.bathrooms = next.bathrooms;
+}
+    if (next.minPrice) {
+params.minPrice = next.minPrice;
+}
+    if (next.maxPrice) {
+params.maxPrice = next.maxPrice;
+}
+    if (next.propertyType) {
+params.propertyType = next.propertyType;
+}
+    if (next.amenities?.length) {
+params.amenities = next.amenities.join(",");
+}
+    setSearchParams(params);
+  }, [filters, setSearchParams]);
 
   // Clear all filters
   const clearFilters = () => {
-    const clearedFilters = {
-      city: "",
-      checkIn: "",
-      checkOut: "",
-      guests: "",
-      bedrooms: "",
-      bathrooms: "",
-      minPrice: "",
-      maxPrice: "",
-      amenities: [],
-      propertyType: "",
-    };
-    applyFilters(clearedFilters);
+    applyFilters({
+      checkIn: "", checkOut: "", guests: "",
+      bedrooms: "", bathrooms: "", minPrice: "", maxPrice: "",
+      amenities: [], propertyType: "",
+    });
   };
 
   // Sort listings
@@ -103,20 +114,31 @@ export const PropertiesPage = () => {
   // Count active filters
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.city) count++;
-    if (filters.bedrooms) count++;
-    if (filters.bathrooms) count++;
-    if (filters.minPrice || filters.maxPrice) count++;
-    if (filters.amenities?.length > 0) count += filters.amenities.length;
-    if (filters.propertyType) count++;
+    if (filters.bedrooms) {
+count++;
+}
+    if (filters.bathrooms) {
+count++;
+}
+    if (filters.minPrice || filters.maxPrice) {
+count++;
+}
+    if (filters.amenities?.length > 0) {
+count += filters.amenities.length;
+}
+    if (filters.propertyType) {
+count++;
+}
     return count;
   }, [filters]);
 
-  const handleAmenityToggle = (amenityKey) => {
+  const retryCount = 0;
+
+  const handleAmenityToggle = (amenityKey: string) => {
     const newAmenities = filters.amenities.includes(amenityKey)
       ? filters.amenities.filter(a => a !== amenityKey)
       : [...filters.amenities, amenityKey];
-    setFilters({ ...filters, amenities: newAmenities });
+    applyFilters({ amenities: newAmenities });
   };
 
   return (
@@ -127,15 +149,12 @@ export const PropertiesPage = () => {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <h1 className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0] mb-2">
-                {filters.city && filters.city !== "All Locations" 
-                  ? `Properties in ${filters.city}` 
-                  : "All Properties in Malta"
-                }
+                All Properties in Malta
               </h1>
               <p className="text-[#A1A1AA]">
                 {loading ? "Loading..." : `${totalCount} properties available`}
                 {filters.checkIn && filters.checkOut && (
-                  <span className="ml-2 text-[#D4AF37]">
+                  <span className="ml-2 text-[#C9A84C]">
                     • {filters.checkIn} to {filters.checkOut}
                   </span>
                 )}
@@ -166,7 +185,7 @@ export const PropertiesPage = () => {
                     <SlidersHorizontal className="w-4 h-4 mr-2" />
                     Filters
                     {activeFilterCount > 0 && (
-                      <span className="ml-2 bg-[#D4AF37] text-[#0F0F10] text-xs px-2 py-0.5 rounded-full">
+                      <span className="ml-2 bg-[#C9A84C] text-[#0F0F10] text-xs px-2 py-0.5 rounded-full">
                         {activeFilterCount}
                       </span>
                     )}
@@ -177,30 +196,12 @@ export const PropertiesPage = () => {
                     <SheetTitle className="text-[#F5F5F0] text-left">Filters</SheetTitle>
                   </SheetHeader>
                   <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-180px)]">
-                    {/* Location Filter */}
-                    <div>
-                      <label className="form-label">Location</label>
-                      <Select
-                        value={filters.city || "All Locations"}
-                        onValueChange={(v) => setFilters({ ...filters, city: v === "All Locations" ? "" : v })}
-                      >
-                        <SelectTrigger className="w-full bg-transparent border-white/10 text-[#F5F5F0] rounded-none">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#161618] border-white/10">
-                          {MALTA_CITIES.map(city => (
-                            <SelectItem key={city} value={city}>{city}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
                     {/* Bedrooms */}
                     <div>
                       <label className="form-label">Bedrooms</label>
                       <Select
                         value={filters.bedrooms || "any"}
-                        onValueChange={(v) => setFilters({ ...filters, bedrooms: v === "any" ? "" : v })}
+                        onValueChange={(v) => applyFilters({ bedrooms: v === "any" ? "" : v })}
                       >
                         <SelectTrigger className="w-full bg-transparent border-white/10 text-[#F5F5F0] rounded-none">
                           <SelectValue placeholder="Any" />
@@ -219,7 +220,7 @@ export const PropertiesPage = () => {
                       <label className="form-label">Bathrooms</label>
                       <Select
                         value={filters.bathrooms || "any"}
-                        onValueChange={(v) => setFilters({ ...filters, bathrooms: v === "any" ? "" : v })}
+                        onValueChange={(v) => applyFilters({ bathrooms: v === "any" ? "" : v })}
                       >
                         <SelectTrigger className="w-full bg-transparent border-white/10 text-[#F5F5F0] rounded-none">
                           <SelectValue placeholder="Any" />
@@ -241,15 +242,15 @@ export const PropertiesPage = () => {
                           type="number"
                           placeholder="Min"
                           value={filters.minPrice}
-                          onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-                          className="w-full bg-transparent border border-white/10 px-3 py-2 text-[#F5F5F0] placeholder:text-[#71717A] focus:border-[#D4AF37] focus:outline-none"
+                          onChange={(e) => applyFilters({ minPrice: e.target.value })}
+                          className="w-full bg-transparent border border-white/10 px-3 py-2 text-[#F5F5F0] placeholder:text-[#71717A] focus:border-[#C9A84C] focus:outline-none"
                         />
                         <input
                           type="number"
                           placeholder="Max"
                           value={filters.maxPrice}
-                          onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-                          className="w-full bg-transparent border border-white/10 px-3 py-2 text-[#F5F5F0] placeholder:text-[#71717A] focus:border-[#D4AF37] focus:outline-none"
+                          onChange={(e) => applyFilters({ maxPrice: e.target.value })}
+                          className="w-full bg-transparent border border-white/10 px-3 py-2 text-[#F5F5F0] placeholder:text-[#71717A] focus:border-[#C9A84C] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -259,7 +260,7 @@ export const PropertiesPage = () => {
                       <label className="form-label">Property Type</label>
                       <Select
                         value={filters.propertyType || "any"}
-                        onValueChange={(v) => setFilters({ ...filters, propertyType: v === "any" ? "" : v })}
+                        onValueChange={(v) => applyFilters({ propertyType: v === "any" ? "" : v })}
                       >
                         <SelectTrigger className="w-full bg-transparent border-white/10 text-[#F5F5F0] rounded-none">
                           <SelectValue placeholder="Any Type" />
@@ -284,14 +285,14 @@ export const PropertiesPage = () => {
                             key={amenity.key}
                             className={`flex items-center gap-3 p-3 border transition-colors cursor-pointer ${
                               filters.amenities.includes(amenity.key)
-                                ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                                ? "border-[#C9A84C] bg-[#C9A84C]/10"
                                 : "border-white/10 hover:border-white/20"
                             }`}
                           >
                             <Checkbox
                               checked={filters.amenities.includes(amenity.key)}
                               onCheckedChange={() => handleAmenityToggle(amenity.key)}
-                              className="border-white/30 data-[state=checked]:bg-[#D4AF37] data-[state=checked]:border-[#D4AF37]"
+                              className="border-white/30 data-[state=checked]:bg-[#C9A84C] data-[state=checked]:border-[#C9A84C]"
                             />
                             <amenity.icon className="w-4 h-4 text-[#A1A1AA]" />
                             <span className="text-sm text-[#F5F5F0]">{amenity.label}</span>
@@ -312,7 +313,7 @@ export const PropertiesPage = () => {
                     </Button>
                     <Button
                       onClick={() => applyFilters(filters)}
-                      className="flex-1 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+                      className="flex-1 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
                     >
                       Apply Filters
                     </Button>
@@ -322,22 +323,6 @@ export const PropertiesPage = () => {
 
               {/* Desktop Inline Filters */}
               <div className="hidden lg:flex items-center gap-3">
-                {/* Location */}
-                <Select
-                  value={filters.city || "All Locations"}
-                  onValueChange={(v) => applyFilters({ ...filters, city: v === "All Locations" ? "" : v })}
-                >
-                  <SelectTrigger className="w-40 bg-transparent border-white/10 text-[#F5F5F0] rounded-none">
-                    <MapPin className="w-4 h-4 mr-2 text-[#A1A1AA]" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#161618] border-white/10">
-                    {MALTA_CITIES.map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
                 {/* Bedrooms */}
                 <Select
                   value={filters.bedrooms || "any"}
@@ -381,7 +366,7 @@ export const PropertiesPage = () => {
                   <SlidersHorizontal className="w-4 h-4 mr-2" />
                   More
                   {activeFilterCount > 3 && (
-                    <span className="ml-2 bg-[#D4AF37] text-[#0F0F10] text-xs px-2 py-0.5 rounded-full">
+                    <span className="ml-2 bg-[#C9A84C] text-[#0F0F10] text-xs px-2 py-0.5 rounded-full">
                       +{activeFilterCount - 3}
                     </span>
                   )}
@@ -392,7 +377,7 @@ export const PropertiesPage = () => {
                   <Button
                     variant="ghost"
                     onClick={clearFilters}
-                    className="text-[#A1A1AA] hover:text-[#D4AF37]"
+                    className="text-[#A1A1AA] hover:text-[#C9A84C]"
                   >
                     <X className="w-4 h-4 mr-1" />
                     Clear
@@ -419,13 +404,13 @@ export const PropertiesPage = () => {
               <div className="hidden sm:flex border border-white/10">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 transition-colors ${viewMode === "grid" ? "bg-white/10 text-[#D4AF37]" : "text-[#A1A1AA] hover:text-[#F5F5F0]"}`}
+                  className={`p-2 transition-colors ${viewMode === "grid" ? "bg-white/10 text-[#C9A84C]" : "text-[#A1A1AA] hover:text-[#F5F5F0]"}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors ${viewMode === "list" ? "bg-white/10 text-[#D4AF37]" : "text-[#A1A1AA] hover:text-[#F5F5F0]"}`}
+                  className={`p-2 transition-colors ${viewMode === "list" ? "bg-white/10 text-[#C9A84C]" : "text-[#A1A1AA] hover:text-[#F5F5F0]"}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -439,8 +424,8 @@ export const PropertiesPage = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-8">
         {/* Degraded / Stale Data Banner */}
         {degraded && !error && (
-          <div className="mb-6 border border-[#D4AF37]/40 bg-[#D4AF37]/10 text-[#F5F5F0] px-4 py-3 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+          <div className="mb-6 border border-[#C9A84C]/40 bg-[#C9A84C]/10 text-[#F5F5F0] px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="font-medium">
                 {degraded.stale ? "Showing recently cached availability" : "Live availability temporarily unavailable"}
@@ -457,10 +442,10 @@ export const PropertiesPage = () => {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
             <h3 className="text-xl text-[#F5F5F0] mb-2">Unable to Load Properties</h3>
-            <p className="text-[#A1A1AA] mb-6 max-w-md">{error}</p>
+            <p className="text-[#A1A1AA] mb-6 max-w-md">{(error as Error)?.message || "Failed to load properties"}</p>
             <Button
-              onClick={() => fetchListings(filters)}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+              onClick={() => window.location.reload()}
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
@@ -471,7 +456,7 @@ export const PropertiesPage = () => {
         {/* Loading State */}
         {loading && !error && (
           <div className="flex flex-col items-center justify-center py-16">
-            <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mb-4" />
+            <Loader2 className="w-10 h-10 text-[#C9A84C] animate-spin mb-4" />
             <p className="text-[#A1A1AA]">
               {retryCount > 0 ? `Retrying... (attempt ${retryCount + 1})` : "Loading properties..."}
             </p>
@@ -488,7 +473,7 @@ export const PropertiesPage = () => {
             </p>
             <Button
               onClick={clearFilters}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
             >
               Clear All Filters
             </Button>
@@ -522,7 +507,7 @@ export const PropertiesPage = () => {
       {!loading && !error && sortedListings.length > 0 && (
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 mt-12">
           <div className="bg-[#161618] border border-white/5 p-8 md:p-12 text-center">
-            <MapPin className="w-8 h-8 text-[#D4AF37] mx-auto mb-4" />
+            <MapPin className="w-8 h-8 text-[#C9A84C] mx-auto mb-4" />
             <h2 className="font-['Playfair_Display'] text-2xl md:text-3xl text-[#F5F5F0] mb-3">
               Explore Map
             </h2>
@@ -531,7 +516,7 @@ export const PropertiesPage = () => {
             </p>
             <Button
               onClick={() => navigate("/map")}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest px-6 py-3 text-xs"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest px-6 py-3 text-xs"
               data-testid="explore-map-btn"
             >
               <MapPin className="w-4 h-4 mr-2" />
