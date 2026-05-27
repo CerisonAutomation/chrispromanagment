@@ -967,7 +967,7 @@ return;
 
     const loadPage = async () => {
       try {
-        // Try loading saved draft from Supabase, then localStorage fallback
+        // Load persisted draft from Supabase (sole source of truth)
         const { data: draft } = await supabase
           .from("cms_page_drafts")
           .select("blocks")
@@ -977,15 +977,6 @@ return;
           setBlocks((draft.blocks as {type:string;data:Record<string,unknown>;visible?:boolean}[]).map(b => ({ ...b, id: `b${Date.now()}${Math.random().toString(36).slice(2,6)}`, visible: b.visible !== false })));
           setSelected(null);
           return;
-        }
-        const local = localStorage.getItem(`cms_draft_${page}`);
-        if (local) {
-          const parsed = JSON.parse(local);
-          if (parsed?.blocks?.length) {
-            setBlocks(parsed.blocks.map(b => ({ ...b, visible: b.visible !== false })));
-            setSelected(null);
-            return;
-          }
         }
       } catch { /* fall through to template */ }
       // Fallback: template + CMS data merge
@@ -1221,8 +1212,7 @@ throw error;
         savedAt: new Date().toISOString(),
       };
 
-      // Persist draft to Supabase and localStorage
-      localStorage.setItem(`cms_draft_${page}`, JSON.stringify(pageDoc));
+      // Persist draft to Supabase (sole source of truth)
       await supabase.from("cms_page_drafts").upsert({
         page_slug: page,
         blocks: pageDoc.blocks,
