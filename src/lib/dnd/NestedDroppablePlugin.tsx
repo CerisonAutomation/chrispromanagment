@@ -3,12 +3,10 @@
 // Custom collision detection for nested drops
 // =============================================================================
 
-import {DragDropManager} from "@dnd-kit/dom";
-
 type NestedDroppablePluginOptions = {
   onChange?: (
     params: { zone: string | null; area: string | null },
-    manager: DragDropManager
+    manager: any
   ) => void;
 };
 
@@ -19,13 +17,13 @@ export function createNestedDroppablePlugin(
   return {
     name: `nested-droppable-${instanceId}`,
     
-    onDragEnd: (manager: DragDropManager) => {
+    onDragEnd: (manager: any) => {
       // Handle drag end
     },
     
     onDragOver: (
       event: any,
-      manager: DragDropManager
+      manager: any
     ) => {
       const over = event?.over;
       
