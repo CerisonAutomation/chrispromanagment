@@ -11,6 +11,26 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 import type { Data } from '@measured/puck';
 
+interface PageVersion {
+  id: string;
+  page_id: string;
+  data: Data;
+  title: string;
+  created_at: string;
+}
+
+// Version control helper: Save current state before update
+async function saveVersion(supabase: any, pageId: string, data: any, title: string) {
+  await supabase
+    .from('cms_page_versions')
+    .insert({
+      page_id: pageId,
+      data: JSON.stringify(data),
+      title,
+      created_by: 'system',
+    });
+}
+
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
@@ -31,14 +51,26 @@ async function getServiceClient() {
 export async function updatePageData(
   slug: string, 
   data: Data
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; version?: PageVersion }> {
   const supabase = await getServiceClient();
   
   const title = data.root?.props?.title ?? 'Untitled';
-  // Theme is stored at data level, not root props
-  const theme = '{}'; // Default empty theme
+  const theme = '{}';
   
-  const { error } = await (supabase as any)
+  // 1. Get current page to create version
+  const { data: currentPage } = await (supabase as any)
+    .from('cms_pages')
+    .select('id, data, title')
+    .eq('slug', slug)
+    .single();
+  
+  // 2. Save current state as version (for rollback)
+  if (currentPage?.id) {
+    await saveVersion(supabase, currentPage.id, currentPage.data, currentPage.title || 'Untitled');
+  }
+  
+  // 3. Upsert the page with new data
+  const { data: upserted, error } = await (supabase as any)
     .from('cms_pages')
     .upsert({
       slug,
@@ -46,7 +78,9 @@ export async function updatePageData(
       data: JSON.stringify(data),
       theme,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'slug' });
+    }, { onConflict: 'slug' })
+    .select()
+    .single();
 
   if (error) {
     console.error('[updatePageData] Error:', error);
@@ -57,7 +91,11 @@ export async function updatePageData(
   revalidatePath(`/${slug}`);
   revalidatePath('/admin/pages');
   
-  return { success: true, message: `Page "${title}" saved successfully` };
+  return { 
+    success: true, 
+    message: `Page "${title}" saved successfully`,
+    version: upserted 
+  };
 }
 
 /**
@@ -87,6 +125,93 @@ export async function togglePublish(
     success: true, 
     published, 
     message: `Page ${published ? 'published' : 'unpublished'}` 
+  };
+}
+
+
+/**
+ * Get page versions for rollback
+ */
+export async function getPageVersions(
+  slug: string
+): Promise<PageVersion[]> {
+  const supabase = await getServiceClient();
+  
+  // First get the page ID
+  const { data: page } = await (supabase as any)
+    .from('cms_pages')
+    .select('id')
+    .eq('slug', slug)
+    .single();
+    
+  if (!page?.id) return [];
+    
+  const { data, error } = await (supabase as any)
+    .from('cms_page_versions')
+    .select('*')
+    .eq('page_id', page.id)
+    .order('created_at', { ascending: false })
+    .limit(20);
+    
+  if (error) {
+    console.error('[getPageVersions] Error:', error);
+    return [];
+  }
+    
+  return data ?? [];
+}
+
+/**
+ * Rollback to a specific version
+ */
+export async function rollbackToVersion(
+  versionId: string,
+  slug: string
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await getServiceClient();
+    
+  // Get the version
+  const { data: version } = await (supabase as any)
+    .from('cms_page_versions')
+    .select('*')
+    .eq('id', versionId)
+    .single();
+    
+  if (!version) {
+    return { success: false, message: 'Version not found' };
+  }
+    
+  // Save current state as a version first (for undo)
+  const { data: currentPage } = await (supabase as any)
+    .from('cms_pages')
+    .select('id, data, title')
+    .eq('slug', slug)
+    .single();
+    
+  if (currentPage?.id) {
+    await saveVersion(supabase, currentPage.id, currentPage.data, currentPage.title || 'Untitled');
+  }
+    
+  // Restore the version
+  const { error } = await (supabase as any)
+    .from('cms_pages')
+    .update({
+      data: version.data,
+      title: version.title,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('slug', slug);
+    
+  if (error) {
+    return { success: false, message: `Rollback failed: ${error.message}` };
+  }
+    
+  revalidatePath(`/${slug}`);
+  revalidatePath('/admin/pages');
+    
+  return { 
+    success: true, 
+    message: `Rolled back to version from ${new Date(version.created_at).toLocaleString()}` 
   };
 }
 

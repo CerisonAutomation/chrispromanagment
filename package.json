@@ -1,3 +1,4 @@
+Removed next-auth from dependencies
 {
   "name": "christiano-property-management",
   "version": "0.3.0",
@@ -77,7 +78,6 @@
     "marked": "^18.0.0",
     "mini-svg-data-uri": "^1.4.4",
     "next": "16.2.3",
-    "next-auth": "4.24.13",
     "next-intl": "^4.9.0",
     "next-themes": "^0.4.6",
     "pg": "^8.20.0",

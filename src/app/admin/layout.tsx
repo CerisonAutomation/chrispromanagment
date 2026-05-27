@@ -1,5 +1,5 @@
 /**
- * @fileoverview Admin layout — Premium Malta Gold dark sidebar + Supabase auth gate.
+ * @fileoverview Admin layout — Premium Malta Gold dark sidebar + Supabase admin auth gate.
  * 15/10 glassmorphism design with animated navigation.
  * 
  * OFFICIAL PATTERN: @supabase/ssr with canonical server client
@@ -8,13 +8,32 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import Link from 'next/link';
-import { getUser } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: { template: '%s | Christiano CMS', default: 'Admin' },
 };
+
+// Admin emails from environment variable
+const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
+
+/**
+ * Check if user has admin privileges
+ */
+function checkIsAdmin(email: string | undefined): boolean {
+  if (!email) return false;
+  
+  // Check against admin emails list
+  if (adminEmails.includes(email.toLowerCase())) return true;
+  
+  // Check if email domain matches (optional)
+  const adminDomain = process.env.ADMIN_EMAIL_DOMAIN;
+  if (adminDomain && email.toLowerCase().endsWith(`@${adminDomain.toLowerCase()}`)) return true;
+  
+  return false;
+}
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: '⬛', exact: true },
@@ -31,8 +50,17 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     return <>{children}</>;
   }
 
-  const user = await getUser();
-  if (!user) redirect('/admin/login');
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  // Check if authenticated
+  if (error || !user) redirect('/admin/login');
+  
+  // Check if user is admin
+  if (!checkIsAdmin(user.email)) {
+    // User is authenticated but not an admin
+    redirect('/forbidden');
+  }
 
   const initials = (user.email ?? 'A').slice(0, 2).toUpperCase();
 

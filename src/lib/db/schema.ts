@@ -28,6 +28,21 @@ export const cmsPages = pgTable('cms_pages', {
 export type CmsPage = typeof cmsPages.$inferSelect;
 export type CmsPageInsert = typeof cmsPages.$inferInsert;
 
+// ─── CMS Page Versions (NEW - For Version Control) ──────────────
+
+export const cmsPageVersions = pgTable('cms_page_versions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  pageId: uuid('page_id').notNull().references(() => cmsPages.id, { onDelete: 'cascade' }),
+  data: jsonb('data').notNull(),
+  title: varchar('title', { length: 255 }),
+  createdBy: text('created_by'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type CmsPageVersion = typeof cmsPageVersions.$inferSelect;
+export type CmsPageVersionInsert = typeof cmsPageVersions.$inferInsert;
+
+
 // ─── Properties ────────────────────────────────────────────────────────────
 
 export const properties = pgTable('properties', {
