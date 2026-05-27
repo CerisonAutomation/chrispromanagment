@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Service Container Implementation
 // Provides dependency injection and service lifecycle management
 

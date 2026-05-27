@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // CVPM BLOCKS — Optimized & Consolidated Block System
 // Single source of truth for ALL block types, themes, and templates

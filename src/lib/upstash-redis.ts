@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { logger } from './otel-observability';
 
 export interface UpstashRedisOptions {

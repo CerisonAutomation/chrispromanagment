@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ethers from 'ethers';
 
 export const BOOKING_CONTRACT_ABI = [

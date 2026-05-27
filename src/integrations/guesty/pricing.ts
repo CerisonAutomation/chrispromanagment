@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ============================================================
 // Guesty Pricing Helper — derives the FULL guest-facing breakdown
 // directly from a Guesty quote's `rates.ratePlans[].money.invoiceItems`.

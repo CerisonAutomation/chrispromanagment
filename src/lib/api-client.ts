@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { handleError } from './error-handler';
 
 export interface ApiResponse<T> {

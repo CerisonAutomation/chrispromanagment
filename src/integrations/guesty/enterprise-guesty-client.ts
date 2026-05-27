@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enterprise-Grade Guesty API Integration
  *

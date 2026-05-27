@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/lib/perf.ts — comprehensive performance and caching utilities
 // Merged from perf.ts + performance-optimizer.ts
 

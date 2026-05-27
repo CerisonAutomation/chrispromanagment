@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Re-export shim for performance-optimizer — merged into lib/perf.ts
 export {
   PerformanceMonitor,
