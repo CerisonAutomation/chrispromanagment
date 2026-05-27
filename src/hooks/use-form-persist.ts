@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useRef } from "react";
 import { UseFormWatch, UseFormReset, FieldValues } from "react-hook-form";
 

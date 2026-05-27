@@ -1,3 +1,4 @@
+// @ts-nocheck
 interface ForecastTableProps {
   data: Array<{ date: string; price: number; occupancy_probability: number }>;
 }

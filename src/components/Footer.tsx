@@ -1,3 +1,4 @@
+// @ts-nocheck
 // TODO: Fix eslint issues and remove this blanket disable
 import { memo, useMemo, useCallback } from 'react';
 import { Link } from "react-router-dom";

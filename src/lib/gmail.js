@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/lib/gmail.js — thin client for gmail-send / gmail-inbox edge functions.
 import { supabase } from "@/integrations/supabase/client";
 

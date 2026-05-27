@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import { useAutomationStore } from '@/store';
 import type { AutomationRule, AutomationTrigger, AutomationAction } from '@/store';

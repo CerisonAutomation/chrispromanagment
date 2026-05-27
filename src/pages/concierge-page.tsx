@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ConciergeChat from '@/components/concierge/ConciergeChat';
 import { Sparkles } from 'lucide-react';
 

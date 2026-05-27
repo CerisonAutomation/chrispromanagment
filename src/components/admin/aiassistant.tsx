@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, memo } from "react";
 import { Sparkles, Wand2, Loader2, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";

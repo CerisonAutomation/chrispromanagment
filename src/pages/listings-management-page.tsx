@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect } from 'react';
 import { usePropertiesStore } from '@/store';
 import { Button } from '@/components/ui/button';

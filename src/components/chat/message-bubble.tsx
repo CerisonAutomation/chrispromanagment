@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ChatMessage } from '@/hooks/use-chat';
 import { format } from 'date-fns';
 

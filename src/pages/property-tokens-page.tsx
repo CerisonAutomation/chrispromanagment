@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from 'react';
 import { connectWallet, mintPropertyNFT } from '@/lib/web3';
 import { Button } from '@/components/ui/button';

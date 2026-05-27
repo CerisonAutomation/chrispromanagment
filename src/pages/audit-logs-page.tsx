@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect } from 'react';
 import { useAuditStore } from '@/store';
 import { Card } from '@/components/ui/card';

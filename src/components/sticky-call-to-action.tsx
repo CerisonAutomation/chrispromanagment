@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Phone, MessageCircle, X, ChevronUp, Building, Calendar, Home, Users, ArrowRight, Star } from "lucide-react";

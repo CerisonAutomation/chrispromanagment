@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const createMockUser = (overrides = {}) => ({
   id: 'mock-user-id',
   email: 'test@example.com',

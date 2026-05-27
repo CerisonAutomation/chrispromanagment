@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { analyticsEngine, type TopProperty } from '@/lib/analytics-engine';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

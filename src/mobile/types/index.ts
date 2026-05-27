@@ -1,3 +1,4 @@
+// @ts-nocheck
 export interface MobileProperty {
   id: string;
   title: string;

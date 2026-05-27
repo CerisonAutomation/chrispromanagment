@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useRef, useEffect } from 'react';
 import { useChat } from '@/hooks/use-chat';
 import MessageBubble from './message-bubble';

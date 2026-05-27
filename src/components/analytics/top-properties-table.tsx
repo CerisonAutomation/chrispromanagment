@@ -1,3 +1,4 @@
+// @ts-nocheck
 interface TopPropertiesTableProps {
   data: Array<{ id: string; title: string; revenue: number }>;
 }

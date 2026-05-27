@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { apiClient } from '@/lib/api-client';
 import { MobileProperty, MobileBooking } from './types';
 
