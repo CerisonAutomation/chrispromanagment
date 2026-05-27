@@ -112,6 +112,51 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Routes where global chrome (Header/Footer/StickyCTA/Modals/CookieConsent)
+ * should NOT render. These are standalone fullscreen experiences.
+ */
+const STANDALONE_PREFIXES = ["/auth", "/admin"];
+
+function isStandaloneRoute(pathname: string) {
+  return STANDALONE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+function GlobalChrome() {
+  const location = useLocation();
+  if (isStandaloneRoute(location.pathname)) return null;
+  return (
+    <>
+      <Header />
+      <Footer />
+      <ContactModal />
+      <PropertyOwnerModal />
+      <StickyCallToAction />
+      <CookieConsent />
+    </>
+  );
+}
+
+function HeaderSlot() {
+  const location = useLocation();
+  if (isStandaloneRoute(location.pathname)) return null;
+  return <Header />;
+}
+
+function FooterChromeSlot() {
+  const location = useLocation();
+  if (isStandaloneRoute(location.pathname)) return null;
+  return (
+    <>
+      <Footer />
+      <ContactModal />
+      <PropertyOwnerModal />
+      <StickyCallToAction />
+      <CookieConsent />
+    </>
+  );
+}
+
 export default function App() {
   useEffect(() => useAuthStore.getState().init(), []);
 
@@ -124,8 +169,8 @@ export default function App() {
               <ScrollToHash />
               <SkipLink />
               <EditModeBridge />
-              <Header />
-              <main id="main-content" className="min-h-[calc(100vh-4rem)]">
+              <HeaderSlot />
+              <main id="main-content" className="min-h-screen">
                 <AppSEO />
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
@@ -159,11 +204,7 @@ export default function App() {
                   </Routes>
                 </Suspense>
               </main>
-              <Footer />
-              <ContactModal />
-              <PropertyOwnerModal />
-              <StickyCallToAction />
-              <CookieConsent />
+              <FooterChromeSlot />
               <Toaster />
             </BrowserRouter>
           </HelmetProvider>
