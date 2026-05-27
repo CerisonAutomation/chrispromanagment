@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition, useEffect } from 'react';
 import { Puck, type Data } from '@measured/puck';
 import '@measured/puck/puck.css';
 import config from '@/puck.config';
@@ -15,12 +15,15 @@ import type { GeneratedTheme } from '@/app/api/ai/generate-theme/route';
 import { cn } from '@/lib/utils';
 import {
   Wand2, Palette, LayoutTemplate, Save, Eye, ChevronLeft, Layers,
+  History, RotateCcw, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { getPageVersions, rollbackToVersion } from '@/lib/actions/pages';
+import type { PageVersion } from '@/lib/actions/pages';
 
-type EditorTab = 'blocks' | 'ai' | 'theme';
+type EditorTab = 'blocks' | 'ai' | 'theme' | 'versions';
 
 interface PuckEditorPageProps {
   initialData: Data;
@@ -29,35 +32,104 @@ interface PuckEditorPageProps {
 }
 
 /**
- * Full-featured Puck editor page with AI sidebar integration.
+ * Full-featured Puck editor page with AI sidebar integration AND VERSION CONTROL
+ * State is DATA-DRIVEN: loads from DB, stays in sync until edited
  */
 export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProps) {
   const [isSaving, startSave] = useTransition();
   const [activeTab, setActiveTab] = useState<EditorTab>('blocks');
   const [appliedThemeName, setAppliedThemeName] = useState<string | null>(null);
+  
+  // CORE FIX: State is initialized from DB and stays in sync
   const [puckData, setPuckData] = useState<Data>(initialData);
+  const [isDirty, setIsDirty] = useState(false); // Track if edited
+  const [versions, setVersions] = useState<PageVersion[]>([]);
+  const [isLoadingVersions, startLoadingVersions] = useTransition();
+
+  // Track changes: mark dirty when data changes from initial
+  useEffect(() => {
+    const initialStr = JSON.stringify(initialData);
+    const currentStr = JSON.stringify(puckData);
+    setIsDirty(initialStr !== currentStr);
+  }, [puckData, initialData]);
+
+  // Load version history when versions tab is opened
+  const handleTabChange = useCallback((tab: EditorTab) => {
+    setActiveTab(tab);
+    if (tab === 'versions' && versions.length === 0) {
+      loadVersions();
+    }
+  }, [versions.length]);
+
+  const loadVersions = useCallback(() => {
+    startLoadingVersions(async () => {
+      try {
+        const data = await getPageVersions(slug);
+        setVersions(data);
+      } catch (error) {
+        toast.error('Failed to load version history');
+      }
+    });
+  }, [slug]);
+
+  const handleRollback = useCallback(async (versionId: string) => {
+    if (!confirm('Rollback to this version? Current changes will be saved as a version first.')) {
+      return;
+    }
+    
+    startSave(async () => {
+      try {
+        const result = await rollbackToVersion(versionId, slug);
+        if (result.success) {
+          toast.success(result.message);
+          // Reload the page to get fresh data
+          window.location.reload();
+        } else {
+          toast.error(result.message);
+        }
+      } catch {
+        toast.error('Failed to rollback');
+      }
+    });
+  }, [slug]);
 
   const handleSave = useCallback((data: Data) => {
     startSave(async () => {
       try {
         await onSave(data);
         setPuckData(data);
+        setIsDirty(false); // Reset dirty state after save
         toast.success('Page saved successfully');
+        // Reload versions if on that tab
+        if (activeTab === 'versions') {
+          loadVersions();
+        }
       } catch {
         toast.error('Failed to save page');
       }
     });
-  }, [onSave]);
+  }, [onSave, activeTab]);
 
   const handleThemeApplied = useCallback((_tokens: Record<string, string>, theme: GeneratedTheme) => {
     setAppliedThemeName(theme.name);
     toast.success(`Theme "${theme.name}" applied live`, { description: theme.description });
   }, []);
 
+  const handleReset = useCallback(() => {
+    if (isDirty && !confirm('Discard changes and reload from database?')) {
+      return;
+    }
+    // Reset to initial DB state
+    setPuckData(initialData);
+    setIsDirty(false);
+    toast.info('Reset to saved state');
+  }, [isDirty, initialData]);
+
   const tabs: Array<{ id: EditorTab; label: string; icon: React.ReactNode; badge?: string }> = [
     { id: 'blocks', label: 'Blocks', icon: <Layers className="w-4 h-4" /> },
     { id: 'ai', label: 'AI Builder', icon: <Wand2 className="w-4 h-4" />, badge: 'NEW' },
     { id: 'theme', label: 'AI Theme', icon: <Palette className="w-4 h-4" />, badge: appliedThemeName ?? undefined },
+    { id: 'versions', label: 'History', icon: <History className="w-4 h-4" />, badge: versions.length > 0 ? `${versions.length}` : undefined },
   ];
 
   return (
@@ -73,6 +145,11 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
         <div className="flex items-center gap-2">
           <LayoutTemplate className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium truncate max-w-[200px]">{slug}</span>
+          {isDirty && (
+            <Badge variant="outline" className="text-xs border-orange-500 text-orange-500">
+              Modified
+            </Badge>
+          )}
         </div>
         {appliedThemeName && (
           <Badge variant="outline" className="text-xs border-violet-500 text-violet-500 ml-2">
@@ -80,6 +157,11 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
           </Badge>
         )}
         <div className="ml-auto flex items-center gap-2">
+          {isDirty && (
+            <Button variant="outline" size="sm" onClick={handleReset}>
+              <RotateCcw className="w-4 h-4 mr-1.5" /> Reset
+            </Button>
+          )}
           <Button variant="outline" size="sm" asChild>
             <a href={`/${slug}`} target="_blank" rel="noopener noreferrer">
               <Eye className="w-4 h-4 mr-1.5" /> Preview
@@ -97,7 +179,7 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
             {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={cn(
                   'flex-1 flex flex-col items-center gap-0.5 py-2.5 px-1 text-xs font-medium transition-colors relative',
                   activeTab === tab.id
@@ -121,7 +203,7 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
             {activeTab === 'blocks' && (
               <div className="p-3">
                 <p className="text-xs text-muted-foreground mb-3">
-                  20 blocks available. Drag from the Puck component panel on the right.
+                  {Object.keys(config.components).length} blocks available. Drag from the Puck component panel on the right.
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {Object.entries(config.components).map(([key, comp]) => (
@@ -156,18 +238,53 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
                 className="rounded-none border-0 bg-transparent"
               />
             )}
+            {activeTab === 'versions' && (
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium">Version History</h3>
+                  <Button variant="ghost" size="sm" onClick={loadVersions} disabled={isLoadingVersions}>
+                    <RotateCcw className={`w-3 h-3 ${isLoadingVersions ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+                {versions.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No version history yet. Save the page to create versions.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {versions.map((version) => (
+                      <div key={version.id} className="p-2 rounded-lg border border-border bg-muted/30">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium truncate">{version.title || 'Untitled'}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => handleRollback(version.id)}
+                          >
+                            <Clock className="w-3 h-3 mr-1" />
+                            Rollback
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(version.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Save Footer */}
           <div className="border-t border-border p-3">
             <Button
               onClick={() => handleSave(puckData)}
-              disabled={isSaving}
+              disabled={isSaving || !isDirty}
               className="w-full bg-primary text-primary-foreground hover:opacity-90"
               size="sm"
             >
               <Save className="w-4 h-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Page'}
+              {isSaving ? 'Saving...' : isDirty ? 'Save Changes' : 'No Changes'}
             </Button>
           </div>
         </aside>
@@ -178,6 +295,10 @@ export function PuckEditorPage({ initialData, slug, onSave }: PuckEditorPageProp
             config={config}
             data={puckData}
             onPublish={handleSave}
+            onChange={(data) => {
+              setPuckData(data);
+              // isDirty is calculated via useEffect
+            }}
           />
         </div>
       </div>

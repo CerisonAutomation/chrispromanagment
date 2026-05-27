@@ -33,11 +33,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              "style-src 'self' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Note: unsafe-inline needed for Puck editor
+              "style-src 'self' 'unsafe-inline'", // Note: unsafe-inline needed for Tailwind
               "img-src 'self' data: blob: https:",
               "font-src 'self' https://r2cdn.perplexity.ai",
-              "connect-src 'self' https://*.supabase.co https://*.guesty.com https://api.openai.com",
+              "connect-src 'self' https://*.supabase.co https://*.guesty.com https://api.openai.com wss://*.supabase.co",
               "frame-ancestors 'none'",
             ].join('; '),
           },

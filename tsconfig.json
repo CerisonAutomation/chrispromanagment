@@ -7,13 +7,21 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
+      "@/*": ["./src/*"],
       "@cpm/shared-types": ["./packages/shared-types/src/index.ts"],
       "@cpm/shared-utils": ["./packages/shared-utils/src/index.ts"],
       "@cpm/ui-components": ["./packages/ui-components/src/index.ts"]
-    }
+    },
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true
   },
   "include": [
     "next-env.d.ts",

@@ -1,25 +1,34 @@
 // =============================================================================
 // CONSOLIDATED TYPES - Single Source of Truth (15/10 Quality)
 // =============================================================================
-// This file consolidates all type definitions across the codebase.
-// Import from here instead of分散 sources.
+// This file consolidates ALL type definitions across the codebase.
+// Import from here instead of dispersed sources.
 
 // ============================================================================
 // BRANDED TYPES - Type-safe IDs
 // ============================================================================
-declare const __brand: unique symbol;
+export declare const __brand: unique symbol;
 type Brand<B> = { [__brand]: B };
 export type Branded<T, B> = T & Brand<B>;
 
 export type BlockId = Branded<string, 'BlockId'>;
 export type PageId = Branded<string, 'PageId'>;
 export type UserId = Branded<string, 'UserId'>;
+export type ListingId = Branded<string, 'ListingId'>;
+export type ReservationId = Branded<string, 'ReservationId'>;
 export type ThemeId = Branded<string, 'ThemeId'>;
 export type Timestamp = Branded<number, 'Timestamp'>;
+export type Email = Branded<string, 'Email'>;
+export type Slug = Branded<string, 'Slug'>;
 
 export function createBlockId(): BlockId { return crypto.randomUUID() as BlockId; }
 export function createPageId(): PageId { return crypto.randomUUID() as PageId; }
+export function createUserId(): UserId { return crypto.randomUUID() as UserId; }
+export function createListingId(): ListingId { return crypto.randomUUID() as ListingId; }
 export function createTimestamp(): Timestamp { return Date.now() as Timestamp; }
+export function createSlug(text: string): Slug { 
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') as Slug; 
+}
 
 // ============================================================================
 // RESULT TYPE - Railway-oriented programming
@@ -30,6 +39,14 @@ export type Result<T, E = Error> =
 
 export function ok<T>(data: T): Result<T, never> { return { success: true, data } as const; }
 export function err<E>(error: E): Result<never, E> { return { success: false, error } as const; }
+
+// Type guards
+export function isOk<T, E>(result: Result<T, E>): result is { success: true; data: T } {
+  return result.success === true;
+}
+export function isErr<T, E>(result: Result<T, E>): result is { success: false; error: E } {
+  return result.success === false;
+}
 
 // ============================================================================
 // OPTION TYPE - Null safety
@@ -48,24 +65,50 @@ export function fromNullable<T>(val: T | null | undefined): Option<T> {
 }
 
 // ============================================================================
-// PUCK CMS TYPES
+// APP ERROR - Standardized error handling
 // ============================================================================
-export type DeviceMode = 'desktop' | 'tablet' | 'mobile';
-export type SidebarPanel = 'blocks' | 'pages' | 'layers' | 'ai';
-export type RightPanel = 'properties' | 'layers' | 'versions';
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+export class AppError extends Error {
+  constructor(
+    public readonly code: string,
+    public readonly message: string,
+    public readonly statusCode: number = 500,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
 
-export interface Toast {
-  id: string;
-  type: ToastType;
-  message: string;
-  duration?: number;
-}
+  static badRequest(message: string, cause?: unknown): AppError {
+    return new AppError('BAD_REQUEST', message, 400, cause);
+  }
 
-export interface HistoryEntry {
-  content: any;
-  selectedBlockId: string | null;
-  timestamp: number;
+  static unauthorized(message: string = 'Unauthorized'): AppError {
+    return new AppError('UNAUTHORIZED', message, 401);
+  }
+
+  static forbidden(message: string = 'Forbidden'): AppError {
+    return new AppError('FORBIDDEN', message, 403);
+  }
+
+  static notFound(message: string = 'Not found'): AppError {
+    return new AppError('NOT_FOUND', message, 404);
+  }
+
+  static conflict(message: string): AppError {
+    return new AppError('CONFLICT', message, 409);
+  }
+
+  static internal(message: string, cause?: unknown): AppError {
+    return new AppError('INTERNAL_ERROR', message, 500, cause);
+  }
+
+  toJSON(): Record<string, unknown> {
+    return {
+      code: this.code,
+      message: this.message,
+      statusCode: this.statusCode,
+    };
+  }
 }
 
 // ============================================================================
@@ -74,23 +117,26 @@ export interface HistoryEntry {
 export interface Block {
   id: BlockId;
   type: string;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   zones?: Record<string, Block[]>;
 }
 
 export interface Page {
   id: PageId;
-  slug: string;
+  slug: Slug;
   title: string;
   data: PuckData;
-  status: 'draft' | 'published' | 'archived';
+  status: PageStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
 
+export type PageStatus = 'draft' | 'published' | 'archived';
+
 export interface PuckData {
-  content: any[];
-  root: { props: Record<string, any> };
+  content: Block[];
+  root: { props: Record<string, unknown> };
+  zones?: Record<string, Block[]>;
 }
 
 // ============================================================================
@@ -100,11 +146,19 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
-  timestamp: number;
+  timestamp: Timestamp;
+}
+
+export function successResponse<T>(data: T): ApiResponse<T> {
+  return { success: true, data, timestamp: createTimestamp() };
+}
+
+export function errorResponse(error: string, statusCode: number = 500): ApiResponse<never> {
+  return { success: false, error, timestamp: createTimestamp() };
 }
 
 // ============================================================================
-// Re-export commonly used types
+// RE-EXPORTS
 // ============================================================================
 export * from './supabase';
 export * from './guesty';
