@@ -240,18 +240,16 @@ export function useBlockAutosync(
 
         const newContent = [...prev.content];
         const [moved] = newContent.splice(fromIndex, 1);
+        if (!moved) return prev;
         newContent.splice(toIndex, 0, moved);
 
         // Mark all affected blocks as pending
-        const affectedIndices = [fromIndex, toIndex].sort((a, b) => a - b);
-        for (let i = affectedIndices[0]; i <= affectedIndices[1]; i++) {
-          if (newContent[i]) {
-            newContent[i] = {
-              ...newContent[i],
-              syncStatus: "pending",
-              lastModified: Date.now(),
-            };
-            pendingChangesRef.current.set(newContent[i].id, newContent[i]);
+        const [startIdx, endIdx] = [fromIndex, toIndex].sort((a, b) => a - b);
+        for (let i = startIdx!; i <= endIdx!; i++) {
+          const item = newContent[i];
+          if (item) {
+            newContent[i] = { ...item, syncStatus: "pending", lastModified: Date.now() };
+            pendingChangesRef.current.set(item.id, newContent[i]!);
           }
         }
 

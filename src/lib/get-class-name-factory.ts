@@ -23,7 +23,7 @@ export default function getClassNameFactory(
     // Handle single string argument (additional class name)
     if (args.length === 1 && typeof args[0] === "string") {
       if (styles && styles[args[0]]) {
-        return styles[args[0]];
+        return styles[args[0]]!;
       }
       return `${name}${separator}${args[0]}`;
     }

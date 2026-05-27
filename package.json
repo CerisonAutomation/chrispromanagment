@@ -1,4 +1,3 @@
-Removed next-auth from dependencies
 {
   "name": "christiano-property-management",
   "version": "0.3.0",

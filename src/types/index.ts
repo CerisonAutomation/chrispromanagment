@@ -253,6 +253,86 @@ export interface GuestyReservation {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CQRS / REPOSITORY BRANDED TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type PageId = string & { readonly __brand: 'PageId' };
+export type Slug = string & { readonly __brand: 'Slug' };
+export type ListingId = string & { readonly __brand: 'ListingId' };
+export type ReservationId = string & { readonly __brand: 'ReservationId' };
+export type Timestamp = number & { readonly __brand: 'Timestamp' };
+
+export interface Page {
+  id: PageId;
+  slug: Slug;
+  title: string;
+  data: Record<string, unknown>;
+  status: 'draft' | 'published' | 'archived';
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface Listing {
+  id: ListingId;
+  guestyId: string;
+  title: string;
+  bedrooms: number;
+  bathrooms: number;
+  occupancy: number;
+  basePrice: number;
+  currency: string;
+  city: string;
+  address: string;
+  amenities: string[];
+  description: string;
+  images: string[];
+}
+
+export interface Availability {
+  checkIn: Date;
+  checkOut: Date;
+  available: boolean;
+}
+
+export interface Reservation {
+  id: ReservationId;
+  listingId: ListingId;
+  confirmationCode: string;
+  status: string;
+  checkIn: string;
+  checkOut: string;
+  guestsCount: number;
+  totalPaid: number;
+  currency: string;
+  guestEmail: string;
+  guestName: string;
+}
+
+export type Result<T, E = Error> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly error: E };
+
+export function ok<T>(value: T): Result<T, never> {
+  return { ok: true, value };
+}
+
+export function err<E>(error: E): Result<never, E> {
+  return { ok: false, error };
+}
+
+export class AppError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    public readonly status: number = 500,
+    public readonly cause?: unknown,
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // UTILITY TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 

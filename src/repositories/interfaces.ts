@@ -25,7 +25,7 @@ export interface PageRepository {
 // =============================================================================
 // LISTING REPOSITORY INTERFACE
 // =============================================================================
-import type { Listing, ListingId } from './types';
+import type { Listing, ListingId, Availability } from './types';
 import type { GuestyListing } from './guesty-types';
 
 export interface ListingRepository {

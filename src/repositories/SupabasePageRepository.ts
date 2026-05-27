@@ -1,8 +1,9 @@
 // =============================================================================
 // SUPABASE PAGE REPOSITORY - CQRS Implementation
 // =============================================================================
-import type { Page, PageId, Slug, Result } from '@/types';
+import type { Page, PageId, Slug, Result, Timestamp } from '@/types';
 import { ok, err, AppError } from '@/types';
+import type { PageRepository } from './interfaces';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
@@ -23,7 +24,7 @@ export class SupabasePageRepository implements PageRepository {
       const { data, error } = await this.supabase
         .from('cms_pages')
         .select('*')
-        .eq('id', id)
+        .eq('id', id as string)
         .single();
 
       if (error) {
@@ -97,7 +98,7 @@ export class SupabasePageRepository implements PageRepository {
       const { data, error } = await this.supabase
         .from('cms_pages')
         .select('*')
-        .eq('status', status)
+        .eq('published', status === 'published')
         .order('updated_at', { ascending: false });
 
       if (error) {
@@ -116,14 +117,15 @@ export class SupabasePageRepository implements PageRepository {
     try {
       const { data, error } = await this.supabase
         .from('cms_pages')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .upsert({
-          id: page.id,
-          slug: page.slug,
+          id: page.id as string,
+          slug: page.slug as string,
           title: page.title,
           data: JSON.stringify(page.data),
-          status: page.status,
+          published: page.status === 'published',
           updated_at: new Date(page.updatedAt).toISOString(),
-        })
+        } as any)
         .select()
         .single();
 
@@ -142,7 +144,7 @@ export class SupabasePageRepository implements PageRepository {
       const { error } = await this.supabase
         .from('cms_pages')
         .delete()
-        .eq('id', id);
+        .eq('id', id as string);
 
       if (error) {
         return err(new AppError('INTERNAL_ERROR', error.message, 500));
@@ -156,14 +158,12 @@ export class SupabasePageRepository implements PageRepository {
 
   async publish(id: PageId): Promise<Result<Page, Error>> {
     try {
-      const { data, error } = await this.supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = this.supabase as any;
+      const { data, error } = await sb
         .from('cms_pages')
-        .update({ 
-          status: 'published',
-          published_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
+        .update({ published: true, updated_at: new Date().toISOString() })
+        .eq('id', id as string)
         .select()
         .single();
 
@@ -179,14 +179,12 @@ export class SupabasePageRepository implements PageRepository {
 
   async unpublish(id: PageId): Promise<Result<Page, Error>> {
     try {
-      const { data, error } = await this.supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sb = this.supabase as any;
+      const { data, error } = await sb
         .from('cms_pages')
-        .update({ 
-          status: 'draft',
-          published_at: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
+        .update({ published: false, updated_at: new Date().toISOString() })
+        .eq('id', id as string)
         .select()
         .single();
 
@@ -207,10 +205,10 @@ export class SupabasePageRepository implements PageRepository {
       id: data.id as PageId,
       slug: data.slug as Slug,
       title: data.title,
-      data: JSON.parse(data.data),
-      status: data.status,
+      data: typeof data.data === 'string' ? JSON.parse(data.data) : data.data,
+      status: data.published ? 'published' : 'draft',
       createdAt: new Date(data.created_at).getTime() as Timestamp,
-      updatedAt: new Date(data.updated_at).getTime() as Timestamp,
+      updatedAt: new Date(data.updated_at ?? data.created_at).getTime() as Timestamp,
     };
   }
 }

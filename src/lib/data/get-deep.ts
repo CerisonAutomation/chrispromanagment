@@ -30,21 +30,21 @@ export function setDeep(obj: any, path: string | PathPart[], value: any): any {
   let current = result;
   
   for (let i = 0; i < parts.length - 1; i++) {
-    const part = parts[i];
+    const part = parts[i]!;
     const nextPart = parts[i + 1];
-    
+
     if (current[part] === undefined) {
       current[part] = typeof nextPart === "number" ? [] : {};
     } else {
-      current[part] = Array.isArray(current[part]) 
-        ? [...current[part]] 
+      current[part] = Array.isArray(current[part])
+        ? [...current[part]]
         : { ...current[part] };
     }
-    
+
     current = current[part];
   }
-  
-  const lastPart = parts[parts.length - 1];
+
+  const lastPart = parts[parts.length - 1]!;
   current[lastPart] = value;
   
   return result;

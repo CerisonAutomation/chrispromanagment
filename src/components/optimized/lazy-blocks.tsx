@@ -68,7 +68,7 @@ export function LazyBlock({
     const startTime = Date.now();
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsVisible(true);
           setLoadTime(Date.now() - startTime);
           observer.disconnect();
@@ -216,7 +216,7 @@ export function useLazyComponent<T extends ComponentType<unknown>>(
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           load().catch(console.error);
           observer.disconnect();
         }

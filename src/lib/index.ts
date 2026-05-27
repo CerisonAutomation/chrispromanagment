@@ -18,8 +18,5 @@ export * from './env.js';
 // API
 export * from './api.js';
 
-// Auth
-export * from './auth.js';
-
 // Hooks - re-export from lib/hooks (will be created)
 // export * from './hooks/index.js';

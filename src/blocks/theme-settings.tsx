@@ -110,7 +110,7 @@ export const ThemeSettings = {
       pill: "9999px",
     };
 
-    const bg = bgMap[p.backgroundShade] || bgMap.darkest;
+    const bg = (bgMap[p.backgroundShade] ?? bgMap.darkest)!;
     const accent = p.accentColor || "#c8a96a";
     const fontBody = p.fontBody || "Outfit";
     const fontHeading = p.fontHeading || "Cormorant Garamond";

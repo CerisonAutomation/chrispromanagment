@@ -195,7 +195,7 @@ const initialState: AdminState = {
   isPublishing: false,
   lastSavedAt: null,
   autosaveEnabled: true,
-  currentTheme: canonicalThemes[0],
+  currentTheme: canonicalThemes[0]!,
   themes: canonicalThemes,
   undoStack: [],
   redoStack: [],
@@ -420,7 +420,7 @@ export const useAdminStore = create<AdminStore>()(
           const { undoStack, redoStack, content, selectedBlockId } = get();
           if (undoStack.length === 0) return;
           
-          const previous = undoStack[undoStack.length - 1];
+          const previous = undoStack[undoStack.length - 1]!;
           const current: HistoryEntry = {
             content: JSON.parse(JSON.stringify(content)),
             selectedBlockId,
@@ -441,7 +441,7 @@ export const useAdminStore = create<AdminStore>()(
           const { undoStack, redoStack, content, selectedBlockId } = get();
           if (redoStack.length === 0) return;
           
-          const next = redoStack[redoStack.length - 1];
+          const next = redoStack[redoStack.length - 1]!;
           const current: HistoryEntry = {
             content: JSON.parse(JSON.stringify(content)),
             selectedBlockId,

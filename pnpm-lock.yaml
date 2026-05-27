@@ -179,9 +179,6 @@ importers:
       next:
         specifier: 16.2.3
         version: 16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
-      next-auth:
-        specifier: 4.24.13
-        version: 4.24.13(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       next-intl:
         specifier: ^4.9.0
         version: 4.9.1(next@16.2.3(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(typescript@6.0.2)

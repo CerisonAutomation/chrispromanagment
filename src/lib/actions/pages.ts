@@ -11,7 +11,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 import type { Data } from '@measured/puck';
 
-interface PageVersion {
+export interface PageVersion {
   id: string;
   page_id: string;
   data: Data;
