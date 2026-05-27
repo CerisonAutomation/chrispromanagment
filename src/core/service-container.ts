@@ -1,6 +1,4 @@
-// @ts-nocheck
-// Service Container Implementation
-// Provides dependency injection and service lifecycle management
+// Service Container — dependency injection and lifecycle management
 
 /**
  * Service lifecycle types
@@ -35,8 +33,8 @@ export class ServiceContainer {
     dependencies?: string[]
   ): void {
     if (this.services.has(name)) {
-      throw new Error(`Service '${name}' is already registered`);
-    }
+return;
+} // idempotent — safe across HMR reloads
 
     this.services.set(name, {
       factory,
@@ -243,7 +241,7 @@ export async function resolveService<T>(name: string): Promise<T> {
 /**
  * Auto-register decorated classes
  */
-export function autoRegister(container: ServiceContainer): void {
+export function autoRegister(_container: ServiceContainer): void {
   // This would typically scan for decorated classes
   // For now, it's a placeholder for reflection-based registration
 }

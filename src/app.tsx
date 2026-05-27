@@ -66,9 +66,15 @@ function PageFallback() {
 
 function ProtectedRoute({ children, requireAdmin = true }: { children: React.ReactNode; requireAdmin?: boolean }) {
   const { session, isAdmin, isLoading } = useAuthStore();
-  if (isLoading) return <PageFallback />;
-  if (!session) return <Navigate to="/auth" replace />;
-  if (requireAdmin && !isAdmin) return <Navigate to="/" replace />;
+  if (isLoading) {
+return <PageFallback />;
+}
+  if (!session) {
+return <Navigate to="/auth" replace />;
+}
+  if (requireAdmin && !isAdmin) {
+return <Navigate to="/" replace />;
+}
   return <>{children}</>;
 }
 
@@ -94,7 +100,7 @@ export default function App() {
       <CMSProvider>
         <ModalProvider>
           <HelmetProvider>
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <Suspense fallback={<PageFallback />}>
               <Routes>
                 {/* Standalone auth — no layout wrapper, no nav/footer */}

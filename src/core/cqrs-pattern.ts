@@ -1,7 +1,4 @@
-// @ts-nocheck
-// CQRS Pattern Implementation
-// Separates read and write operations for scalable data access patterns
-// Supports both Class-based DI structures and Event-driven dispatch-object patterns seamlessly.
+// CQRS Pattern — read/write segregation with typed command/query buses
 
 /**
  * Command interface for write operations that modify state
@@ -398,24 +395,24 @@ export class CommandResult<T = any> {
 /**
  * Generic Command Handler base class
  */
-export abstract class CommandHandler<TInput = any, TOutput = any>
+export abstract class CommandHandler<TInput = unknown, TOutput = unknown>
   implements ICommand<TInput, TOutput> {
   abstract execute(input: TInput): Promise<TOutput>;
 
-  async validate?(input: TInput): Promise<boolean> {
-    return true; // Default validation passes
+  async validate?(_input: TInput): Promise<boolean> {
+    return true;
   }
 }
 
 /**
  * Generic Query Handler base class
  */
-export abstract class QueryHandler<TInput = any, TOutput = any>
+export abstract class QueryHandler<TInput = unknown, TOutput = unknown>
   implements IQuery<TInput, TOutput> {
   abstract execute(input: TInput): Promise<TOutput>;
 
-  async validate?(input: TInput): Promise<boolean> {
-    return true; // Default validation passes
+  async validate?(_input: TInput): Promise<boolean> {
+    return true;
   }
 }
 
