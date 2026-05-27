@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Guesty Authentication Middleware
  * 

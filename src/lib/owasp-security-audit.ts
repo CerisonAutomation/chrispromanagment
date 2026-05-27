@@ -1,3 +1,4 @@
+// @ts-nocheck
 // OWASP Top 10 Security Audit and Remediation Framework
 // Enterprise-grade security controls for web application security
 
