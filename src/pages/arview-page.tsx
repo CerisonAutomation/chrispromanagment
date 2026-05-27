@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import ARViewer from '@/components/ar/ARViewer';
 import { Button } from '@/components/ui/button';

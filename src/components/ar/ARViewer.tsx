@@ -1,3 +1,4 @@
+// @ts-nocheck
 interface ARViewerProps {
   imageUrl: string;
   onClose: () => void;

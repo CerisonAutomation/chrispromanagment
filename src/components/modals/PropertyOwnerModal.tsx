@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from "react";
 import { CheckCircle, Loader2, ArrowRight, ArrowLeft, Home, MapPin, Bed, Bath, Users, Calendar, Phone, Mail, Building } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

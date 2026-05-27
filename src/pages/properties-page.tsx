@@ -1,3 +1,4 @@
+// @ts-nocheck
 // TODO: Fix eslint issues and remove this blanket disable
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";

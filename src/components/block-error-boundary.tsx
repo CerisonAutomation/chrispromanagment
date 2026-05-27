@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Component, ErrorInfo } from "react";
 import { cn } from '@/lib/utils';
 

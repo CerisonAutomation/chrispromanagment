@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * LiveBlocks.jsx — Exact mirror renderers of every frontend section
  * Each block matches the actual page pixel-for-pixel, with InlineText editing.

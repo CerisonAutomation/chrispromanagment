@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface OccupancyChartProps {

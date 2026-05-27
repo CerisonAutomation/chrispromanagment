@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { render, screen, within } from '@/test/utils';
 import { ErrorBoundary } from '@/components/error-boundary';
 

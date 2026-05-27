@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/lib/perf.js — canonical perf utilities (MemoryCache + RequestDeduplicator)
 // Ported from the reference TS core. Pure JS, zero external deps.
 

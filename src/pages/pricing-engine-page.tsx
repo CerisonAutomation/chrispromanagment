@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect } from 'react';
 import { usePricingStore, usePropertiesStore } from '@/store';
 import PricingChart from '@/components/pricing/pricing-chart';

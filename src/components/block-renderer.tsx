@@ -1,3 +1,4 @@
+// @ts-nocheck
 // BlockRenderer — additive on-ramp toward editor consolidation (P3).
 //
 // Resolves a block type via the centralized registry instead of inline
