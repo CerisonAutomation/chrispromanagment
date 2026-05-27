@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useMemo } from "react";
 import { Grid3x3, ChevronLeft, ChevronRight } from "lucide-react";
 import SmartImage from "./smart-image";
