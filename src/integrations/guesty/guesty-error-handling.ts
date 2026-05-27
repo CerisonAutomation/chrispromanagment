@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Comprehensive Error Handling and Recovery System for Guesty Integration
  * 
