@@ -117,7 +117,9 @@ export const PropertyOwnerModal = () => {
         expected_revenue: form.expectedRevenue || null,
         additional_info: form.additionalInfo || null,
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setIsSuccess(true);
       toast.success("Inquiry submitted! We'll be in touch within 24 hours.");
     } catch (error) {
@@ -146,7 +148,7 @@ export const PropertyOwnerModal = () => {
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
               ownerModalStep >= step
-                ? "bg-[#D4AF37] text-[#0F0F10]"
+                ? "bg-[#C9A84C] text-[#0F0F10]"
                 : "bg-[#27272A] text-[#A1A1AA]"
             }`}
           >
@@ -155,7 +157,7 @@ export const PropertyOwnerModal = () => {
           {step < 3 && (
             <div
               className={`w-12 h-0.5 mx-1 ${
-                ownerModalStep > step ? "bg-[#D4AF37]" : "bg-[#27272A]"
+                ownerModalStep > step ? "bg-[#C9A84C]" : "bg-[#27272A]"
               }`}
             />
           )}
@@ -180,7 +182,7 @@ export const PropertyOwnerModal = () => {
             </p>
             <Button
               onClick={handleClose}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
             >
               Close
             </Button>
@@ -205,7 +207,7 @@ export const PropertyOwnerModal = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                    <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                       Property Type *
                     </label>
                     <Select value={form.propertyType} onValueChange={(v) => setForm({ ...form, propertyType: v })}>
@@ -220,7 +222,7 @@ export const PropertyOwnerModal = () => {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                    <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                       Location *
                     </label>
                     <Select value={form.location} onValueChange={(v) => setForm({ ...form, location: v })}>
@@ -238,7 +240,7 @@ export const PropertyOwnerModal = () => {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                    <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                       <Bed className="w-3 h-3 inline mr-1" /> Bedrooms
                     </label>
                     <Input
@@ -251,7 +253,7 @@ export const PropertyOwnerModal = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                    <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                       <Bath className="w-3 h-3 inline mr-1" /> Bathrooms
                     </label>
                     <Input
@@ -264,7 +266,7 @@ export const PropertyOwnerModal = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                    <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                       <Users className="w-3 h-3 inline mr-1" /> Max Guests
                     </label>
                     <Input
@@ -284,7 +286,7 @@ export const PropertyOwnerModal = () => {
             {ownerModalStep === 2 && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Full Name *
                   </label>
                   <Input
@@ -296,7 +298,7 @@ export const PropertyOwnerModal = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Email Address *
                   </label>
                   <Input
@@ -308,7 +310,7 @@ export const PropertyOwnerModal = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Phone Number *
                   </label>
                   <Input
@@ -326,7 +328,7 @@ export const PropertyOwnerModal = () => {
             {ownerModalStep === 3 && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-3 block">
                     Services You're Interested In
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -335,14 +337,14 @@ export const PropertyOwnerModal = () => {
                         key={service.id}
                         className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${
                           form.servicesInterested.includes(service.id)
-                            ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                            ? "border-[#C9A84C] bg-[#C9A84C]/10"
                             : "border-white/10 hover:border-white/30"
                         }`}
                       >
                         <Checkbox
                           checked={form.servicesInterested.includes(service.id)}
                           onCheckedChange={() => handleServiceToggle(service.id)}
-                          className="border-white/20 data-[state=checked]:bg-[#D4AF37] data-[state=checked]:border-[#D4AF37]"
+                          className="border-white/20 data-[state=checked]:bg-[#C9A84C] data-[state=checked]:border-[#C9A84C]"
                         />
                         <span className="text-sm text-[#F5F5F0]">{service.label}</span>
                       </label>
@@ -351,7 +353,7 @@ export const PropertyOwnerModal = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Is your property currently listed?
                   </label>
                   <Select value={form.currentlyListed} onValueChange={(v) => setForm({ ...form, currentlyListed: v })}>
@@ -369,7 +371,7 @@ export const PropertyOwnerModal = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Additional Information
                   </label>
                   <Textarea
@@ -400,7 +402,7 @@ export const PropertyOwnerModal = () => {
                 <Button
                   type="button"
                   onClick={nextStep}
-                  className="flex-1 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+                  className="flex-1 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
                 >
                   Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -410,7 +412,7 @@ export const PropertyOwnerModal = () => {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+                  className="flex-1 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
                 >
                   {isSubmitting ? (
                     <>

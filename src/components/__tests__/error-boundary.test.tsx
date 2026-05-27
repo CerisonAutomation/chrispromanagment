@@ -3,7 +3,9 @@ import { ErrorBoundary } from '@/components/error-boundary';
 
 // Component that throws an error
 function ThrowError({ shouldThrow }) {
-  if (shouldThrow) throw new Error('Test error');
+  if (shouldThrow) {
+throw new Error('Test error');
+}
   return <div>No error</div>;
 }
 

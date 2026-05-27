@@ -9,7 +9,9 @@ import { toast } from 'sonner';
 export default function ListingsManagementPage() {
   const { properties, loading, filter, total, fetch, setFilter, clearFilter, toggleActive, sync } = usePropertiesStore();
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => {
+ fetch(); 
+}, [fetch]);
 
   const handleToggle = async (guesty_id: string, active: boolean) => {
     try {
@@ -34,7 +36,7 @@ export default function ListingsManagementPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-[#D4AF37]" />
+            <Building2 className="w-6 h-6 text-[#C9A84C]" />
             Listings
           </h1>
           <p className="text-sm text-[#71717A] mt-1">
@@ -45,7 +47,7 @@ export default function ListingsManagementPage() {
           <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="border-white/10 text-[#A1A1AA]">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button onClick={handleSync} disabled={loading} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]" size="sm">
+          <Button onClick={handleSync} disabled={loading} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]" size="sm">
             Sync Guesty
           </Button>
         </div>
@@ -72,7 +74,7 @@ export default function ListingsManagementPage() {
               onClick={() => setFilter({ active: val })}
               className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                 filter.active === val
-                  ? 'bg-[#D4AF37] text-[#0F0F10] border-[#D4AF37]'
+                  ? 'bg-[#C9A84C] text-[#0F0F10] border-[#C9A84C]'
                   : 'border-white/10 text-[#A1A1AA] hover:border-white/20'
               }`}
             >
@@ -84,7 +86,7 @@ export default function ListingsManagementPage() {
 
       {loading && !properties.length ? (
         <div className="flex items-center justify-center h-48">
-          <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
         </div>
       ) : properties.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
@@ -118,7 +120,7 @@ export default function ListingsManagementPage() {
                 {p.bathrooms != null && <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{p.bathrooms}</span>}
                 {p.accommodates != null && <span className="flex items-center gap-1"><Users className="w-3 h-3" />{p.accommodates}</span>}
                 {p.base_price != null && (
-                  <span className="ml-auto font-semibold text-[#D4AF37]">
+                  <span className="ml-auto font-semibold text-[#C9A84C]">
                     {p.currency ?? '€'}{p.base_price}/night
                   </span>
                 )}

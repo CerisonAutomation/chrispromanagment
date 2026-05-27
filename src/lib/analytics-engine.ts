@@ -9,7 +9,9 @@ export interface TopProperty    { id: string; title: string; revenue: number; na
 export interface KPIStats { totalRevenue: number; avgOccupancy: number; totalBookings: number; avgNightlyRate: number }
 
 function extractAmount(money: unknown): number {
-  if (!money || typeof money !== 'object') return 0;
+  if (!money || typeof money !== 'object') {
+return 0;
+}
   const m = money as Record<string, number>;
   return m.hostPayout ?? m.totalPaid ?? m.netIncome ?? 0;
 }
@@ -25,7 +27,9 @@ class AnalyticsEngine {
 
     const map = new Map<string, number>();
     data?.forEach(r => {
-      if (r.check_in) map.set(r.check_in, (map.get(r.check_in) || 0) + extractAmount(r.money));
+      if (r.check_in) {
+map.set(r.check_in, (map.get(r.check_in) || 0) + extractAmount(r.money));
+}
     });
 
     return eachDayOfInterval({ start: subDays(new Date(), days - 1), end: new Date() }).map(d => {
@@ -64,7 +68,9 @@ class AnalyticsEngine {
     const map = new Map<string, number>();
     data?.forEach(r => {
       const date = r.created_at?.split('T')[0];
-      if (date) map.set(date, (map.get(date) || 0) + 1);
+      if (date) {
+map.set(date, (map.get(date) || 0) + 1);
+}
     });
 
     return eachDayOfInterval({ start: subDays(new Date(), days - 1), end: new Date() }).map(d => {
@@ -79,11 +85,15 @@ class AnalyticsEngine {
       .from('reservations_cache')
       .select('guesty_property_id, money, guesty_properties_cache(title)');
 
-    if (!data) return [];
+    if (!data) {
+return [];
+}
     const propMap = new Map<string, { title: string; revenue: number; bookings: number }>();
     data.forEach(r => {
       const id = r.guesty_property_id;
-      if (!id) return;
+      if (!id) {
+return;
+}
       const title = (r.guesty_properties_cache as { title?: string } | null)?.title ?? id;
       const existing = propMap.get(id) ?? { title, revenue: 0, bookings: 0 };
       propMap.set(id, { title, revenue: existing.revenue + extractAmount(r.money), bookings: existing.bookings + 1 });

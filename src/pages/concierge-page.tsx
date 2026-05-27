@@ -6,7 +6,7 @@ export default function ConciergePage() {
     <div className="min-h-screen bg-[#0F0F10] p-6 flex flex-col">
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-[#D4AF37]" />
+          <Sparkles className="w-6 h-6 text-[#C9A84C]" />
           AI Concierge
         </h1>
         <p className="text-sm text-[#71717A] mt-1">Intelligent guest assistance powered by AI</p>

@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 
 export interface ConciergeMessage {
   role: 'user' | 'assistant';
@@ -13,7 +12,7 @@ export async function getConciergeResponse(
     checkIn?: string;
     checkOut?: string;
   }
-): Promise<string> {
+): Promise<string | undefined> {
   const { data, error } = await supabase.functions.invoke('concierge-ai', {
     body: { messages, userContext },
   });
@@ -22,5 +21,5 @@ export async function getConciergeResponse(
     throw new Error(`Failed to get concierge response: ${error.message}`);
   }
 
-  return data.message;
+  return data?.message;
 }

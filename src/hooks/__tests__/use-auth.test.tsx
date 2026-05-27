@@ -1,12 +1,30 @@
-// TODO: Fix eslint issues and remove this blanket disable
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { useAuth, signOut } from '../use-auth';
+import { useAuth } from '../use-auth';
 
-vi.mock('../use-auth', () => ({
-  useAuth: vi.fn(),
-  signOut: vi.fn(),
-}));
+// Mock Supabase inline to avoid hoisting reference error
+vi.mock('@/integrations/supabase/client', () => {
+  const mockSupabase = {
+    auth: {
+      onAuthStateChange: vi.fn().mockReturnValue({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      }),
+      getSession: vi.fn().mockResolvedValue({
+        data: { session: null },
+        error: null,
+      }),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn().mockResolvedValue({ error: null }),
+      resetPasswordForEmail: vi.fn(),
+    },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+    }),
+  };
+  return { supabase: mockSupabase };
+});
 
 describe('useAuth', () => {
   beforeEach(() => {

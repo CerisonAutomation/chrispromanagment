@@ -9,8 +9,12 @@ async function invokeVersion(action, body = {}) {
   const { data, error } = await supabase.functions.invoke("cms-version", {
     body: { action, ...body },
   });
-  if (error) throw new Error(error.message || "Edge call failed");
-  if (data?.error) throw new Error(data.error);
+  if (error) {
+throw new Error(error.message || "Edge call failed");
+}
+  if (data?.error) {
+throw new Error(data.error);
+}
   return data;
 }
 
@@ -43,7 +47,9 @@ export default function VersionHistoryPanel() {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+ refresh(); 
+}, [refresh]);
 
   const snapshot = async (status = "draft") => {
     setBusy("snapshot");
@@ -56,33 +62,45 @@ export default function VersionHistoryPanel() {
       toast.success(status === "baseline" ? "Baseline saved" : "Snapshot saved");
       setLabel(""); setNote("");
       await refresh();
-    } catch (e) { toast.error(e.message); }
-    finally { setBusy(null); }
+    } catch (e) {
+ toast.error(e.message); 
+} finally {
+ setBusy(null); 
+}
   };
 
   const publish = async (id) => {
     setBusy(id);
-    try { await invokeVersion("publish", { id }); toast.success("Published"); await refresh(); }
-    catch (e) { toast.error(e.message); }
-    finally { setBusy(null); }
+    try {
+ await invokeVersion("publish", { id }); toast.success("Published"); await refresh(); 
+} catch (e) {
+ toast.error(e.message); 
+} finally {
+ setBusy(null); 
+}
   };
 
   const revert = async (id, label) => {
-    if (!confirm(`Revert the live site to "${label}"?\n\nA backup of the current state will be auto-saved first.`)) return;
+    if (!confirm(`Revert the live site to "${label}"?\n\nA backup of the current state will be auto-saved first.`)) {
+return;
+}
     setBusy(id);
     try {
       await invokeVersion("revert", { id });
       toast.success("Reverted — refresh to see changes");
       await refresh();
-    } catch (e) { toast.error(e.message); }
-    finally { setBusy(null); }
+    } catch (e) {
+ toast.error(e.message); 
+} finally {
+ setBusy(null); 
+}
   };
 
   return (
     <div className="bg-[#111318] border border-[#1a1a1e] rounded-lg p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <History className="w-4 h-4 text-[#D4AF37]" />
+          <History className="w-4 h-4 text-[#C9A84C]" />
           <h3 className="text-sm font-semibold text-[#f0ede8]">Publish History & Version Control</h3>
         </div>
         <Button size="sm" variant="ghost" onClick={refresh} disabled={loading}
@@ -104,7 +122,7 @@ export default function VersionHistoryPanel() {
           <Save className="w-3 h-3 mr-1" /> Snapshot
         </Button>
         <Button onClick={() => snapshot("baseline")} disabled={busy === "snapshot"}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] text-xs"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] text-xs"
           title="Reset baseline to the current frontend state — useful as a recovery point.">
           <CheckCircle2 className="w-3 h-3 mr-1" /> Set as Baseline
         </Button>

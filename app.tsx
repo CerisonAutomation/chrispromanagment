@@ -23,12 +23,16 @@ import { HelmetProvider, Helmet } from "react-helmet-async";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { app } from "@/lib/utils";
 import { modalContext } from "@/context/modal-context";
+import { SecurityHeaders } from "@/components/security/SecurityHeaders";
+import { initializeSecurity } from "@/lib/security/security-middleware";
 
 // Simple SEO that doesn't break
 function AppSEO() {
   const location = useLocation();
   // Skip SEO on admin pages
-  if (location.pathname.startsWith('/admin')) return null;
+  if (location.pathname.startsWith('/admin')) {
+return null;
+}
   
   return (
     <Helmet>
@@ -68,12 +72,26 @@ function SkipLink() {
 }
 
 export default function App() {
+  // Initialize security middleware on app load
+  useEffect(() => {
+    initializeSecurity({
+      enableCSRF: true,
+      enableRateLimit: true,
+      enableSecurityHeaders: true,
+      enableInputValidation: true,
+      enableSecurityLogging: true,
+      rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
+      rateLimitMaxRequests: 100,
+    });
+  }, []);
+
   return (
     <ErrorBoundary>
       <CMSProvider>
         <ModalProvider>
           <HelmetProvider>
             <BrowserRouter>
+              <SecurityHeaders />
               <ScrollToHash />
               <SkipLink />
               <Header />

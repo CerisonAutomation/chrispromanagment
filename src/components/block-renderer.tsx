@@ -15,7 +15,9 @@ export function BlockRenderer({ type, content, fallback = null, ...rest }) {
     return fallback;
   }
   const Renderer = schema.render || schema.component || schema.Component;
-  if (typeof Renderer !== "function") return fallback;
+  if (typeof Renderer !== "function") {
+return fallback;
+}
   try {
     return <Renderer content={content} {...rest} />;
   } catch (e) {

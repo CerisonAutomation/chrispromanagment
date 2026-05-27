@@ -28,7 +28,9 @@ export default function ChatPage() {
   const [newSubject, setNewSubject] = useState('');
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => { fetchRooms(); }, [fetchRooms]);
+  useEffect(() => {
+ fetchRooms(); 
+}, [fetchRooms]);
 
   const filtered = rooms.filter(r => {
     const q = search.toLowerCase();
@@ -40,7 +42,9 @@ export default function ChatPage() {
   });
 
   const handleCreate = async () => {
-    if (!newEmail.trim()) { toast.error('Email is required'); return; }
+    if (!newEmail.trim()) {
+ toast.error('Email is required'); return; 
+}
     setCreating(true);
     try {
       const room = await createRoom(newEmail.trim(), newName.trim() || newEmail.trim(), newSubject.trim() || undefined);
@@ -61,21 +65,21 @@ export default function ChatPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <MessageSquare className="w-6 h-6 text-[#D4AF37]" />
+            <MessageSquare className="w-6 h-6 text-[#C9A84C]" />
             Messages
           </h1>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={fetchRooms} disabled={loading} className="border-white/10 text-[#A1A1AA]">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Button onClick={() => setShowNew(v => !v)} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]" size="sm">
+            <Button onClick={() => setShowNew(v => !v)} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]" size="sm">
               <Plus className="w-4 h-4 mr-1" />New
             </Button>
           </div>
         </div>
 
         {showNew && (
-          <Card className="p-4 bg-[#161618] border-[#D4AF37]/30 mb-4 space-y-3">
+          <Card className="p-4 bg-[#161618] border-[#C9A84C]/30 mb-4 space-y-3">
             <h2 className="text-[#F5F5F0] font-semibold text-sm">New Conversation</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Input placeholder="Guest email *" value={newEmail} onChange={e => setNewEmail(e.target.value)}
@@ -87,7 +91,7 @@ export default function ChatPage() {
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => setShowNew(false)} className="border-white/10">Cancel</Button>
-              <Button size="sm" onClick={handleCreate} disabled={creating} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+              <Button size="sm" onClick={handleCreate} disabled={creating} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
                 {creating ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Start Chat'}
               </Button>
             </div>
@@ -108,7 +112,7 @@ export default function ChatPage() {
             <ScrollArea className="flex-1">
               {loading && !rooms.length ? (
                 <div className="p-4 text-center text-[#71717A] text-sm">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-[#D4AF37]" />
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-[#C9A84C]" />
                   Loading…
                 </div>
               ) : filtered.length === 0 ? (
@@ -120,10 +124,10 @@ export default function ChatPage() {
                 <button
                   key={room.id}
                   onClick={() => setActiveRoom(room.id)}
-                  className={`w-full text-left p-3 border-b border-white/5 hover:bg-white/5 transition-colors ${activeRoomId === room.id ? 'bg-[#D4AF37]/10 border-l-2 border-l-[#D4AF37]' : ''}`}
+                  className={`w-full text-left p-3 border-b border-white/5 hover:bg-white/5 transition-colors ${activeRoomId === room.id ? 'bg-[#C9A84C]/10 border-l-2 border-l-[#C9A84C]' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-xs font-bold flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-xs font-bold flex-shrink-0">
                       {initials(room)}
                     </div>
                     <div className="flex-1 min-w-0">

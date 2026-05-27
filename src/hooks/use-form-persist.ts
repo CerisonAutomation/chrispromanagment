@@ -22,13 +22,17 @@ export function useFormPersist<T extends FieldValues>(
 
   // Restore persisted values on mount once
   useEffect(() => {
-    if (!storage || restored.current) return;
+    if (!storage || restored.current) {
+return;
+}
     try {
       const raw = storage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<T>;
         // Filter out excluded keys
-        exclude.forEach((k) => { delete parsed[k as string]; });
+        exclude.forEach((k) => {
+ delete parsed[k as string]; 
+});
         reset(parsed as T, { keepDefaultValues: true });
       }
     } catch {
@@ -40,11 +44,15 @@ export function useFormPersist<T extends FieldValues>(
 
   // Watch and persist on every change
   useEffect(() => {
-    if (!storage) return;
+    if (!storage) {
+return;
+}
     const sub = watch((values) => {
       try {
         const toStore: Partial<T> = { ...values };
-        exclude.forEach((k) => { delete toStore[k as string]; });
+        exclude.forEach((k) => {
+ delete toStore[k as string]; 
+});
         storage.setItem(storageKey, JSON.stringify(toStore));
       } catch {
         // storage full or unavailable

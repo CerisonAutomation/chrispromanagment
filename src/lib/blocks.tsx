@@ -41,7 +41,7 @@ import {
 
 export const THEME = {
   bg:"#0F0F10", surface:"#161618", dark:"#0A0A0B",
-  accent:"#D4AF37", accentHover:"#E5C158",
+  accent:"#C9A84C", accentHover:"#D4B85C",
   text:"#F5F5F0", muted:"#A1A1AA", border:"rgba(255,255,255,0.06)",
   fontHeading:"'Playfair Display', Georgia, serif",
   fontBody:"'Manrope', system-ui, sans-serif",
@@ -56,14 +56,14 @@ export const FONT_PAIRS = [
 ];
 
 export const COLOR_PRESETS = [
-  { id:"gold-noir", name:"Gold Noir", accent:"#D4AF37", bg:"#0F0F10", surface:"#161618", text:"#F5F5F0" },
+  { id:"gold-noir", name:"Gold Noir", accent:"#C9A84C", bg:"#0F0F10", surface:"#161618", text:"#F5F5F0" },
   { id:"sapphire", name:"Sapphire", accent:"#3B82F6", bg:"#0F172A", surface:"#1E293B", text:"#F8FAFC" },
   { id:"emerald", name:"Emerald", accent:"#10B981", bg:"#0A1612", surface:"#122820", text:"#ECFDF5" },
   { id:"rose", name:"Rose Quartz", accent:"#F43F5E", bg:"#18181B", surface:"#27272A", text:"#FAFAFA" },
   { id:"amber", name:"Amber", accent:"#F59E0B", bg:"#1C1917", surface:"#292524", text:"#FAFAF9" },
   { id:"violet", name:"Violet", accent:"#8B5CF6", bg:"#0F0A1A", surface:"#1A1028", text:"#F5F0FF" },
   { id:"teal", name:"Teal", accent:"#0D9488", bg:"#060C0C", surface:"#0C1616", text:"#D0F0EC" },
-  { id:"light", name:"Light Mode", accent:"#D4AF37", bg:"#FFFFFF", surface:"#F9FAFB", text:"#111827" },
+  { id:"light", name:"Light Mode", accent:"#C9A84C", bg:"#FFFFFF", surface:"#F9FAFB", text:"#111827" },
 ];
 
 // ─── BLOCK SCHEMAS (Consolidated from all sources) ───────────────────────────────────────────
@@ -753,7 +753,7 @@ export const SCHEMAS = {
       bg:{ type:"color", label:"Background" },
       fg:{ type:"color", label:"Foreground" },
     },
-    defaults: { enabled:false, message:"Spring savings — 10% off direct bookings.", ctaText:"Book", ctaHref:"/properties", bg:"#D4AF37", fg:"#0F0F10" },
+    defaults: { enabled:false, message:"Spring savings — 10% off direct bookings.", ctaText:"Book", ctaHref:"/properties", bg:"#C9A84C", fg:"#0F0F10" },
   },
 
   mobileMenu: {

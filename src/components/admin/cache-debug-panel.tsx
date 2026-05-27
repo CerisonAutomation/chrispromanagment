@@ -9,6 +9,22 @@ import { Trash2, RefreshCw, Database } from "lucide-react";
 
 const POLL_MS = 1500;
 
+interface CacheStats {
+  size: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+}
+
+interface GuestyTokenStatus {
+  has_token: boolean;
+  seconds_until_expiry: number | null;
+  last_refreshed_at: string | null;
+  refresh_count: number | null;
+  memory_cached: boolean;
+  scope: string | null;
+}
+
 /**
  * Admin debug panel — surfaces:
  *   • Live cache hit/miss/hit-rate per cache (pages / blocks / bookings)
@@ -16,22 +32,28 @@ const POLL_MS = 1500;
  *   • Guesty OAuth token vault status (expiry, last refresh, refresh count)
  */
 export default function CacheDebugPanel() {
-  const [stats, setStats] = useState(getCacheStats());
+  const [stats, setStats] = useState<Record<string, CacheStats>>(getCacheStats());
   const { status: rawStatus, loading, refresh } = useGuestyTokenStatus();
-  const status: any = rawStatus;
+  const status = rawStatus as GuestyTokenStatus | null;
 
   useEffect(() => {
     const id = setInterval(() => setStats(getCacheStats()), POLL_MS);
     return () => clearInterval(id);
   }, []);
 
-  const fmtRate = (r) => `${(r * 100).toFixed(1)}%`;
-  const fmtSecs = (s) => {
-    if (s == null) return "—";
+  const fmtRate = (r: number) => `${(r * 100).toFixed(1)}%`;
+  const fmtSecs = (s: number | null) => {
+    if (s == null) {
+return "—";
+}
     const m = Math.floor(s / 60);
     const h = Math.floor(m / 60);
-    if (h > 0) return `${h}h ${m % 60}m`;
-    if (m > 0) return `${m}m ${s % 60}s`;
+    if (h > 0) {
+return `${h}h ${m % 60}m`;
+}
+    if (m > 0) {
+return `${m}m ${s % 60}s`;
+}
     return `${s}s`;
   };
 
@@ -42,13 +64,15 @@ export default function CacheDebugPanel() {
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" /> Cache stats (live)
           </CardTitle>
-          <Button variant="destructive" size="sm" onClick={() => { clearAllCaches(); setStats(getCacheStats()); }}>
+          <Button variant="destructive" size="sm" onClick={() => {
+ clearAllCaches(); setStats(getCacheStats()); 
+}}>
             <Trash2 className="h-4 w-4 mr-1" /> Clear all
           </Button>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {Object.entries(stats).map(([name, s]: [string, any]) => (
+            {Object.entries(stats).map(([name, s]: [string, CacheStats]) => (
               <div key={name} className="rounded-lg border bg-card p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="font-medium capitalize">{name}</div>
@@ -64,7 +88,9 @@ export default function CacheDebugPanel() {
                   size="sm"
                   variant="outline"
                   className="mt-3 w-full"
-                  onClick={() => { invalidateCache(name); setStats(getCacheStats()); }}
+                  onClick={() => {
+ invalidateCache(name); setStats(getCacheStats()); 
+}}
                 >
                   Clear {name}
                 </Button>
@@ -104,7 +130,13 @@ export default function CacheDebugPanel() {
   );
 }
 
-function Stat({ label, value, ok }: { label: any; value: any; ok?: any }) {
+interface StatProps {
+  label: string;
+  value: string | number | boolean;
+  ok?: boolean;
+}
+
+function Stat({ label, value, ok }: StatProps) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <div className="text-xs text-muted-foreground">{label}</div>

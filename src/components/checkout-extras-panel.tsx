@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,15 +14,23 @@ import { Tag, CreditCard, Loader2, Check } from "lucide-react";
  * Sits above the Stripe Elements card. Calls `onQuoteUpdate(newQuote)` when
  * a coupon is applied so the parent can refresh totals.
  */
-export default function CheckoutExtrasPanel({ quoteId, listingId, onQuoteUpdate }) {
+interface CheckoutExtrasPanelProps {
+  quoteId: string | null;
+  listingId: string;
+  onQuoteUpdate?: (quote: Record<string, unknown>) => void;
+}
+
+export default function CheckoutExtrasPanel({ quoteId, listingId, onQuoteUpdate }: CheckoutExtrasPanelProps) {
   const { provider, loading: providerLoading, error: providerError } = usePaymentProvider(listingId);
   const { applyCoupon, loading: couponLoading } = useGuestyQuote();
   const [code, setCode] = useState("");
-  const [applied, setApplied] = useState(null);
+  const [applied, setApplied] = useState<string | null>(null);
 
   const onApply = async (e) => {
     e?.preventDefault?.();
-    if (!quoteId || !code.trim()) return;
+    if (!quoteId || !code.trim()) {
+return;
+}
     try {
       const updated = await applyCoupon(quoteId, code.trim());
       setApplied(code.trim());
@@ -40,7 +47,7 @@ export default function CheckoutExtrasPanel({ quoteId, listingId, onQuoteUpdate 
       {/* Coupon */}
       <div className="bg-[#161618] border border-white/10 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Tag className="h-4 w-4 text-[#D4AF37]" />
+          <Tag className="h-4 w-4 text-[#C9A84C]" />
           <h3 className="text-sm font-semibold text-[#F5F5F0]">Have a promo code?</h3>
         </div>
         <form onSubmit={onApply} className="flex gap-2">
@@ -66,7 +73,7 @@ export default function CheckoutExtrasPanel({ quoteId, listingId, onQuoteUpdate 
       <div className="bg-[#161618] border border-white/10 rounded-lg p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-[#D4AF37]" />
+            <CreditCard className="h-4 w-4 text-[#C9A84C]" />
             <h3 className="text-sm font-semibold text-[#F5F5F0]">Secure payment</h3>
           </div>
           {providerLoading ? (

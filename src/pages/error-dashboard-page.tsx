@@ -18,9 +18,15 @@ interface ErrorEntry {
 }
 
 function severityFromAction(action: string): 'critical' | 'high' | 'medium' | 'low' {
-  if (action.includes('critical') || action.includes('payment')) return 'critical';
-  if (action.includes('error') || action.includes('failed') || action.includes('failure')) return 'high';
-  if (action.includes('warn') || action.includes('timeout')) return 'medium';
+  if (action.includes('critical') || action.includes('payment')) {
+return 'critical';
+}
+  if (action.includes('error') || action.includes('failed') || action.includes('failure')) {
+return 'high';
+}
+  if (action.includes('warn') || action.includes('timeout')) {
+return 'medium';
+}
   return 'low';
 }
 
@@ -45,7 +51,9 @@ export default function ErrorDashboardPage() {
         .or('action.ilike.%error%,action.ilike.%failed%,action.ilike.%failure%,action.ilike.%critical%,action.ilike.%warn%')
         .order('created_at', { ascending: false })
         .limit(100);
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setErrors((data as ErrorEntry[]) || []);
     } catch (e: unknown) {
       toast.error('Failed to load error log');
@@ -54,7 +62,9 @@ export default function ErrorDashboardPage() {
     }
   };
 
-  useEffect(() => { fetchErrors(); }, []);
+  useEffect(() => {
+ fetchErrors(); 
+}, []);
 
   const toggleResolve = (id: string) => {
     setResolved(prev => {
@@ -73,7 +83,7 @@ export default function ErrorDashboardPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <AlertCircle className="w-6 h-6 text-[#D4AF37]" />
+            <AlertCircle className="w-6 h-6 text-[#C9A84C]" />
             Error Dashboard
           </h1>
           <p className="text-sm text-[#71717A] mt-1">Live from audit log · {active.length} unresolved</p>
@@ -101,7 +111,7 @@ export default function ErrorDashboardPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-48">
-          <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
         </div>
       ) : errors.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">

@@ -32,7 +32,9 @@ export const ConfirmationPage = () => {
   }, [directReservationId, directCode, sessionId]);
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return "";
+    if (!dateStr) {
+return "";
+}
     return new Date(dateStr).toLocaleDateString("en-GB", {
       weekday: "long",
       day: "numeric",
@@ -55,7 +57,7 @@ export const ConfirmationPage = () => {
     return (
       <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#D4AF37] animate-spin mx-auto mb-6" />
+          <Loader2 className="w-12 h-12 text-[#C9A84C] animate-spin mx-auto mb-6" />
           <h1 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-2">
             Confirming Your Booking
           </h1>
@@ -69,7 +71,7 @@ export const ConfirmationPage = () => {
   if (status === "pending") {
     return (
       <div className="min-h-screen bg-[#0F0F10] pt-32 px-6 text-center">
-        <Loader2 className="w-16 h-16 text-[#D4AF37] mx-auto mb-6 animate-spin" />
+        <Loader2 className="w-16 h-16 text-[#C9A84C] mx-auto mb-6 animate-spin" />
         <h1 className="font-['Playfair_Display'] text-3xl text-[#F5F5F0] mb-4">
           Payment Processing
         </h1>
@@ -79,7 +81,7 @@ export const ConfirmationPage = () => {
         </p>
         <Button
           onClick={() => navigate("/#contact")}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
         >
           Contact Us
         </Button>
@@ -102,13 +104,13 @@ export const ConfirmationPage = () => {
           <Button
             onClick={() => navigate("/properties")}
             variant="outline"
-            className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0F10] rounded-none"
+            className="border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] hover:text-[#0F0F10] rounded-none"
           >
             Browse Properties
           </Button>
           <Button
             onClick={() => navigate("/#contact")}
-            className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+            className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
           >
             Contact Us
           </Button>
@@ -132,13 +134,13 @@ export const ConfirmationPage = () => {
           <Button
             onClick={() => navigate("/properties")}
             variant="outline"
-            className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0F10] rounded-none"
+            className="border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] hover:text-[#0F0F10] rounded-none"
           >
             Try Again
           </Button>
           <Button
             onClick={() => navigate("/#contact")}
-            className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+            className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
           >
             Contact Us
           </Button>
@@ -161,9 +163,9 @@ export const ConfirmationPage = () => {
             Thank you for your reservation. A confirmation email has been sent to your inbox.
           </p>
           {transaction?.confirmation_code && (
-            <div className="mt-6 inline-block bg-[#161618] border border-[#D4AF37]/30 px-6 py-3">
+            <div className="mt-6 inline-block bg-[#161618] border border-[#C9A84C]/30 px-6 py-3">
               <span className="text-[#A1A1AA] text-sm block mb-1">Confirmation Code</span>
-              <span className="font-['Playfair_Display'] text-2xl text-[#D4AF37]">
+              <span className="font-['Playfair_Display'] text-2xl text-[#C9A84C]">
                 {transaction.confirmation_code}
               </span>
             </div>
@@ -179,7 +181,7 @@ export const ConfirmationPage = () => {
           <div className="space-y-4">
             {transaction?.check_in && (
               <div className="flex items-start gap-4 p-4 bg-[#0F0F10] border border-white/5">
-                <Calendar className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                <Calendar className="w-5 h-5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[#A1A1AA] text-sm block mb-1">Dates</span>
                   <span className="text-[#F5F5F0]">
@@ -191,7 +193,7 @@ export const ConfirmationPage = () => {
 
             {transaction?.guests_count && (
               <div className="flex items-start gap-4 p-4 bg-[#0F0F10] border border-white/5">
-                <Users className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                <Users className="w-5 h-5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[#A1A1AA] text-sm block mb-1">Guests</span>
                   <span className="text-[#F5F5F0]">
@@ -203,7 +205,7 @@ export const ConfirmationPage = () => {
 
             {transaction?.guest_name && (
               <div className="flex items-start gap-4 p-4 bg-[#0F0F10] border border-white/5">
-                <Mail className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                <Mail className="w-5 h-5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[#A1A1AA] text-sm block mb-1">Guest</span>
                   <span className="text-[#F5F5F0]">{transaction.guest_name}</span>
@@ -215,7 +217,7 @@ export const ConfirmationPage = () => {
             {transaction?.amount && (
               <div className="flex justify-between items-center pt-4 border-t border-white/10">
                 <span className="text-[#F5F5F0] font-semibold">Total Paid</span>
-                <span className="font-['Playfair_Display'] text-2xl text-[#D4AF37]">
+                <span className="font-['Playfair_Display'] text-2xl text-[#C9A84C]">
                   {formatPrice(transaction.amount, transaction.currency)}
                 </span>
               </div>
@@ -230,19 +232,19 @@ export const ConfirmationPage = () => {
           </h2>
           <div className="space-y-4 text-[#A1A1AA]">
             <p className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+              <span className="w-6 h-6 rounded-full bg-[#C9A84C] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
                 1
               </span>
               You'll receive a confirmation email with all the details of your booking.
             </p>
             <p className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+              <span className="w-6 h-6 rounded-full bg-[#C9A84C] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
                 2
               </span>
               A few days before your arrival, we'll send you check-in instructions and access details.
             </p>
             <p className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+              <span className="w-6 h-6 rounded-full bg-[#C9A84C] text-[#0F0F10] flex items-center justify-center flex-shrink-0 text-sm font-semibold">
                 3
               </span>
               Our team is available if you have any questions before or during your stay.
@@ -258,16 +260,16 @@ export const ConfirmationPage = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <a
               href="tel:+35679790202"
-              className="flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/5 hover:border-[#D4AF37]/30 transition-colors"
+              className="flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/5 hover:border-[#C9A84C]/30 transition-colors"
             >
-              <Phone className="w-5 h-5 text-[#D4AF37]" />
+              <Phone className="w-5 h-5 text-[#C9A84C]" />
               <span className="text-[#F5F5F0]">+356 7979 0202</span>
             </a>
             <a
               href="mailto:info@christianopropertymanagement.com"
-              className="flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/5 hover:border-[#D4AF37]/30 transition-colors"
+              className="flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/5 hover:border-[#C9A84C]/30 transition-colors"
             >
-              <Mail className="w-5 h-5 text-[#D4AF37]" />
+              <Mail className="w-5 h-5 text-[#C9A84C]" />
               <span className="text-[#F5F5F0]">info@christianopropertymanagement.com</span>
             </a>
           </div>
@@ -277,7 +279,7 @@ export const ConfirmationPage = () => {
         <div className="text-center mt-12">
           <Button
             onClick={() => navigate("/")}
-            className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest px-8 py-4"
+            className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest px-8 py-4"
             data-testid="back-home-btn"
           >
             Back to Home

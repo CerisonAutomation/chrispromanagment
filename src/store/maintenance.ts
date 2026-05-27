@@ -61,12 +61,20 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (filter.status) q = q.eq('status', filter.status);
-      if (filter.priority) q = q.eq('priority', filter.priority);
-      if (filter.propertyId) q = q.eq('property_id', filter.propertyId);
+      if (filter.status) {
+q = q.eq('status', filter.status);
+}
+      if (filter.priority) {
+q = q.eq('priority', filter.priority);
+}
+      if (filter.propertyId) {
+q = q.eq('property_id', filter.propertyId);
+}
 
       const { data, error } = await q;
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       set({ tickets: (data as MaintenanceTicket[]) || [] });
     } catch (e: unknown) {
       set({ error: (e as Error).message });
@@ -93,7 +101,9 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
       .insert(ticket)
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     const created = data as MaintenanceTicket;
     set(s => ({ tickets: [created, ...s.tickets] }));
     return created;
@@ -104,7 +114,9 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
       .from('maintenance_tickets')
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({
       tickets: s.tickets.map(t => t.id === id ? { ...t, ...patch } : t),
       selected: s.selected?.id === id ? { ...s.selected, ...patch } : s.selected,
@@ -113,7 +125,9 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
 
   async remove(id) {
     const { error } = await supabase.from('maintenance_tickets').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({
       tickets: s.tickets.filter(t => t.id !== id),
       selected: s.selected?.id === id ? null : s.selected,
@@ -134,6 +148,8 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
         get().fetch();
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+ supabase.removeChannel(ch); 
+};
   },
 }));

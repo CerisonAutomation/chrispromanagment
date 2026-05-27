@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect, useCallback } from "react";
 import {
   Upload, Trash2, Search, Grid, List, RefreshCw,
@@ -34,7 +33,9 @@ export const MediaLibrary = () => {
       .from("media_library")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) { toast.error("Failed to load media"); return; }
+    if (error) {
+ toast.error("Failed to load media"); return; 
+}
     setMedia((data as MediaItem[]) || []);
   }, []);
 
@@ -45,7 +46,9 @@ export const MediaLibrary = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "media_library" }, fetchMedia)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+ supabase.removeChannel(channel); 
+};
   }, [fetchMedia]);
 
   const filteredMedia = media.filter(item =>
@@ -54,7 +57,9 @@ export const MediaLibrary = () => {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files?.length) return;
+    if (!files?.length) {
+return;
+}
     setIsUploading(true);
 
     try {
@@ -63,7 +68,9 @@ export const MediaLibrary = () => {
         const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
         const { error: storageErr } = await supabase.storage.from("media").upload(path, file);
-        if (storageErr) { toast.error(`Failed to upload ${file.name}`); continue; }
+        if (storageErr) {
+ toast.error(`Failed to upload ${file.name}`); continue; 
+}
 
         const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(path);
 
@@ -89,7 +96,9 @@ export const MediaLibrary = () => {
       const { data, error } = await supabase.functions.invoke("ai-generate-image", {
         body: { prompt: "Luxury Mediterranean villa in Malta with sea view at sunset, professional real estate photography" },
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
 
       if (data?.url) {
         await supabase.from("media_library").insert({
@@ -121,21 +130,27 @@ export const MediaLibrary = () => {
       await supabase.storage.from("media").remove([item.storage_path]);
     }
     const { error } = await supabase.from("media_library").delete().eq("id", item.id);
-    if (error) { toast.error("Delete failed"); return; }
-    if (selectedItem?.id === item.id) setSelectedItem(null);
+    if (error) {
+ toast.error("Delete failed"); return; 
+}
+    if (selectedItem?.id === item.id) {
+setSelectedItem(null);
+}
     setMedia(prev => prev.filter(m => m.id !== item.id));
     toast.success("Item deleted");
   };
 
   const formatSize = (bytes: number | null) => {
-    if (!bytes) return "AI";
+    if (!bytes) {
+return "AI";
+}
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+        <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
       </div>
     );
   }
@@ -152,7 +167,7 @@ export const MediaLibrary = () => {
             variant="outline"
             onClick={generateAIImage}
             disabled={isGenerating}
-            className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+            className="border-[#C9A84C]/30 text-[#C9A84C] hover:bg-[#C9A84C]/10"
           >
             {isGenerating ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -163,7 +178,7 @@ export const MediaLibrary = () => {
           </Button>
           <label className="cursor-pointer">
             <Button
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]"
               disabled={isUploading}
               asChild
             >
@@ -231,7 +246,7 @@ export const MediaLibrary = () => {
                   onClick={() => setSelectedItem(item)}
                   className={`group relative aspect-square bg-[#0a0a0b] border rounded-lg overflow-hidden cursor-pointer transition-all ${
                     selectedItem?.id === item.id
-                      ? "border-[#D4AF37] ring-2 ring-[#D4AF37]/20"
+                      ? "border-[#C9A84C] ring-2 ring-[#C9A84C]/20"
                       : "border-white/10 hover:border-white/20"
                   }`}
                 >
@@ -252,7 +267,7 @@ export const MediaLibrary = () => {
                   key={item.id}
                   onClick={() => setSelectedItem(item)}
                   className={`flex items-center gap-4 p-3 bg-[#0F0F10] border rounded-lg cursor-pointer transition-all ${
-                    selectedItem?.id === item.id ? "border-[#D4AF37]" : "border-white/10 hover:border-white/20"
+                    selectedItem?.id === item.id ? "border-[#C9A84C]" : "border-white/10 hover:border-white/20"
                   }`}
                 >
                   <img src={item.url} alt={item.name} className="w-16 h-16 object-cover rounded" />
@@ -261,13 +276,17 @@ export const MediaLibrary = () => {
                     <p className="text-xs text-[#71717A]">{formatSize(item.file_size)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); copyUrl(item); }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => {
+ e.stopPropagation(); copyUrl(item); 
+}}>
                       {copiedId === item.id ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => { e.stopPropagation(); deleteItem(item); }}
+                      onClick={(e) => {
+ e.stopPropagation(); deleteItem(item); 
+}}
                       className="text-red-400 hover:bg-red-500/10"
                     >
                       <Trash2 className="w-4 h-4" />

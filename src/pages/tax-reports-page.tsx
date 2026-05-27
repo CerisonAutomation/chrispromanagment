@@ -37,13 +37,17 @@ export default function TaxReportsPage() {
         .lte('check_in', endDate)
         .eq('status', 'confirmed');
 
-      if (error) throw error;
+      if (error) {
+throw error;
+}
 
       const rows = reservations || [];
 
       const totalRevenue = rows.reduce((s, r) => s + (r.total_price || 0), 0);
       const totalNights = rows.reduce((s, r) => {
-        if (!r.check_in || !r.check_out) return s;
+        if (!r.check_in || !r.check_out) {
+return s;
+}
         const nights = Math.round((new Date(r.check_out).getTime() - new Date(r.check_in).getTime()) / 86400000);
         return s + nights;
       }, 0);
@@ -51,7 +55,9 @@ export default function TaxReportsPage() {
       // By month
       const monthMap = new Map<string, number>();
       rows.forEach(r => {
-        if (!r.check_in) return;
+        if (!r.check_in) {
+return;
+}
         const month = r.check_in.slice(0, 7);
         monthMap.set(month, (monthMap.get(month) || 0) + (r.total_price || 0));
       });
@@ -61,17 +67,21 @@ export default function TaxReportsPage() {
 
       // By property — join with guesty_properties_cache
       const listingIds = [...new Set(rows.map(r => r.listing_id).filter(Boolean))];
-      let propTitles: Record<string, string> = {};
+      const propTitles: Record<string, string> = {};
       if (listingIds.length) {
         const { data: props } = await supabase
           .from('guesty_properties_cache')
           .select('guesty_id, title')
           .in('guesty_id', listingIds as string[]);
-        props?.forEach(p => { propTitles[p.guesty_id] = p.title || p.guesty_id; });
+        props?.forEach(p => {
+ propTitles[p.guesty_id] = p.title || p.guesty_id; 
+});
       }
       const propMap = new Map<string, { revenue: number; bookings: number }>();
       rows.forEach(r => {
-        if (!r.listing_id) return;
+        if (!r.listing_id) {
+return;
+}
         const cur = propMap.get(r.listing_id) || { revenue: 0, bookings: 0 };
         propMap.set(r.listing_id, { revenue: cur.revenue + (r.total_price || 0), bookings: cur.bookings + 1 });
       });
@@ -95,10 +105,14 @@ export default function TaxReportsPage() {
     }
   }, [year]);
 
-  useEffect(() => { generateReport(); }, [generateReport]);
+  useEffect(() => {
+ generateReport(); 
+}, [generateReport]);
 
   const exportCSV = () => {
-    if (!report) return;
+    if (!report) {
+return;
+}
     const rows = [
       ['Month', 'Revenue (€)', 'VAT 15% (€)', 'Net (€)'],
       ...report.byMonth.map(m => [
@@ -127,7 +141,9 @@ export default function TaxReportsPage() {
             <p className="text-sm text-[#71717A]">Malta VAT 15% — Confirmed reservations only</p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={year} onValueChange={v => { setYear(v); }}>
+            <Select value={year} onValueChange={v => {
+ setYear(v); 
+}}>
               <SelectTrigger className="w-28 bg-[#161618] border-white/10 text-[#F5F5F0]">
                 <SelectValue />
               </SelectTrigger>
@@ -139,7 +155,7 @@ export default function TaxReportsPage() {
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><FileText className="w-4 h-4 mr-2" />Refresh</>}
             </Button>
             {report && (
-              <Button onClick={exportCSV} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+              <Button onClick={exportCSV} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
                 <Download className="w-4 h-4 mr-2" />Export CSV
               </Button>
             )}
@@ -148,7 +164,7 @@ export default function TaxReportsPage() {
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#C9A84C]" />
           </div>
         )}
 
@@ -157,7 +173,7 @@ export default function TaxReportsPage() {
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
               {[
-                { label: 'Gross Revenue', value: `€${report.totalRevenue.toLocaleString('en', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-[#D4AF37]' },
+                { label: 'Gross Revenue', value: `€${report.totalRevenue.toLocaleString('en', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-[#C9A84C]' },
                 { label: 'VAT (15%)', value: `€${report.vatAmount.toLocaleString('en', { minimumFractionDigits: 2 })}`, icon: FileText, color: 'text-red-400' },
                 { label: 'Net Income', value: `€${report.netIncome.toLocaleString('en', { minimumFractionDigits: 2 })}`, icon: TrendingUp, color: 'text-green-400' },
                 { label: 'Bookings', value: report.bookings.toString(), icon: Calendar, color: 'text-blue-400' },
@@ -193,7 +209,7 @@ export default function TaxReportsPage() {
                       {report.byMonth.map(m => (
                         <tr key={m.month} className="border-b border-white/5 hover:bg-white/5">
                           <td className="py-2 text-[#F5F5F0]">{m.month}</td>
-                          <td className="py-2 text-right text-[#D4AF37]">€{m.revenue.toFixed(2)}</td>
+                          <td className="py-2 text-right text-[#C9A84C]">€{m.revenue.toFixed(2)}</td>
                           <td className="py-2 text-right text-red-400">€{(m.revenue * VAT_RATE).toFixed(2)}</td>
                           <td className="py-2 text-right text-green-400">€{(m.revenue * (1 - VAT_RATE)).toFixed(2)}</td>
                         </tr>
@@ -222,7 +238,7 @@ export default function TaxReportsPage() {
                         <tr key={p.title} className="border-b border-white/5 hover:bg-white/5">
                           <td className="py-2 text-[#F5F5F0] max-w-[150px] truncate">{p.title}</td>
                           <td className="py-2 text-right text-[#A1A1AA]">{p.bookings}</td>
-                          <td className="py-2 text-right text-[#D4AF37]">€{p.revenue.toFixed(2)}</td>
+                          <td className="py-2 text-right text-[#C9A84C]">€{p.revenue.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -234,7 +250,7 @@ export default function TaxReportsPage() {
         )}
 
         {!loading && report && report.bookings === 0 && (
-          <div className="mt-6 p-4 bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-center text-sm text-[#A1A1AA]">
+          <div className="mt-6 p-4 bg-[#C9A84C]/10 border border-[#C9A84C]/20 text-center text-sm text-[#A1A1AA]">
             No confirmed reservations found for {year}. Reservations sync automatically via the Guesty webhook.
           </div>
         )}

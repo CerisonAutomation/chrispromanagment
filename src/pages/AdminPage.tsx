@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCMS } from "@/context/cmscontext";
+import { useAuthStore } from "@/store/auth";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { 
   Layout, Eye, EyeOff, Save, LogOut, Plus, Trash2, GripVertical, Sparkles, RefreshCw,
@@ -1773,10 +1774,10 @@ fetchMedia(mediaListing);
 // ============================================
 export default function AdminPage() {
   const navigate = useNavigate();
-  const { cms, isAdmin, isLoading: cmsLoading, isRolesLoading, session, verifyAdmin, logout, updateSection } = useCMS();
+  const { cms, verifyAdmin, logout, updateSection } = useCMS();
+  const { isLoading } = useAuthStore();
 
   const [adminKey, setAdminKey] = useState("");
-  const isLoading = cmsLoading || isRolesLoading;
   const [mode, setMode] = useState("studio"); // 'studio' | 'dashboard'
   const [page, setPage] = useState("home");
   const [leftTab, setLeftTab] = useState("blocks");
@@ -2131,11 +2132,6 @@ await updateSection("faq", faq.data).catch(() => {});
   if (isLoading) {
 return <div className="fixed inset-0 bg-[#0a0a0b] flex items-center justify-center z-[9999]"><div className="animate-spin w-10 h-10 border-2 border-[#C9A84C] border-t-transparent rounded-full" /></div>;
 }
-
-  if (!isAdmin) {
-    navigate("/auth", { replace: true });
-    return null;
-  }
 
   return (
     <div className="fixed inset-0 bg-[#0a0a0b] flex flex-col z-[9999] overflow-hidden" data-testid="admin-editor">

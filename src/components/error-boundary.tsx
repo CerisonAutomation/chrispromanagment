@@ -52,7 +52,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   reset = () => this.setState({ error: null });
 
   render() {
-    if (!this.state.error) return this.props.children;
+    if (!this.state.error) {
+return this.props.children;
+}
     return (
       <div 
         className={cn("min-h-screen flex items-center justify-center bg-background-dark text-text-primary p-6")}

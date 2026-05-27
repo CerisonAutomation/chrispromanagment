@@ -44,7 +44,9 @@ export default function MaintenancePage() {
   }, [fetch]);
 
   const handleCreate = async () => {
-    if (!form.title.trim()) { toast.error('Title is required'); return; }
+    if (!form.title.trim()) {
+ toast.error('Title is required'); return; 
+}
     setSaving(true);
     try {
       await create({
@@ -88,7 +90,7 @@ export default function MaintenancePage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Wrench className="w-6 h-6 text-[#D4AF37]" />
+            <Wrench className="w-6 h-6 text-[#C9A84C]" />
             Maintenance
           </h1>
           <p className="text-sm text-[#71717A] mt-1">
@@ -99,7 +101,7 @@ export default function MaintenancePage() {
           <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="border-white/10 text-[#A1A1AA]">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button onClick={() => setShowForm(v => !v)} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+          <Button onClick={() => setShowForm(v => !v)} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
             <Plus className="w-4 h-4 mr-2" />New Ticket
           </Button>
         </div>
@@ -107,7 +109,7 @@ export default function MaintenancePage() {
 
       {/* New ticket form */}
       {showForm && (
-        <Card className="p-6 bg-[#161618] border-[#D4AF37]/30 space-y-4">
+        <Card className="p-6 bg-[#161618] border-[#C9A84C]/30 space-y-4">
           <h2 className="text-[#F5F5F0] font-semibold">New Maintenance Ticket</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input placeholder="Title *" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
@@ -131,10 +133,12 @@ export default function MaintenancePage() {
             </SelectContent>
           </Select>
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => { setShowForm(false); setForm(BLANK); }} className="border-white/10">
+            <Button variant="outline" onClick={() => {
+ setShowForm(false); setForm(BLANK); 
+}} className="border-white/10">
               Cancel
             </Button>
-            <Button onClick={handleCreate} disabled={saving} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+            <Button onClick={handleCreate} disabled={saving} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Create Ticket'}
             </Button>
           </div>
@@ -149,7 +153,7 @@ export default function MaintenancePage() {
             onClick={() => setFilter({ status: s === '' ? null : s as TicketStatus })}
             className={`px-3 py-1 text-xs rounded-full border transition-colors ${
               filter.status === (s || null)
-                ? 'bg-[#D4AF37] text-[#0F0F10] border-[#D4AF37]'
+                ? 'bg-[#C9A84C] text-[#0F0F10] border-[#C9A84C]'
                 : 'border-white/10 text-[#A1A1AA] hover:border-white/20'
             }`}
           >
@@ -161,7 +165,7 @@ export default function MaintenancePage() {
       {/* Ticket list */}
       {loading && !tickets.length ? (
         <div className="flex items-center justify-center h-48">
-          <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
         </div>
       ) : tickets.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">

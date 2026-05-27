@@ -37,7 +37,9 @@ export function useChat(roomId?: string) {
       .from('chat_rooms')
       .select('*')
       .order('updated_at', { ascending: false });
-    if (error) setError(error as unknown as Error);
+    if (error) {
+setError(error as unknown as Error);
+}
     setRooms((data as ChatRoom[]) || []);
   }, []);
 
@@ -47,7 +49,9 @@ export function useChat(roomId?: string) {
       .select('*')
       .eq('room_id', id)
       .order('created_at', { ascending: true });
-    if (error) setError(error as unknown as Error);
+    if (error) {
+setError(error as unknown as Error);
+}
     setMessages((data as ChatMessage[]) || []);
   }, []);
 
@@ -59,7 +63,9 @@ export function useChat(roomId?: string) {
       sender_name: user?.user_metadata?.display_name ?? user?.email ?? 'Admin',
       content,
     });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     await supabase.from('chat_rooms').update({ updated_at: new Date().toISOString() }).eq('id', targetRoomId);
   }, []);
 
@@ -70,13 +76,17 @@ export function useChat(roomId?: string) {
       subject: subject ?? null,
       property_id: propertyId ?? null,
     }).select().single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     return data as ChatRoom;
   }, []);
 
   const markAsRead = useCallback(async (targetRoomId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+return;
+}
     await supabase.from('chat_messages')
       .update({ is_read: true })
       .eq('room_id', targetRoomId)
@@ -91,11 +101,15 @@ export function useChat(roomId?: string) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_rooms' }, fetchRooms)
       .subscribe();
 
-    return () => { supabase.removeChannel(roomsSub); };
+    return () => {
+ supabase.removeChannel(roomsSub); 
+};
   }, [fetchRooms]);
 
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId) {
+return;
+}
     fetchMessages(roomId);
     markAsRead(roomId);
 
@@ -109,7 +123,9 @@ export function useChat(roomId?: string) {
       .subscribe();
 
     setChannel(msgSub);
-    return () => { supabase.removeChannel(msgSub); };
+    return () => {
+ supabase.removeChannel(msgSub); 
+};
   }, [roomId, fetchMessages, markAsRead]);
 
   return { messages, rooms, loading, error, sendMessage, createRoom, markAsRead, channel };

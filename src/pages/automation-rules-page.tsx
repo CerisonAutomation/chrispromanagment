@@ -45,12 +45,20 @@ export default function AutomationRulesPage() {
   const [configText, setConfigText] = useState('{}');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => {
+ fetch(); 
+}, [fetch]);
 
   const handleCreate = async () => {
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    if (!form.name.trim()) {
+ toast.error('Name is required'); return; 
+}
     let action_config: Record<string, unknown> = {};
-    try { action_config = JSON.parse(configText); } catch { toast.error('Invalid JSON in config'); return; }
+    try {
+ action_config = JSON.parse(configText); 
+} catch {
+ toast.error('Invalid JSON in config'); return; 
+}
     setSaving(true);
     try {
       await create({ ...form, action_config });
@@ -97,7 +105,7 @@ export default function AutomationRulesPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Zap className="w-6 h-6 text-[#D4AF37]" />
+            <Zap className="w-6 h-6 text-[#C9A84C]" />
             Automation Rules
           </h1>
           <p className="text-sm text-[#71717A] mt-1">
@@ -108,7 +116,7 @@ export default function AutomationRulesPage() {
           <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="border-white/10 text-[#A1A1AA]">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button onClick={() => setShowForm(v => !v)} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+          <Button onClick={() => setShowForm(v => !v)} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
             <Plus className="w-4 h-4 mr-2" />
             New Rule
           </Button>
@@ -116,7 +124,7 @@ export default function AutomationRulesPage() {
       </div>
 
       {showForm && (
-        <Card className="p-6 bg-[#161618] border-[#D4AF37]/30 space-y-4">
+        <Card className="p-6 bg-[#161618] border-[#C9A84C]/30 space-y-4">
           <h2 className="text-[#F5F5F0] font-semibold">New Automation Rule</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -147,10 +155,12 @@ export default function AutomationRulesPage() {
             className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0] font-mono text-xs h-20"
           />
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => { setShowForm(false); setForm(BLANK); setConfigText('{}'); }} className="border-white/10">
+            <Button variant="outline" onClick={() => {
+ setShowForm(false); setForm(BLANK); setConfigText('{}'); 
+}} className="border-white/10">
               Cancel
             </Button>
-            <Button onClick={handleCreate} disabled={saving} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+            <Button onClick={handleCreate} disabled={saving} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Create Rule'}
             </Button>
           </div>
@@ -159,7 +169,7 @@ export default function AutomationRulesPage() {
 
       {loading && !rules.length ? (
         <div className="flex items-center justify-center h-48">
-          <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
         </div>
       ) : rules.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
@@ -183,7 +193,7 @@ export default function AutomationRulesPage() {
                       <p className="text-xs text-[#71717A] mb-2 truncate">{rule.description}</p>
                     )}
                     <div className="flex flex-wrap gap-2 text-xs">
-                      <span className="px-2 py-0.5 rounded bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20">
+                      <span className="px-2 py-0.5 rounded bg-[#C9A84C]/10 text-[#C9A84C] border border-[#C9A84C]/20">
                         When: {triggerLabel}
                       </span>
                       <span className="px-2 py-0.5 rounded bg-white/5 text-[#A1A1AA] border border-white/10">
@@ -197,7 +207,7 @@ export default function AutomationRulesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <Button variant="ghost" size="sm" onClick={() => handleRun(rule.id)} className="text-[#A1A1AA] hover:text-[#D4AF37]" title="Run now">
+                    <Button variant="ghost" size="sm" onClick={() => handleRun(rule.id)} className="text-[#A1A1AA] hover:text-[#C9A84C]" title="Run now">
                       <Play className="w-4 h-4" />
                     </Button>
                     <Button

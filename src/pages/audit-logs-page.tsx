@@ -11,7 +11,9 @@ const PAGE_SIZE = 50;
 export default function AuditLogsPage() {
   const { logs, total, loading, error, filter, page, fetch, setFilter, clearFilter } = useAuditStore();
 
-  useEffect(() => { fetch(1); }, [fetch]);
+  useEffect(() => {
+ fetch(1); 
+}, [fetch]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -37,7 +39,7 @@ export default function AuditLogsPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Shield className="w-6 h-6 text-[#D4AF37]" />
+            <Shield className="w-6 h-6 text-[#C9A84C]" />
             Audit Logs
           </h1>
           <p className="text-sm text-[#71717A] mt-1">{total.toLocaleString()} events</p>
@@ -91,7 +93,7 @@ export default function AuditLogsPage() {
 
       {loading && !logs.length ? (
         <div className="flex items-center justify-center h-48">
-          <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+          <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
         </div>
       ) : logs.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
@@ -104,7 +106,7 @@ export default function AuditLogsPage() {
             <Card key={log.id} className="px-4 py-3 bg-[#161618] border-white/10 flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 text-xs bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 rounded">
+                  <span className="px-2 py-0.5 text-xs bg-[#C9A84C]/10 text-[#C9A84C] border border-[#C9A84C]/20 rounded">
                     {log.action}
                   </span>
                   {log.entity_type && (

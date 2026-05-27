@@ -89,7 +89,7 @@ export default function OwnerViewPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#C9A84C] animate-spin" />
       </div>
     );
   }
@@ -118,10 +118,10 @@ export default function OwnerViewPage() {
       <div className="border-b border-white/5 bg-[#0a0a0b]/95 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#D4AF37] flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#C9A84C] flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill="#0a0a0b" />
-                <path d="M12 6L16 8.5V13.5L12 16L8 13.5V8.5L12 6Z" fill="#D4AF37" />
+                <path d="M12 6L16 8.5V13.5L12 16L8 13.5V8.5L12 6Z" fill="#C9A84C" />
               </svg>
             </div>
             <div>
@@ -138,7 +138,7 @@ export default function OwnerViewPage() {
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         {/* Welcome */}
         <div>
-          <p className="text-[#D4AF37] text-xs uppercase tracking-[0.25em] mb-1">Welcome back</p>
+          <p className="text-[#C9A84C] text-xs uppercase tracking-[0.25em] mb-1">Welcome back</p>
           <h1 className="text-3xl font-['Playfair_Display'] text-[#F5F5F0]">{owner?.full_name}</h1>
           {owner?.company && <p className="text-[#71717A] text-sm mt-1">{owner.company}</p>}
         </div>
@@ -148,7 +148,7 @@ export default function OwnerViewPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="p-5 bg-[#161618] border-white/10">
               <p className="text-xs text-[#71717A] uppercase tracking-wider mb-1">Total Gross Revenue</p>
-              <p className="text-2xl font-semibold text-[#D4AF37]">€{totalGross.toFixed(0)}</p>
+              <p className="text-2xl font-semibold text-[#C9A84C]">€{totalGross.toFixed(0)}</p>
             </Card>
             <Card className="p-5 bg-[#161618] border-white/10">
               <p className="text-xs text-[#71717A] uppercase tracking-wider mb-1">Total Net Payout</p>
@@ -164,7 +164,7 @@ export default function OwnerViewPage() {
         {/* Reports list */}
         <div>
           <h2 className="text-[#F5F5F0] font-semibold mb-4 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
+            <TrendingUp className="w-4 h-4 text-[#C9A84C]" />
             Your Reports
           </h2>
 
@@ -189,7 +189,7 @@ export default function OwnerViewPage() {
                         </p>
                       )}
                       <div className="flex flex-wrap gap-4 mt-2 text-sm">
-                        <span className="text-[#A1A1AA]">Gross: <span className="text-[#D4AF37] font-medium">€{r.gross_revenue.toFixed(2)}</span></span>
+                        <span className="text-[#A1A1AA]">Gross: <span className="text-[#C9A84C] font-medium">€{r.gross_revenue.toFixed(2)}</span></span>
                         <span className="text-[#A1A1AA]">Mgmt fee: <span className="text-[#F5F5F0]">€{r.management_fee.toFixed(2)}</span></span>
                         <span className="text-[#A1A1AA]">Net: <span className="text-green-400 font-medium">€{r.net_payout.toFixed(2)}</span></span>
                         <span className="text-[#A1A1AA]">{r.bookings_count} bookings</span>

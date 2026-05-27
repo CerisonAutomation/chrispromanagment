@@ -2,6 +2,30 @@
 // OWASP Top 10 Security Audit and Remediation Framework
 // Enterprise-grade security controls for web application security
 
+export interface Request {
+  ip?: string;
+  connection?: { remoteAddress?: string };
+  headers?: Record<string, string>;
+  method?: string;
+  url?: string;
+  [key: string]: unknown;
+}
+
+export interface Response {
+  setHeader: (name: string, value: string) => void;
+  status: (code: number) => Response;
+  json: (data: unknown) => void;
+  on: (event: string, callback: () => void) => void;
+  [key: string]: unknown;
+}
+
+export type NextFunction = () => void;
+
+export interface Application {
+  use: (middleware: (req: Request, res: Response, next: NextFunction) => void) => void;
+  [key: string]: unknown;
+}
+
 export interface SecurityIssue {
   owaspCategory: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
@@ -436,7 +460,7 @@ export class SecurityMiddleware {
   /**
    * Configure comprehensive security middleware
    */
-  static configureSecurity(app: any): void {
+  static configureSecurity(app: Application): void {
     // Rate limiting
     app.use(this.rateLimiter());
 
@@ -454,9 +478,9 @@ export class SecurityMiddleware {
    * Rate limiting middleware
    */
   private static rateLimiter() {
-    const requests = new Map();
+    const requests = new Map<string, { count: number; resetTime: number }>();
 
-    return (req: any, res: any, next: any) => {
+    return (req: Request, res: Response, next: NextFunction) => {
       const ip = req.ip || req.connection.remoteAddress;
       const now = Date.now();
       const windowMs = 15 * 60 * 1000; // 15 minutes
@@ -486,7 +510,7 @@ export class SecurityMiddleware {
    * Security headers middleware
    */
   private static securityHeaders() {
-    return (req: any, res: any, next: any) => {
+    return (req: Request, res: Response, next: NextFunction) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('X-Frame-Options', 'DENY');
       res.setHeader('X-XSS-Protection', '1; mode=block');
@@ -501,7 +525,7 @@ export class SecurityMiddleware {
    * Request validation middleware
    */
   private static requestValidation() {
-    return (req: any, res: any, next: any) => {
+    return (req: Request, res: Response, next: NextFunction) => {
       // Validate request size
       const contentLength = parseInt(req.headers['content-length'] || '0');
       const maxSize = 10 * 1024 * 1024; // 10MB
@@ -526,7 +550,7 @@ export class SecurityMiddleware {
    * Request logging middleware
    */
   private static requestLogging() {
-    return (req: any, res: any, next: any) => {
+    return (req: Request, res: Response, next: NextFunction) => {
       const startTime = Date.now();
 
       res.on('finish', () => {

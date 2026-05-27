@@ -82,7 +82,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   async sendMessage(content, roomId) {
     const targetRoomId = roomId ?? get().activeRoomId;
-    if (!targetRoomId) throw new Error('No active room');
+    if (!targetRoomId) {
+throw new Error('No active room');
+}
     set({ sending: true });
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -92,7 +94,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         sender_name: user?.user_metadata?.display_name ?? user?.email ?? 'Admin',
         content,
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       await supabase.from('chat_rooms')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', targetRoomId);
@@ -108,7 +112,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       subject: subject ?? null,
       property_id: propertyId ?? null,
     }).select().single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     const room = data as ChatRoom;
     set(s => ({ rooms: [room, ...s.rooms] }));
     return room;
@@ -116,13 +122,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   async closeRoom(roomId) {
     const { error } = await supabase.from('chat_rooms').update({ status: 'closed' }).eq('id', roomId);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ rooms: s.rooms.map(r => r.id === roomId ? { ...r, status: 'closed' } : r) }));
   },
 
   async markRead(roomId) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+return;
+}
     await supabase.from('chat_messages')
       .update({ is_read: true })
       .eq('room_id', roomId)
@@ -132,7 +142,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   subscribeMessages(roomId) {
     const { channel: existing } = get();
-    if (existing) supabase.removeChannel(existing);
+    if (existing) {
+supabase.removeChannel(existing);
+}
 
     const ch = supabase.channel(`chat-store:${roomId}`)
       .on('postgres_changes', {
@@ -147,6 +159,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       .subscribe();
 
     set({ channel: ch });
-    return () => { supabase.removeChannel(ch); set({ channel: null }); };
+    return () => {
+ supabase.removeChannel(ch); set({ channel: null }); 
+};
   },
 }));

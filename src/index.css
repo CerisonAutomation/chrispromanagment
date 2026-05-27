@@ -9,8 +9,8 @@
    ============================================ */
 :root {
   /* Colors */
-  --gold: #D4AF37;
-  --gold-light: #E5C158;
+  --gold: #C9A84C;
+  --gold-light: #D4B85C;
   --gold-dark: #B8962F;
   --bg-dark: #0F0F10;
   --bg-darker: #0A0A0B;
@@ -236,7 +236,7 @@ a {
 
 /* Gold gradient text */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #D4AF37 0%, #F3E5AB 40%, #D4AF37 70%, #B8962F 100%);
+  background: linear-gradient(135deg, #C9A84C 0%, #F3E5AB 40%, #C9A84C 70%, #B8962F 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

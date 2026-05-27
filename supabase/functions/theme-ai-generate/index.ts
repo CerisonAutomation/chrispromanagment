@@ -15,20 +15,30 @@ const isValid = (v: unknown) => typeof v === "string" && (HEX_RE.test(v) || HSL_
 async function requireEditor(req: Request): Promise<Response | null> {
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return json({ error: "Unauthorized" }, 401);
+  if (!token) {
+return json({ error: "Unauthorized" }, 401);
+}
   const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   const { data: { user } } = await userClient.auth.getUser();
-  if (!user) return json({ error: "Unauthorized" }, 401);
+  if (!user) {
+return json({ error: "Unauthorized" }, 401);
+}
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
-  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) return json({ error: "Admin or editor required" }, 403);
+  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) {
+return json({ error: "Admin or editor required" }, 403);
+}
   return null;
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
   const guard = await requireEditor(req);
-  if (guard) return guard;
+  if (guard) {
+return guard;
+}
 
   try {
     const { prompt, currentTokens = {} } = await req.json();
@@ -36,7 +46,9 @@ Deno.serve(async (req) => {
       return json({ error: "prompt is required" }, 400);
     }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+    if (!LOVABLE_API_KEY) {
+return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+}
 
     const system = `You are a brand-aware visual designer. Update CSS design tokens to match the user's mood.
 Only return tokens from this allow-list: ${ALLOWED_TOKENS.join(", ")}.
@@ -78,8 +90,12 @@ Only return tokens you want to change.`;
       }),
     });
 
-    if (resp.status === 429) return json({ error: "Rate limited. Try again in a moment." }, 429);
-    if (resp.status === 402) return json({ error: "AI credits exhausted. Add funds in workspace settings." }, 402);
+    if (resp.status === 429) {
+return json({ error: "Rate limited. Try again in a moment." }, 429);
+}
+    if (resp.status === 402) {
+return json({ error: "AI credits exhausted. Add funds in workspace settings." }, 402);
+}
     if (!resp.ok) {
       const t = await resp.text();
       console.error("gateway error", resp.status, t);
@@ -93,7 +109,9 @@ Only return tokens you want to change.`;
 
     const tokens: Record<string, string> = {};
     for (const [k, v] of Object.entries(raw)) {
-      if (ALLOWED_TOKENS.includes(k) && isValid(v)) tokens[k] = v;
+      if (ALLOWED_TOKENS.includes(k) && isValid(v)) {
+tokens[k] = v;
+}
     }
 
     return json({ tokens, rationale: args.rationale ?? "" });

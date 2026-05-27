@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Home, Calendar, DollarSign, Percent, Loader2 } from 'lucide-react';
 
-const GOLD = '#D4AF37';
+const GOLD = '#C9A84C';
 const SURFACE = '#161618';
 const BG = '#0F0F10';
 const MUTED = '#A1A1AA';
@@ -17,7 +17,9 @@ function fmt(n: number, currency = 'EUR') {
   return new Intl.NumberFormat('en-EU', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
 }
 
-function pct(n: number) { return `${n.toFixed(1)}%`; }
+function pct(n: number) {
+ return `${n.toFixed(1)}%`; 
+}
 
 interface KPICardProps {
   label: string;
@@ -30,10 +32,10 @@ interface KPICardProps {
 function KPICard({ label, value, sub, trend, icon }: KPICardProps) {
   const up = trend !== undefined && trend >= 0;
   return (
-    <div className="bg-[#161618] border border-white/10 p-6 relative overflow-hidden group hover:border-[#D4AF37]/30 transition-colors">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div className="bg-[#161618] border border-white/10 p-6 relative overflow-hidden group hover:border-[#C9A84C]/30 transition-colors">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
+        <div className="w-10 h-10 bg-[#C9A84C]/10 flex items-center justify-center text-[#C9A84C]">
           {icon}
         </div>
         {trend !== undefined && (
@@ -51,7 +53,9 @@ function KPICard({ label, value, sub, trend, icon }: KPICardProps) {
 }
 
 const ChartTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string }) => {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) {
+return null;
+}
   return (
     <div className="bg-[#161618] border border-white/10 px-3 py-2 text-xs">
       <p className="text-[#A1A1AA] mb-1">{label}</p>
@@ -94,7 +98,7 @@ export default function AnalyticsDashboardPage() {
     return (
       <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-10 h-10 text-[#C9A84C] animate-spin mx-auto mb-4" />
           <p className="text-[#A1A1AA] text-sm">Loading analytics…</p>
         </div>
       </div>
@@ -109,7 +113,7 @@ export default function AnalyticsDashboardPage() {
         {/* Header */}
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-[#D4AF37] text-xs uppercase tracking-widest mb-2">Performance Overview</p>
+            <p className="text-[#C9A84C] text-xs uppercase tracking-widest mb-2">Performance Overview</p>
             <h1 className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]">Analytics Dashboard</h1>
           </div>
           <div className="flex items-center gap-1 bg-[#161618] border border-white/10 p-1">
@@ -118,7 +122,7 @@ export default function AnalyticsDashboardPage() {
                 key={d}
                 onClick={() => setDays(d)}
                 className={`px-4 py-1.5 text-xs font-medium transition-colors ${
-                  days === d ? 'bg-[#D4AF37] text-[#0F0F10]' : 'text-[#A1A1AA] hover:text-[#F5F5F0]'
+                  days === d ? 'bg-[#C9A84C] text-[#0F0F10]' : 'text-[#A1A1AA] hover:text-[#F5F5F0]'
                 }`}
               >
                 {d}d
@@ -142,7 +146,7 @@ export default function AnalyticsDashboardPage() {
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="rounded-none capitalize text-xs uppercase tracking-wider data-[state=active]:bg-[#D4AF37] data-[state=active]:text-[#0F0F10] data-[state=active]:shadow-none text-[#A1A1AA] px-5 py-2"
+                className="rounded-none capitalize text-xs uppercase tracking-wider data-[state=active]:bg-[#C9A84C] data-[state=active]:text-[#0F0F10] data-[state=active]:shadow-none text-[#A1A1AA] px-5 py-2"
               >
                 {tab}
               </TabsTrigger>
@@ -215,16 +219,16 @@ export default function AnalyticsDashboardPage() {
             <div className="space-y-3">
               {topProps.map((p, i) => (
                 <div key={p.id} className="flex items-center gap-4">
-                  <span className="font-['Playfair_Display'] text-lg text-[#D4AF37]/50 w-6 shrink-0">{i + 1}</span>
+                  <span className="font-['Playfair_Display'] text-lg text-[#C9A84C]/50 w-6 shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[#F5F5F0] text-sm font-medium truncate">{p.title}</p>
                     <p className="text-[#71717A] text-xs">{p.bookings} booking{p.bookings !== 1 ? 's' : ''}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[#D4AF37] font-semibold text-sm">{fmt(p.revenue)}</p>
+                    <p className="text-[#C9A84C] font-semibold text-sm">{fmt(p.revenue)}</p>
                     <div className="mt-1 h-1 bg-white/5 w-24">
                       <div
-                        className="h-full bg-[#D4AF37]"
+                        className="h-full bg-[#C9A84C]"
                         style={{ width: `${(p.revenue / (topProps[0]?.revenue || 1)) * 100}%` }}
                       />
                     </div>

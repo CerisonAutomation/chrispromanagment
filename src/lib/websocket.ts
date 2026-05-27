@@ -19,7 +19,9 @@ class RealtimeManager {
       .on('postgres_changes', { event, schema: 'public', table }, (payload) => onRow(payload.new ?? payload.old))
       .subscribe();
     this.channels.set(key, ch);
-    return () => { supabase.removeChannel(ch); this.channels.delete(key); };
+    return () => {
+ supabase.removeChannel(ch); this.channels.delete(key); 
+};
   }
 
   /** Broadcast presence/custom events on a named room */
@@ -34,7 +36,9 @@ class RealtimeManager {
 
   leaveRoom(room: string) {
     const ch = this.channels.get(`room:${room}`);
-    if (ch) { supabase.removeChannel(ch); this.channels.delete(`room:${room}`); }
+    if (ch) {
+ supabase.removeChannel(ch); this.channels.delete(`room:${room}`); 
+}
   }
 
   /** Broadcast arbitrary payload to room subscribers */
@@ -44,7 +48,9 @@ class RealtimeManager {
   }
 
   on(event: string, handler: Handler) {
-    if (!this.handlers.has(event)) this.handlers.set(event, []);
+    if (!this.handlers.has(event)) {
+this.handlers.set(event, []);
+}
     this.handlers.get(event)!.push(handler);
     return () => {
       const list = this.handlers.get(event) ?? [];
@@ -53,7 +59,11 @@ class RealtimeManager {
   }
 
   trigger(event: string, data: unknown) {
-    this.handlers.get(event)?.forEach(h => { try { h(data); } catch {} });
+    this.handlers.get(event)?.forEach(h => {
+ try {
+ h(data); 
+} catch {} 
+});
   }
 
   teardown() {

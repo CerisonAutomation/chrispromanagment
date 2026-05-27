@@ -31,13 +31,19 @@ function json(data: unknown, status = 200) {
 async function requireEditor(req: Request): Promise<Response | null> {
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return json({ error: "Unauthorized" }, 401);
+  if (!token) {
+return json({ error: "Unauthorized" }, 401);
+}
   const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   const { data: { user } } = await userClient.auth.getUser();
-  if (!user) return json({ error: "Unauthorized" }, 401);
+  if (!user) {
+return json({ error: "Unauthorized" }, 401);
+}
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
-  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) return json({ error: "Admin or editor required" }, 403);
+  if (!roles?.some((r: { role: string }) => r.role === "admin" || r.role === "editor")) {
+return json({ error: "Admin or editor required" }, 403);
+}
   return null;
 }
 
@@ -63,18 +69,28 @@ function fieldsToJsonSchema(fields: Record<string, { type: string }>) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
+  if (req.method !== "POST") {
+return json({ error: "POST only" }, 405);
+}
   const guard = await requireEditor(req);
-  if (guard) return guard;
+  if (guard) {
+return guard;
+}
 
   try {
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+    if (!apiKey) {
+return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+}
 
     const body = await req.json();
     const { blockType, fields = {}, content = {}, action = "improve", promptTemplate, context = {} } = body || {};
-    if (!blockType) return json({ error: "blockType required" }, 400);
+    if (!blockType) {
+return json({ error: "blockType required" }, 400);
+}
 
     const sysParts = [
       "You are an expert content editor for a luxury property-management website.",
@@ -88,8 +104,8 @@ Deno.serve(async (req) => {
 
     const userPrompt =
       promptTemplate ||
-      `Action: ${action}. Block type: ${blockType}. Current content (JSON):\n${JSON.stringify(content, null, 2)}\n` +
-        (context.extra ? `\nExtra guidance: ${context.extra}` : "");
+      `Action: ${action}. Block type: ${blockType}. Current content (JSON):\n${JSON.stringify(content, null, 2)}\n${ 
+        context.extra ? `\nExtra guidance: ${context.extra}` : ""}`;
 
     const tool = {
       type: "function",
@@ -117,10 +133,12 @@ Deno.serve(async (req) => {
       }),
     });
 
-    if (res.status === 429)
-      return json({ error: "Rate limited, please try again later." }, 429);
-    if (res.status === 402)
-      return json({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }, 402);
+    if (res.status === 429) {
+return json({ error: "Rate limited, please try again later." }, 429);
+}
+    if (res.status === 402) {
+return json({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }, 402);
+}
 
     const data = await res.json();
     if (!res.ok) {

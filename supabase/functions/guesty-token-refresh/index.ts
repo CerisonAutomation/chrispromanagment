@@ -81,13 +81,8 @@ return;
 }
 
 async function getVaultSecret(admin: ReturnType<typeof createClient>, name: string): Promise<string | null> {
-  const { data } = await admin
-    .schema("vault")
-    .from("decrypted_secrets")
-    .select("decrypted_secret")
-    .eq("name", name)
-    .maybeSingle();
-  return (data as { decrypted_secret?: string } | null)?.decrypted_secret ?? null;
+  const { data } = await admin.rpc("get_vault_secret", { secret_name: name });
+  return typeof data === "string" ? data : null;
 }
 
 export async function fetchFreshToken(admin?: ReturnType<typeof createClient>): Promise<{ token: string; expiresAt: Date; scope: string }> {

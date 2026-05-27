@@ -32,12 +32,16 @@ export function CookieConsent() {
   }, []);
 
   const dismiss = (choice: "accepted" | "declined") => {
-    try { localStorage.setItem(STORAGE_KEY, choice); } catch { /* noop */ }
+    try {
+ localStorage.setItem(STORAGE_KEY, choice); 
+} catch { /* noop */ }
     setAnimating(false);
     setTimeout(() => setVisible(false), 300);
   };
 
-  if (!visible) return null;
+  if (!visible) {
+return null;
+}
 
   return (
     <div
@@ -54,7 +58,7 @@ export function CookieConsent() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2">
-          <Cookie className="w-4 h-4 text-[#D4AF37]" />
+          <Cookie className="w-4 h-4 text-[#C9A84C]" />
           <span className="text-sm font-semibold text-[#F5F5F0]">Cookie Settings</span>
         </div>
         <button
@@ -71,7 +75,7 @@ export function CookieConsent() {
         <p className="text-xs text-[#A1A1AA] leading-relaxed mb-4">
           We use strictly necessary cookies for bookings, and optional analytics cookies
           to improve your experience. No advertising cookies.{" "}
-          <Link to="/privacy-policy" className="text-[#D4AF37] hover:underline" onClick={() => dismiss("accepted")}>
+          <Link to="/privacy-policy" className="text-[#C9A84C] hover:underline" onClick={() => dismiss("accepted")}>
             Privacy Policy
           </Link>
         </p>
@@ -88,7 +92,7 @@ export function CookieConsent() {
           <Button
             onClick={() => dismiss("accepted")}
             size="sm"
-            className="flex-1 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none text-xs font-semibold"
+            className="flex-1 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none text-xs font-semibold"
           >
             Accept all
           </Button>

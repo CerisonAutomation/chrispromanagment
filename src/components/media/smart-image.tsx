@@ -26,12 +26,18 @@ export function SmartImage({
 }) {
   // Build fallback chain from a Guesty-style picture object or a raw src.
   const sources = useMemo(() => {
-    if (Array.isArray(src)) return src.filter(Boolean);
-    if (src) return [src];
+    if (Array.isArray(src)) {
+return src.filter(Boolean);
+}
+    if (src) {
+return [src];
+}
     if (picture && typeof picture === "object") {
       return [picture.large, picture.original, picture.regular, picture.thumbnail].filter(Boolean);
     }
-    if (typeof picture === "string") return [picture];
+    if (typeof picture === "string") {
+return [picture];
+}
     return [];
   }, [picture, src]);
 
@@ -41,9 +47,13 @@ export function SmartImage({
   const ref = useRef(null);
 
   useEffect(() => {
-    if (priority || visible) return;
+    if (priority || visible) {
+return;
+}
     const el = ref.current;
-    if (!el || typeof IntersectionObserver === "undefined") { setVisible(true); return; }
+    if (!el || typeof IntersectionObserver === "undefined") {
+ setVisible(true); return; 
+}
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && (setVisible(true), io.disconnect())),
       { rootMargin: "200px 0px" }
@@ -77,8 +87,11 @@ export function SmartImage({
           sizes={sizes}
           onLoad={() => setLoaded(true)}
           onError={() => {
-            if (hasMore) setIdx((i) => i + 1);
-            else setLoaded(true); // give up, hide skeleton
+            if (hasMore) {
+setIdx((i) => i + 1);
+} else {
+setLoaded(true);
+} // give up, hide skeleton
           }}
           className={`w-full h-full transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} ${imgClassName}`}
           style={{ objectFit: fit, objectPosition }}

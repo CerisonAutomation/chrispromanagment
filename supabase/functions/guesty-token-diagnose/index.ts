@@ -8,13 +8,19 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 async function requireAdmin(req: Request): Promise<Response | null> {
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (!token) {
+return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
   const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   const { data: { user } } = await userClient.auth.getUser();
-  if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (!user) {
+return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
-  if (!roles?.some((r: { role: string }) => r.role === "admin")) return new Response(JSON.stringify({ error: "Admin required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (!roles?.some((r: { role: string }) => r.role === "admin")) {
+return new Response(JSON.stringify({ error: "Admin required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
   return null;
 }
 
@@ -45,7 +51,9 @@ async function attempt(
   clientSecret: string,
 ): Promise<Attempt> {
   const params = new URLSearchParams({ grant_type: "client_credentials" });
-  if (scope) params.set("scope", scope);
+  if (scope) {
+params.set("scope", scope);
+}
   const headers: Record<string, string> = {
     "Content-Type": "application/x-www-form-urlencoded",
     Accept: "application/json",
@@ -80,9 +88,13 @@ async function attempt(
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
   const guard = await requireAdmin(req);
-  if (guard) return guard;
+  if (guard) {
+return guard;
+}
 
 
   const clientId = Deno.env.get("GUESTY_CLIENT_ID") || "";
@@ -101,7 +113,9 @@ Deno.serve(async (req) => {
       for (const mode of AUTH_MODES) {
         const a = await attempt(ep.url, scope, mode, clientId, clientSecret);
         results.push(a);
-        if (a.ok && !firstSuccess) firstSuccess = a;
+        if (a.ok && !firstSuccess) {
+firstSuccess = a;
+}
         // brief space between calls — avoid stampeding throttle
         await new Promise((r) => setTimeout(r, 250));
       }
@@ -109,7 +123,7 @@ Deno.serve(async (req) => {
   }
 
   const summary = {
-    client_id_prefix: clientId.slice(0, 6) + "…",
+    client_id_prefix: `${clientId.slice(0, 6)  }…`,
     client_id_length: clientId.length,
     secret_length: clientSecret.length,
     first_success: firstSuccess

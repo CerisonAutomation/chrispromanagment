@@ -111,7 +111,7 @@ export const BlockLibrary = ({ cms, updateSection, setHasUnsavedChanges }) => {
             variant="ghost"
             size="sm"
             onClick={() => setSelectedCategory(null)}
-            className={`${!selectedCategory ? "bg-[#D4AF37]/10 text-[#D4AF37]" : "text-[#A1A1AA]"}`}
+            className={`${!selectedCategory ? "bg-[#C9A84C]/10 text-[#C9A84C]" : "text-[#A1A1AA]"}`}
           >
             All
           </Button>
@@ -121,7 +121,7 @@ export const BlockLibrary = ({ cms, updateSection, setHasUnsavedChanges }) => {
               variant="ghost"
               size="sm"
               onClick={() => setSelectedCategory(cat.category)}
-              className={`${selectedCategory === cat.category ? "bg-[#D4AF37]/10 text-[#D4AF37]" : "text-[#A1A1AA]"}`}
+              className={`${selectedCategory === cat.category ? "bg-[#C9A84C]/10 text-[#C9A84C]" : "text-[#A1A1AA]"}`}
             >
               {cat.category}
             </Button>
@@ -138,15 +138,15 @@ export const BlockLibrary = ({ cms, updateSection, setHasUnsavedChanges }) => {
                   <button
                     key={block.id}
                     onClick={() => addBlock(block)}
-                    className="group p-3 bg-[#0F0F10] border border-white/10 rounded-lg hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 transition-all text-left"
+                    className="group p-3 bg-[#0F0F10] border border-white/10 rounded-lg hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/5 transition-all text-left"
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <block.icon className="w-4 h-4 text-[#D4AF37]" />
+                      <block.icon className="w-4 h-4 text-[#C9A84C]" />
                       <span className="text-sm font-medium text-[#F5F5F0]">{block.label}</span>
                     </div>
                     <p className="text-xs text-[#71717A] line-clamp-1">{block.desc}</p>
                     <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Plus className="w-4 h-4 text-[#D4AF37]" />
+                      <Plus className="w-4 h-4 text-[#C9A84C]" />
                     </div>
                   </button>
                 ))}
@@ -176,10 +176,10 @@ export const BlockLibrary = ({ cms, updateSection, setHasUnsavedChanges }) => {
             {activeBlocks.map((block, index) => (
               <div
                 key={block.instanceId}
-                className="flex items-center gap-3 p-3 bg-[#0F0F10] border border-white/10 rounded group hover:border-[#D4AF37]/30"
+                className="flex items-center gap-3 p-3 bg-[#0F0F10] border border-white/10 rounded group hover:border-[#C9A84C]/30"
               >
                 <GripVertical className="w-4 h-4 text-[#71717A] cursor-grab" />
-                <block.icon className="w-4 h-4 text-[#D4AF37]" />
+                <block.icon className="w-4 h-4 text-[#C9A84C]" />
                 <span className="flex-1 text-sm text-[#F5F5F0]">{block.label}</span>
                 <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
                   <Button
@@ -220,7 +220,7 @@ export const BlockLibrary = ({ cms, updateSection, setHasUnsavedChanges }) => {
             >
               Clear All
             </Button>
-            <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+            <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
               Save Layout
             </Button>
           </div>

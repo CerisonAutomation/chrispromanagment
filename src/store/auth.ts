@@ -30,8 +30,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   init() {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       set({ session, user: session?.user ?? null });
-      if (session?.user) get().refreshRoles(session.user.id);
-      else set({ roles: [], isAdmin: false, isEditor: false });
+      if (session?.user) {
+get().refreshRoles(session.user.id);
+} else {
+set({ roles: [], isAdmin: false, isEditor: false });
+}
     });
 
     supabase.auth.getSession().then(({ data }) => {
@@ -48,7 +51,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   async signIn(email, password) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
   },
 
   async signUp(email, password, displayName) {
@@ -57,7 +62,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       password,
       options: { data: { display_name: displayName } },
     });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
   },
 
   async signOut() {
@@ -69,7 +76,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth?mode=reset`,
     });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
   },
 
   async refreshRoles(userId) {

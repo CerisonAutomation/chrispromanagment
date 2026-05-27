@@ -50,8 +50,11 @@ export const useMediaStore = create<MediaState>((set, get) => ({
       .from('media_library')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) set({ error: error.message });
-    else set({ items: (data as MediaItem[]) || [] });
+    if (error) {
+set({ error: error.message });
+} else {
+set({ items: (data as MediaItem[]) || [] });
+}
     set({ loading: false });
   },
 
@@ -62,7 +65,9 @@ export const useMediaStore = create<MediaState>((set, get) => ({
         const ext = file.name.split('.').pop();
         const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
         const { error: storageErr } = await supabase.storage.from('media').upload(path, file);
-        if (storageErr) throw storageErr;
+        if (storageErr) {
+throw storageErr;
+}
         const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
         await supabase.from('media_library').insert({
           url: publicUrl,
@@ -83,13 +88,17 @@ export const useMediaStore = create<MediaState>((set, get) => ({
       await supabase.storage.from('media').remove([item.storage_path]);
     }
     const { error } = await supabase.from('media_library').delete().eq('id', item.id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ items: s.items.filter(i => i.id !== item.id) }));
   },
 
   async generateAI(prompt = 'Luxury Mediterranean villa in Malta with sea view at sunset, professional real estate photography') {
     const { data, error } = await supabase.functions.invoke('ai-generate-image', { body: { prompt } });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     if (data?.url) {
       await supabase.from('media_library').insert({
         url: data.url,
@@ -110,6 +119,8 @@ export const useMediaStore = create<MediaState>((set, get) => ({
         get().fetch();
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+ supabase.removeChannel(ch); 
+};
   },
 }));

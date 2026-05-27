@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { getConciergeResponse, ConciergeMessage } from '@/lib/concierge-ai';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,9 @@ export default function ConciergeChat({ propertyId }: ConciergeChatProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+return;
+}
 
     const userMessage: ConciergeMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -35,10 +36,10 @@ export default function ConciergeChat({ propertyId }: ConciergeChatProps) {
         ...prev,
         { role: 'assistant', content: response }
       ]);
-    } catch (err: Error) {
+    } catch (err) {
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: `Error: ${err.message}` }
+        { role: 'assistant', content: `Error: ${(err as Error).message}` }
       ]);
     } finally {
       setLoading(false);

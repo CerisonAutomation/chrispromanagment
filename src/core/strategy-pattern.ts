@@ -112,8 +112,7 @@ export class StrategyChain<TInput = unknown, TOutput = unknown> {
  * Composite Strategy for combining multiple strategies
  */
 export class CompositeStrategy<TInput = unknown, TOutput = unknown>
-  implements IStrategy<TInput, TOutput>
-{
+  implements IStrategy<TInput, TOutput> {
   private strategies: IStrategy<TInput, TOutput>[] = [];
   private combineMode: 'all' | 'first' | 'merge' = 'first';
 
@@ -170,8 +169,7 @@ export class CompositeStrategy<TInput = unknown, TOutput = unknown>
  * Adaptive Strategy that learns from execution results
  */
 export class AdaptiveStrategy<TInput = unknown, TOutput = unknown>
-  implements IStrategy<TInput, TOutput>
-{
+  implements IStrategy<TInput, TOutput> {
   private strategies: Map<string, IStrategy<TInput, TOutput>> = new Map();
   private performanceMetrics = new Map<string, { success: number; total: number; avgTime: number }>();
   private selector: (input: TInput) => string;

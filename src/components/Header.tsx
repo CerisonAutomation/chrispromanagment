@@ -26,7 +26,7 @@ interface DropdownItem {
  * @param props - Component props
  * @returns React component
  */
-export const Header = memo(function Header() {
+export const Header = memo(() => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -61,7 +61,9 @@ export const Header = memo(function Header() {
 
   // Memoized event handlers
   const openDropdown = useCallback((id: string) => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    if (closeTimeoutRef.current) {
+clearTimeout(closeTimeoutRef.current);
+}
     setActiveDropdown(id);
   }, []);
 
@@ -70,7 +72,9 @@ export const Header = memo(function Header() {
   }, []);
 
   const cancelClose = useCallback(() => {
-    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    if (closeTimeoutRef.current) {
+clearTimeout(closeTimeoutRef.current);
+}
   }, []);
 
   const handleDropdownClick = useCallback((item: DropdownItem) => {
@@ -91,7 +95,9 @@ export const Header = memo(function Header() {
 
   useEffect(() => {
     return () => { 
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current); 
+      if (closeTimeoutRef.current) {
+clearTimeout(closeTimeoutRef.current);
+} 
     };
   }, []);
 
@@ -126,7 +132,7 @@ export const Header = memo(function Header() {
   );
 
   // Memoized DropdownMenu component
-  const DropdownMenu = memo(function DropdownMenu({ 
+  const DropdownMenu = memo(({ 
     items, 
     isOpen, 
     id 
@@ -134,8 +140,10 @@ export const Header = memo(function Header() {
     items: DropdownItem[]; 
     isOpen: boolean; 
     id: string;
-  }) {
-    if (!isOpen) return null;
+  }) => {
+    if (!isOpen) {
+return null;
+}
     return (
       <div 
         className="absolute top-full left-0 w-72 z-50 pt-1"
@@ -155,9 +163,9 @@ export const Header = memo(function Header() {
                   className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors group"
                   aria-label={item.label}
                 >
-                  {item.icon && <item.icon className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#A1A1AA] group-hover:text-[#D4AF37] transition-colors" />}
+                  {item.icon && <item.icon className="w-5 h-5 mt-0.5 flex-shrink-0 text-[#A1A1AA] group-hover:text-[#C9A84C] transition-colors" />}
                   <div>
-                    <p className="text-sm font-medium text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors">{item.label}</p>
+                    <p className="text-sm font-medium text-[#F5F5F0] group-hover:text-[#C9A84C] transition-colors">{item.label}</p>
                     <p className="text-xs text-[#71717A]">{item.desc}</p>
                   </div>
                 </button>
@@ -207,7 +215,7 @@ export const Header = memo(function Header() {
                 onMouseLeave={closeDropdown}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-widest transition-colors duration-200",
-                  isOwnerPage ? "text-[#D4AF37]"
+                  isOwnerPage ? "text-[#C9A84C]"
                     : activeDropdown === "owners" ? "text-[#F5F5F0] bg-white/5"
                     : "text-[#A1A1AA] hover:text-[#F5F5F0]"
                 )}
@@ -229,7 +237,7 @@ export const Header = memo(function Header() {
                 onMouseLeave={closeDropdown}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 text-sm uppercase tracking-widest transition-colors duration-200",
-                  isPropertiesPage ? "text-[#D4AF37]"
+                  isPropertiesPage ? "text-[#C9A84C]"
                     : activeDropdown === "booking" ? "text-[#F5F5F0] bg-white/5"
                     : "text-[#A1A1AA] hover:text-[#F5F5F0]"
                 )}
@@ -272,7 +280,7 @@ export const Header = memo(function Header() {
             
             <Button
               onClick={() => isOwnerPage ? openOwnerModal() : navigate("/properties")}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest px-6 py-3 font-semibold btn-gold-glow"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-6 py-3 font-semibold btn-gold-glow"
               aria-label={isOwnerPage ? "List your property" : (headerCfg?.ctaText || "Book Now")}
             >
               {isOwnerPage ? "List Property" : (headerCfg?.ctaText || "Book Now")}
@@ -294,12 +302,14 @@ export const Header = memo(function Header() {
 
                 <nav className="flex-1 p-6 overflow-y-auto" aria-label="Mobile navigation">
                   <div className="mb-6">
-                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">{mobileCfg?.ownersTitle || "For Property Owners"}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#C9A84C] mb-3 px-4">{mobileCfg?.ownersTitle || "For Property Owners"}</p>
                     <div className="space-y-1">
                       {ownerDropdownItems.filter(i => !i.divider).map((item) => (
                         <button
                           key={item.href || item.label}
-                          onClick={() => { handleDropdownClick(item); setIsMobileMenuOpen(false); }}
+                          onClick={() => {
+ handleDropdownClick(item); setIsMobileMenuOpen(false); 
+}}
                           className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors rounded"
                           aria-label={item.label}
                         >
@@ -311,12 +321,14 @@ export const Header = memo(function Header() {
                   </div>
 
                   <div className="mb-6">
-                    <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 px-4">{mobileCfg?.bookingTitle || "Book a Stay"}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#C9A84C] mb-3 px-4">{mobileCfg?.bookingTitle || "Book a Stay"}</p>
                     <div className="space-y-1">
                       {bookingDropdownItems.filter(i => !i.divider).map((item) => (
                         <button
                           key={item.href || item.label}
-                          onClick={() => { handleDropdownClick(item); setIsMobileMenuOpen(false); }}
+                          onClick={() => {
+ handleDropdownClick(item); setIsMobileMenuOpen(false); 
+}}
                           className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors rounded"
                           aria-label={item.label}
                         >
@@ -335,7 +347,9 @@ export const Header = memo(function Header() {
                   </a>
                    
                   <Button
-                    onClick={() => { openContactModal(); setIsMobileMenuOpen(false); }}
+                    onClick={() => {
+ openContactModal(); setIsMobileMenuOpen(false); 
+}}
                     variant="outline"
                     className="w-full border-white/10 text-[#F5F5F0] rounded-none py-4"
                     aria-label={mobileCfg?.contactLabel || "Contact Us"}

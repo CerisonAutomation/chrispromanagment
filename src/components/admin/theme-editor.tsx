@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from "react";
 import { 
   Palette, Sun, Moon, Type, Check, RefreshCw, Save,
@@ -21,8 +20,8 @@ const COLOR_PRESETS = [
   {
     name: "Gold & Black (Default)",
     colors: {
-      gold: "#D4AF37",
-      goldHover: "#E5C158",
+      gold: "#C9A84C",
+      goldHover: "#D4B85C",
       bgDark: "#0F0F10",
       bgCard: "#161618",
       bgAlt: "#0A0A0B",
@@ -86,7 +85,7 @@ const COLOR_PRESETS = [
   {
     name: "Light Mode",
     colors: {
-      gold: "#D4AF37",
+      gold: "#C9A84C",
       goldHover: "#C4A030",
       bgDark: "#FFFFFF",
       bgCard: "#F9FAFB",
@@ -176,7 +175,7 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]"
         >
           {isSaving ? (
             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -200,7 +199,7 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
             onClick={() => setActiveTab(tab)}
             className={`capitalize ${
               activeTab === tab
-                ? "text-[#D4AF37] bg-[#D4AF37]/10"
+                ? "text-[#C9A84C] bg-[#C9A84C]/10"
                 : "text-[#A1A1AA]"
             }`}
           >
@@ -220,7 +219,7 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
             className="p-6 rounded-lg border border-white/10"
             style={{ backgroundColor: colors.bgDark || "#0F0F10" }}
           >
-            <p className="text-xs uppercase tracking-widest mb-2" style={{ color: colors.gold || "#D4AF37" }}>
+            <p className="text-xs uppercase tracking-widest mb-2" style={{ color: colors.gold || "#C9A84C" }}>
               Live Preview
             </p>
             <h2 className="text-2xl font-bold mb-2" style={{ color: colors.textPrimary || "#F5F5F0" }}>
@@ -233,7 +232,7 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
               <button
                 className="px-4 py-2 font-medium transition-colors"
                 style={{ 
-                  backgroundColor: colors.gold || "#D4AF37",
+                  backgroundColor: colors.gold || "#C9A84C",
                   color: colors.bgDark || "#0F0F10"
                 }}
               >
@@ -300,14 +299,14 @@ export const ThemeEditor = ({ cms, updateSection, setHasUnsavedChanges }) => {
                 onClick={() => handleFontChange(option)}
                 className={`p-4 text-left border rounded-lg transition-colors ${
                   fonts.heading === option.heading && fonts.body === option.body
-                    ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                    ? "border-[#C9A84C] bg-[#C9A84C]/10"
                     : "border-white/10 hover:border-white/20 bg-[#0F0F10]"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-[#A1A1AA]">{option.name}</span>
                   {fonts.heading === option.heading && fonts.body === option.body && (
-                    <Check className="w-4 h-4 text-[#D4AF37]" />
+                    <Check className="w-4 h-4 text-[#C9A84C]" />
                   )}
                 </div>
                 <p 
@@ -366,13 +365,17 @@ function AIThemePanel() {
     const out = {};
     for (const k of THEME_TOKEN_ALLOWLIST) {
       const v = cs.getPropertyValue(k).trim();
-      if (v) out[k] = v;
+      if (v) {
+out[k] = v;
+}
     }
     return out;
   };
 
   const onGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+return;
+}
     setBusy(true);
     try {
       const { tokens, rationale: r } = await generateThemeWithAI(prompt, currentTokens());
@@ -392,11 +395,15 @@ function AIThemePanel() {
   };
 
   const onSave = async () => {
-    if (!lastTokens) return toast.info("Nothing to save — generate a theme first.");
+    if (!lastTokens) {
+return toast.info("Nothing to save — generate a theme first.");
+}
     setBusy(true);
     try {
       const { error } = await saveThemeTokens(lastTokens);
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       toast.success("AI theme saved. It will load on every page.");
     } catch (e) {
       toast.error(e?.message || "Save failed");
@@ -420,9 +427,9 @@ function AIThemePanel() {
   };
 
   return (
-    <div className="p-5 rounded-lg border border-[#D4AF37]/30 bg-gradient-to-br from-[#D4AF37]/5 to-transparent space-y-3">
+    <div className="p-5 rounded-lg border border-[#C9A84C]/30 bg-gradient-to-br from-[#C9A84C]/5 to-transparent space-y-3">
       <div className="flex items-center gap-2">
-        <Sparkles className="w-5 h-5 text-[#D4AF37]" />
+        <Sparkles className="w-5 h-5 text-[#C9A84C]" />
         <h2 className="text-base font-semibold text-[#F5F5F0]">AI Theme Generator</h2>
         <span className="text-xs text-[#71717A] ml-2">Describe a mood — applies live, click Save to persist.</span>
       </div>
@@ -434,7 +441,7 @@ function AIThemePanel() {
         className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0]"
       />
       <div className="flex flex-wrap gap-2">
-        <Button onClick={onGenerate} disabled={busy || !prompt.trim()} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+        <Button onClick={onGenerate} disabled={busy || !prompt.trim()} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
           {busy ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
           Apply with AI
         </Button>
@@ -446,7 +453,7 @@ function AIThemePanel() {
         </Button>
       </div>
       {rationale && (
-        <p className="text-xs text-[#A1A1AA] italic border-l-2 border-[#D4AF37]/40 pl-3">{rationale}</p>
+        <p className="text-xs text-[#A1A1AA] italic border-l-2 border-[#C9A84C]/40 pl-3">{rationale}</p>
       )}
       {lastTokens && (
         <div className="flex flex-wrap gap-2 pt-2">

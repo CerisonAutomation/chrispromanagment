@@ -1,4 +1,3 @@
-// @ts-nocheck
 // LiveNavigateMode — iframe-mirrored frontend with click-to-edit support.
 // Communicates with EditModeBridge in the iframe via postMessage.
 
@@ -28,16 +27,24 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   useEffect(() => {
     const onMsg = (e) => {
       const d = e.data;
-      if (!d || typeof d !== "object" || !d.type?.startsWith?.("cvpm:")) return;
+      if (!d || typeof d !== "object" || !d.type?.startsWith?.("cvpm:")) {
+return;
+}
       if (d.type === "cvpm:ready" || d.type === "cvpm:url") {
-        if (d.url) setUrl(d.url);
-        if (d.url) setEditorUrl(d.url);
+        if (d.url) {
+setUrl(d.url);
+}
+        if (d.url) {
+setEditorUrl(d.url);
+}
       } else if (d.type === "cvpm:edit-focus") {
         setFocused({ selector: d.selector, text: d.text, tag: d.tag, url: d.url });
         setDraft(d.text || "");
       } else if (d.type === "cvpm:edit-change") {
         // live mirror — keep textarea in sync if user is typing in iframe
-        if (focused && d.selector === focused.selector) setDraft(d.text);
+        if (focused && d.selector === focused.selector) {
+setDraft(d.text);
+}
       }
     };
     window.addEventListener("message", onMsg);
@@ -47,13 +54,21 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   // Toggle edit mode in iframe
   useEffect(() => {
     const w = iframeRef.current?.contentWindow;
-    if (!w) return;
-    try { w.postMessage({ type: "cvpm:edit-mode", on: editing }, "*"); } catch { /* empty */ }
-    if (!editing) { setFocused(null); setDraft(""); }
+    if (!w) {
+return;
+}
+    try {
+ w.postMessage({ type: "cvpm:edit-mode", on: editing }, "*"); 
+} catch { /* empty */ }
+    if (!editing) {
+ setFocused(null); setDraft(""); 
+}
   }, [editing, iframeKey]);
 
   const goTo = (newPath) => {
-    if (!newPath.startsWith("/")) newPath = "/" + newPath;
+    if (!newPath.startsWith("/")) {
+newPath = `/${  newPath}`;
+}
     setEditorUrl(newPath);
     setUrl(newPath);
     setIframeKey(k => k + 1);
@@ -62,7 +77,9 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   const reload = () => setIframeKey(k => k + 1);
 
   const applyEdit = async () => {
-    if (!focused) return;
+    if (!focused) {
+return;
+}
     // Push the new text back into the iframe
     const w = iframeRef.current?.contentWindow;
     try {
@@ -85,10 +102,12 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
         { section_key: overlayKey, section_label: "Live Edit Overlays", content: { items: next } },
         { onConflict: "section_key" }
       );
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       toast.success("Saved live edit");
     } catch (e) {
-      toast.error("Could not persist (RLS): " + (e?.message || ""));
+      toast.error(`Could not persist (RLS): ${  e?.message || ""}`);
     }
   };
 
@@ -100,7 +119,9 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
         <button onClick={() => iframeRef.current?.contentWindow?.history?.forward()} className="p-1.5 text-[#6a6a6e] hover:text-[#f0ede8] rounded hover:bg-[#1a1a1e]" title="Forward"><ArrowRight className="w-3.5 h-3.5" /></button>
         <button onClick={reload} className="p-1.5 text-[#6a6a6e] hover:text-[#f0ede8] rounded hover:bg-[#1a1a1e]" title="Reload"><RefreshCw className="w-3.5 h-3.5" /></button>
         <form
-          onSubmit={(e) => { e.preventDefault(); goTo(editorUrl); }}
+          onSubmit={(e) => {
+ e.preventDefault(); goTo(editorUrl); 
+}}
           className="flex-1 flex items-center gap-2"
         >
           <Input
@@ -114,7 +135,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
           onClick={() => setEditing(v => !v)}
           className={`flex items-center gap-1.5 px-3 py-1 text-[10px] font-semibold rounded transition-all ${
             editing
-              ? "bg-[#D4AF37] text-[#0a0a0b]"
+              ? "bg-[#C9A84C] text-[#0a0a0b]"
               : "bg-[#1a1a1e] text-[#A1A1AA] hover:text-[#f0ede8]"
           }`}
           title={editing ? "Pause editing — resume navigation" : "Pause to edit anything on screen"}
@@ -133,7 +154,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
           { l: "Map", u: "/map" },
           { l: "Confirmation", u: "/confirmation" },
         ].map(p => (
-          <button key={p.u} onClick={() => goTo(p.u)} className={`px-2 py-1 text-[10px] rounded font-medium whitespace-nowrap ${url === p.u ? "bg-[#D4AF37]/15 text-[#D4AF37]" : "text-[#6a6a6e] hover:text-[#f0ede8] hover:bg-[#1a1a1e]"}`}>{p.l}</button>
+          <button key={p.u} onClick={() => goTo(p.u)} className={`px-2 py-1 text-[10px] rounded font-medium whitespace-nowrap ${url === p.u ? "bg-[#C9A84C]/15 text-[#C9A84C]" : "text-[#6a6a6e] hover:text-[#f0ede8] hover:bg-[#1a1a1e]"}`}>{p.l}</button>
         ))}
       </div>
 
@@ -149,7 +170,7 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
           />
           {!editing && (
             <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 bg-[#0a0a0b]/85 border border-[#1e1e22] text-[10px] text-[#A1A1AA] px-3 py-1.5 rounded-full">
-              Navigation mode — click <b className="text-[#D4AF37]">Pause to Edit</b> to modify text on screen
+              Navigation mode — click <b className="text-[#C9A84C]">Pause to Edit</b> to modify text on screen
             </div>
           )}
         </div>
@@ -185,12 +206,14 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
                     onChange={(e) => {
                       setDraft(e.target.value);
                       // Live push as the user types in the side editor
-                       try { iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: e.target.value }, "*"); } catch { /* empty */ }
+                       try {
+ iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: e.target.value }, "*"); 
+} catch { /* empty */ }
                     }}
-                    className="bg-[#08080a] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[140px] resize-none focus:border-[#D4AF37]/50"
+                    className="bg-[#08080a] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[140px] resize-none focus:border-[#C9A84C]/50"
                   />
                 </div>
-                <Button onClick={applyEdit} className="w-full h-9 bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b] text-xs font-semibold">
+                <Button onClick={applyEdit} className="w-full h-9 bg-[#C9A84C] hover:bg-[#D4B85C] text-[#0a0a0b] text-xs font-semibold">
                   <Save className="w-3.5 h-3.5 mr-1.5" />Save Live Edit
                 </Button>
                 <p className="text-[9px] text-[#5a5a5e] leading-relaxed">

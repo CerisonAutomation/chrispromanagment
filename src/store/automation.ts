@@ -58,8 +58,11 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       .from('automation_rules')
       .select('*')
       .order('created_at', { ascending: false });
-    if (error) set({ error: error.message });
-    else set({ rules: (data as AutomationRule[]) || [] });
+    if (error) {
+set({ error: error.message });
+} else {
+set({ rules: (data as AutomationRule[]) || [] });
+}
     set({ loading: false });
   },
 
@@ -69,7 +72,9 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       .insert(rule)
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     const created = data as AutomationRule;
     set(s => ({ rules: [created, ...s.rules] }));
     return created;
@@ -80,13 +85,17 @@ export const useAutomationStore = create<AutomationState>((set, get) => ({
       .from('automation_rules')
       .update(patch)
       .eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ rules: s.rules.map(r => r.id === id ? { ...r, ...patch } : r) }));
   },
 
   async remove(id) {
     const { error } = await supabase.from('automation_rules').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ rules: s.rules.filter(r => r.id !== id) }));
   },
 

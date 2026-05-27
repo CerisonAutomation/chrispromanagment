@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { Locale, localeFlags, loadLocale, getBrowserLocale } from '@/lib/i18n-utils';
 import { Button } from '@/components/ui/button';

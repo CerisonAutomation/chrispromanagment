@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { ChatMessage } from '@/hooks/use-chat';
 import { format } from 'date-fns';
 
@@ -13,12 +12,12 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
   return (
     <div className={`flex gap-2 items-end ${isOwn ? 'justify-end' : 'justify-start'}`}>
       {!isOwn && (
-        <div className="w-7 h-7 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-xs font-bold flex-shrink-0">
+        <div className="w-7 h-7 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-xs font-bold flex-shrink-0">
           {initial}
         </div>
       )}
 
-      <div className={`max-w-[70%] rounded-lg px-3 py-2 ${isOwn ? 'bg-[#D4AF37] text-[#0a0a0b]' : 'bg-white/5 text-[#F5F5F0]'}`}>
+      <div className={`max-w-[70%] rounded-lg px-3 py-2 ${isOwn ? 'bg-[#C9A84C] text-[#0a0a0b]' : 'bg-white/5 text-[#F5F5F0]'}`}>
         {!isOwn && message.sender_name && (
           <p className="text-[10px] font-medium opacity-60 mb-0.5">{message.sender_name}</p>
         )}
@@ -30,7 +29,7 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
       </div>
 
       {isOwn && (
-        <div className="w-7 h-7 rounded-full bg-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] text-xs font-bold flex-shrink-0">
+        <div className="w-7 h-7 rounded-full bg-[#C9A84C]/30 flex items-center justify-center text-[#C9A84C] text-xs font-bold flex-shrink-0">
           {initial}
         </div>
       )}

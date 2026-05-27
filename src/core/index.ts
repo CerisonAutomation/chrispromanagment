@@ -13,6 +13,10 @@ export {
   CommandEvent,
   CommandEventPublisher,
   WithEvents,
+  Command,
+  Query,
+  createCommand,
+  createQuery,
 } from './cqrs-pattern';
 
 export {
@@ -46,3 +50,6 @@ export {
   autoRegister,
   ServiceLocator,
 } from './service-container';
+// Upstash Integration
+export { UpstashRedis, redis, Cacheable } from '@/lib/upstash-redis';
+export { QStashClient, qstash, queueAIGeneration, queueGuestySync, queueStripeReconciliation, queueEmailNotification } from '@/lib/qstash';

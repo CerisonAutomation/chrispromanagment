@@ -60,7 +60,9 @@ export default function OwnerPortalPage() {
         email: owner.email,
         options: { emailRedirectTo: `${window.location.origin}/owner-view` },
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       toast.success(`Magic link sent to ${owner.email}`);
     } catch (e: unknown) {
       toast.error((e as Error).message);
@@ -74,7 +76,7 @@ export default function OwnerPortalPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#D4AF37]" />
+            <Users className="w-6 h-6 text-[#C9A84C]" />
             Owner Portal
           </h1>
           <p className="text-sm text-[#71717A] mt-1">{owners.length} owners</p>
@@ -83,14 +85,14 @@ export default function OwnerPortalPage() {
           <Button variant="outline" size="sm" onClick={fetch} disabled={loading} className="border-white/10 text-[#A1A1AA]">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button onClick={() => setShowForm(v => !v)} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+          <Button onClick={() => setShowForm(v => !v)} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
             <Plus className="w-4 h-4 mr-2" />Add Owner
           </Button>
         </div>
       </div>
 
       {showForm && (
-        <Card className="p-6 bg-[#161618] border-[#D4AF37]/30 space-y-4">
+        <Card className="p-6 bg-[#161618] border-[#C9A84C]/30 space-y-4">
           <h2 className="text-[#F5F5F0] font-semibold">New Owner</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input placeholder="Full name *" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
@@ -103,8 +105,10 @@ export default function OwnerPortalPage() {
               className="bg-[#0a0a0b] border-white/10 text-[#F5F5F0]" />
           </div>
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => { setShowForm(false); setForm(BLANK); }} className="border-white/10">Cancel</Button>
-            <Button onClick={handleCreate} disabled={saving} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+            <Button variant="outline" onClick={() => {
+ setShowForm(false); setForm(BLANK); 
+}} className="border-white/10">Cancel</Button>
+            <Button onClick={handleCreate} disabled={saving} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Add Owner'}
             </Button>
           </div>
@@ -115,7 +119,7 @@ export default function OwnerPortalPage() {
         <TabsList className="bg-[#161618] border border-white/10 rounded-none p-1 h-auto">
           {['owners', 'reports'].map(t => (
             <TabsTrigger key={t} value={t}
-              className="rounded-none capitalize text-xs uppercase tracking-wider data-[state=active]:bg-[#D4AF37] data-[state=active]:text-[#0F0F10] text-[#A1A1AA] px-5 py-2">
+              className="rounded-none capitalize text-xs uppercase tracking-wider data-[state=active]:bg-[#C9A84C] data-[state=active]:text-[#0F0F10] text-[#A1A1AA] px-5 py-2">
               {t}
             </TabsTrigger>
           ))}
@@ -124,7 +128,7 @@ export default function OwnerPortalPage() {
         <TabsContent value="owners" className="mt-4">
           {loading && !owners.length ? (
             <div className="flex items-center justify-center h-48">
-              <RefreshCw className="w-6 h-6 text-[#D4AF37] animate-spin" />
+              <RefreshCw className="w-6 h-6 text-[#C9A84C] animate-spin" />
             </div>
           ) : owners.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
@@ -136,8 +140,12 @@ export default function OwnerPortalPage() {
               {owners.map(o => (
                 <Card
                   key={o.id}
-                  className={`p-4 bg-[#161618] border cursor-pointer transition-all ${selected?.id === o.id ? 'border-[#D4AF37]/40' : 'border-white/10 hover:border-white/20'}`}
-                  onClick={() => { select(selected?.id === o.id ? null : o); if (selected?.id !== o.id) fetchReports(o.id); }}
+                  className={`p-4 bg-[#161618] border cursor-pointer transition-all ${selected?.id === o.id ? 'border-[#C9A84C]/40' : 'border-white/10 hover:border-white/20'}`}
+                  onClick={() => {
+ select(selected?.id === o.id ? null : o); if (selected?.id !== o.id) {
+fetchReports(o.id);
+} 
+}}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -148,11 +156,15 @@ export default function OwnerPortalPage() {
                         {o.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{o.phone}</span>}
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); handleSendReportLink(o); }}
-                      className="text-[#D4AF37] hover:bg-[#D4AF37]/10" title="Send report link">
+                    <Button variant="ghost" size="sm" onClick={e => {
+ e.stopPropagation(); handleSendReportLink(o); 
+}}
+                      className="text-[#C9A84C] hover:bg-[#C9A84C]/10" title="Send report link">
                       <Send className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); handleDelete(o.id); }}
+                    <Button variant="ghost" size="sm" onClick={e => {
+ e.stopPropagation(); handleDelete(o.id); 
+}}
                       className="text-red-400 hover:bg-red-500/10">
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -165,7 +177,7 @@ export default function OwnerPortalPage() {
 
         <TabsContent value="reports" className="mt-4">
           {selected && (
-            <p className="text-xs text-[#D4AF37] mb-3">Showing reports for {selected.full_name}</p>
+            <p className="text-xs text-[#C9A84C] mb-3">Showing reports for {selected.full_name}</p>
           )}
           {ownerReports.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 border border-dashed border-white/10 rounded-lg">
@@ -182,7 +194,7 @@ export default function OwnerPortalPage() {
                         {r.period_start} — {r.period_end}
                       </p>
                       <div className="flex gap-4 mt-1 text-xs text-[#A1A1AA]">
-                        <span>Gross: <span className="text-[#D4AF37]">€{r.gross_revenue.toFixed(2)}</span></span>
+                        <span>Gross: <span className="text-[#C9A84C]">€{r.gross_revenue.toFixed(2)}</span></span>
                         <span>Fee: €{r.management_fee.toFixed(2)}</span>
                         <span>Net: <span className="text-green-400">€{r.net_payout.toFixed(2)}</span></span>
                         <span>{r.bookings_count} bookings</span>

@@ -16,7 +16,7 @@ interface FooterProps {
  * @param props - Component props
  * @returns React component
  */
-export const Footer = memo(function Footer() {
+export const Footer = memo(() => {
   const { cms } = useCMS();
   const { openContactModal, openOwnerModal } = useModal();
   const { content: footerCfg } = useBlock("footer");
@@ -60,15 +60,15 @@ export const Footer = memo(function Footer() {
               For Guests
             </h4>
             <nav className="flex flex-col gap-2" aria-label="Guest navigation">
-              <Link to="/properties" className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">
+              <Link to="/properties" className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors">
                 Browse Properties
               </Link>
-              <Link to="/properties" className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">
+              <Link to="/properties" className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors">
                 Book a Stay
               </Link>
               <button 
                 onClick={handleContactClick} 
-                className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors text-left"
+                className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors text-left"
                 aria-label="Contact us"
               >
                 Contact Us
@@ -82,17 +82,17 @@ export const Footer = memo(function Footer() {
               For Owners
             </h4>
             <nav className="flex flex-col gap-2" aria-label="Owner navigation">
-              <Link to="/property-owners" className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">
+              <Link to="/property-owners" className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors">
                 Our Services
               </Link>
               <button 
                 onClick={handleOwnerClick} 
-                className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors text-left"
+                className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors text-left"
                 aria-label="List your property"
               >
                 List Your Property
               </button>
-              <Link to="/property-owners#pricing" className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">
+              <Link to="/property-owners#pricing" className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors">
                 Pricing Plans
               </Link>
             </nav>
@@ -106,7 +106,7 @@ export const Footer = memo(function Footer() {
             <div className="flex flex-col gap-2">
               <a 
                 href={`tel:${cms.contact?.phone || '+35679790202'}`} 
-                className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors"
+                className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors"
                 aria-label={`Call ${cms.contact?.phone || '+356 7979 0202'}`}
               >
                 <Phone className="w-3 h-3" />
@@ -114,7 +114,7 @@ export const Footer = memo(function Footer() {
               </a>
               <a 
                 href={`mailto:${cms.contact?.email}`} 
-                className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors"
+                className="flex items-center gap-2 text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors"
                 aria-label={`Email ${cms.contact?.email}`}
               >
                 <Mail className="w-3 h-3" />
@@ -145,43 +145,43 @@ export const Footer = memo(function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all group"
+                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#C9A84C] hover:bg-[#C9A84C]/10 transition-all group"
                 )}
                 aria-label="Instagram"
               >
-                <Instagram className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#D4AF37] transition-colors" />
+                <Instagram className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#C9A84C] transition-colors" />
               </a>
               <a
                 href="https://facebook.com/christianopropertymanagement"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all group"
+                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#C9A84C] hover:bg-[#C9A84C]/10 transition-all group"
                 )}
                 aria-label="Facebook"
               >
-                <Facebook className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#D4AF37] transition-colors" />
+                <Facebook className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#C9A84C] transition-colors" />
               </a>
               <a
                 href="https://wa.me/35679790202"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all group"
+                  "w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#C9A84C] hover:bg-[#C9A84C]/10 transition-all group"
                 )}
                 aria-label="WhatsApp"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#D4AF37] transition-colors" />
+                <MessageCircle className="w-3.5 h-3.5 text-[#A1A1AA] group-hover:text-[#C9A84C] transition-colors" />
               </a>
             </div>
 
             {/* Legal Links */}
             <div className="flex gap-3 text-xs">
-              <Link to="/privacy-policy" className="text-[#71717A] hover:text-[#D4AF37] transition-colors">
+              <Link to="/privacy-policy" className="text-[#71717A] hover:text-[#C9A84C] transition-colors">
                 Privacy Policy
               </Link>
               <span className="text-[#71717A]">·</span>
-              <Link to="/terms" className="text-[#71717A] hover:text-[#D4AF37] transition-colors">
+              <Link to="/terms" className="text-[#71717A] hover:text-[#C9A84C] transition-colors">
                 Terms &amp; Conditions
               </Link>
             </div>

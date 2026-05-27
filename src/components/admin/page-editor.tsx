@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Fix eslint issues and remove this blanket disable
 import { useState, useCallback } from "react";
 import { 
@@ -14,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Block type definitions
 const BLOCK_TYPES = {
-  hero: { icon: Layout, label: "Hero Section", color: "#D4AF37" },
+  hero: { icon: Layout, label: "Hero Section", color: "#C9A84C" },
   text: { icon: Type, label: "Text Block", color: "#3B82F6" },
   image: { icon: Image, label: "Image", color: "#10B981" },
   gallery: { icon: Layout, label: "Image Gallery", color: "#8B5CF6" },
@@ -77,21 +76,33 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
     setLocalCms(prev => {
       const newCms = { ...prev };
       if (pageId === "landing" && ["hero", "about", "features", "testimonials"].includes(section)) {
-        if (!newCms[section]) newCms[section] = {};
+        if (!newCms[section]) {
+newCms[section] = {};
+}
         if (field.includes(".")) {
           const [parent, child] = field.split(".");
-          if (!newCms[section][parent]) newCms[section][parent] = {};
+          if (!newCms[section][parent]) {
+newCms[section][parent] = {};
+}
           newCms[section][parent][child] = value;
         } else {
           newCms[section][field] = value;
         }
       } else if (pageId === "propertyOwners") {
-        if (!newCms.propertyOwners) newCms.propertyOwners = {};
-        if (!newCms.propertyOwners[section]) newCms.propertyOwners[section] = {};
+        if (!newCms.propertyOwners) {
+newCms.propertyOwners = {};
+}
+        if (!newCms.propertyOwners[section]) {
+newCms.propertyOwners[section] = {};
+}
         newCms.propertyOwners[section][field] = value;
       } else {
-        if (!newCms[pageId]) newCms[pageId] = {};
-        if (!newCms[pageId][section]) newCms[pageId][section] = {};
+        if (!newCms[pageId]) {
+newCms[pageId] = {};
+}
+        if (!newCms[pageId][section]) {
+newCms[pageId][section] = {};
+}
         newCms[pageId][section][field] = value;
       }
       return newCms;
@@ -128,7 +139,9 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
       const { data, error } = await supabase.functions.invoke("ai-generate", {
         body: { prompt, section, field, context: pageId },
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       if (data?.content) {
         handleFieldChange(section, field, data.content);
         toast.success("AI content generated!");
@@ -162,7 +175,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
             variant="ghost"
             size="sm"
             onClick={() => generateAIContent(section, field, `Generate ${label} for ${pageStructure.title}`)}
-            className="opacity-0 group-hover:opacity-100 h-6 px-2 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+            className="opacity-0 group-hover:opacity-100 h-6 px-2 text-[#C9A84C] hover:bg-[#C9A84C]/10"
             disabled={aiGenerating}
           >
             <Wand2 className="w-3 h-3 mr-1" />
@@ -204,7 +217,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
   const renderSectionEditor = (sectionId) => {
     const pageData = getPageData();
     
-  // eslint-disable-next-line no-case-declarations
+   
     switch (sectionId) {
       case "hero": { {
         const heroData = pageId === "landing" ? localCms.hero : pageData.hero;
@@ -312,7 +325,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
             {featuresData.map((feature, i) => (
               <div key={i} className="p-4 bg-[#0a0a0b] border border-white/10 rounded space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#D4AF37]">Feature {i + 1}</span>
+                  <span className="text-sm text-[#C9A84C]">Feature {i + 1}</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -373,7 +386,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
             {testimonialsData.slice(0, 5).map((testimonial, i) => (
               <div key={i} className="p-4 bg-[#0a0a0b] border border-white/10 rounded space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#D4AF37]">Testimonial {i + 1}</span>
+                  <span className="text-sm text-[#C9A84C]">Testimonial {i + 1}</span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -525,7 +538,7 @@ export const PageEditor = ({ pageId, cms, updateSection, setHasUnsavedChanges, p
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]"
         >
           {isSaving ? (
             <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

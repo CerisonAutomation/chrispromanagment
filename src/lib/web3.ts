@@ -5,7 +5,9 @@ export const POLYGON_CHAIN_ID = 137;
 export const POLYGON_RPC_URL = 'https://polygon-rpc.com';
 
 export async function connectWallet(): Promise<string> {
-  if (!window.ethereum) throw new Error('No wallet installed');
+  if (!window.ethereum) {
+throw new Error('No wallet installed');
+}
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const accounts = await provider.send('eth_requestAccounts', []);

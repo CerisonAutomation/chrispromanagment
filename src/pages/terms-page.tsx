@@ -11,7 +11,7 @@ export default function TermsPage() {
 
       <div className="max-w-3xl mx-auto px-6 md:px-12">
         <div className="mb-10">
-          <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3">Legal</p>
+          <p className="text-xs uppercase tracking-widest text-[#C9A84C] mb-3">Legal</p>
           <h1 className="font-['Playfair_Display'] text-4xl text-[#F5F5F0] mb-4">Terms &amp; Conditions</h1>
           <p className="text-[#71717A] text-sm">Last updated: 1 January 2025 · Governed by the laws of Malta</p>
         </div>
@@ -74,7 +74,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-[#F5F5F0] text-xl font-semibold mb-3">8. Governing Law &amp; Disputes</h2>
-            <p>These Terms are governed by the laws of Malta. Any dispute shall be subject to the exclusive jurisdiction of the Maltese courts. For consumer disputes, you may also use the EU Online Dispute Resolution platform at <a href="https://ec.europa.eu/odr" target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] hover:underline">ec.europa.eu/odr</a>.</p>
+            <p>These Terms are governed by the laws of Malta. Any dispute shall be subject to the exclusive jurisdiction of the Maltese courts. For consumer disputes, you may also use the EU Online Dispute Resolution platform at <a href="https://ec.europa.eu/odr" target="_blank" rel="noopener noreferrer" className="text-[#C9A84C] hover:underline">ec.europa.eu/odr</a>.</p>
           </section>
 
           <section>
@@ -85,14 +85,14 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[#F5F5F0] text-xl font-semibold mb-3">10. Contact</h2>
             <p>
-              For any questions regarding these Terms contact us at <a href="mailto:info@christianopropertymanagement.com" className="text-[#D4AF37] hover:underline">info@christianopropertymanagement.com</a> or call <a href="tel:+35679790202" className="text-[#D4AF37] hover:underline">+356 7979 0202</a>.
+              For any questions regarding these Terms contact us at <a href="mailto:info@christianopropertymanagement.com" className="text-[#C9A84C] hover:underline">info@christianopropertymanagement.com</a> or call <a href="tel:+35679790202" className="text-[#C9A84C] hover:underline">+356 7979 0202</a>.
             </p>
           </section>
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/5 flex gap-4 text-sm">
-          <Link to="/" className="text-[#D4AF37] hover:underline">← Home</Link>
-          <Link to="/privacy-policy" className="text-[#A1A1AA] hover:text-[#D4AF37]">Privacy Policy →</Link>
+          <Link to="/" className="text-[#C9A84C] hover:underline">← Home</Link>
+          <Link to="/privacy-policy" className="text-[#A1A1AA] hover:text-[#C9A84C]">Privacy Policy →</Link>
         </div>
       </div>
     </div>

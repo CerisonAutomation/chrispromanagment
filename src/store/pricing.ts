@@ -48,10 +48,15 @@ export const usePricingStore = create<PricingState>((set, get) => ({
   async fetchRules(propertyId) {
     set({ loading: true, error: null });
     let q = supabase.from('pricing_rules').select('*').order('priority');
-    if (propertyId) q = q.eq('property_id', propertyId);
+    if (propertyId) {
+q = q.eq('property_id', propertyId);
+}
     const { data, error } = await q;
-    if (error) set({ error: error.message });
-    else set({ rules: (data as PricingRule[]) || [] });
+    if (error) {
+set({ error: error.message });
+} else {
+set({ rules: (data as PricingRule[]) || [] });
+}
     set({ loading: false });
   },
 
@@ -69,7 +74,9 @@ export const usePricingStore = create<PricingState>((set, get) => ({
 
   async createRule(rule) {
     const { data, error } = await supabase.from('pricing_rules').insert(rule).select().single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     const created = data as PricingRule;
     set(s => ({ rules: [...s.rules, created].sort((a, b) => a.priority - b.priority) }));
     return created;
@@ -77,13 +84,17 @@ export const usePricingStore = create<PricingState>((set, get) => ({
 
   async updateRule(id, patch) {
     const { error } = await supabase.from('pricing_rules').update(patch).eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ rules: s.rules.map(r => r.id === id ? { ...r, ...patch } : r) }));
   },
 
   async removeRule(id) {
     const { error } = await supabase.from('pricing_rules').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({ rules: s.rules.filter(r => r.id !== id) }));
   },
 

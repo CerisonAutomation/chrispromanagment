@@ -36,7 +36,9 @@ export default function PropertyTokensPage() {
       const signer = await ethersProvider.getSigner();
 
       const contractAddress = import.meta.env.VITE_NFT_CONTRACT_ADDRESS;
-      if (!contractAddress) throw new Error('NFT contract address not configured');
+      if (!contractAddress) {
+throw new Error('NFT contract address not configured');
+}
 
       const txHash = await mintPropertyNFT(contractAddress, tokenURI, signer);
 

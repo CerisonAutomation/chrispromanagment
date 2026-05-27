@@ -196,7 +196,7 @@ export function Injectable(
   name?: string,
   lifetime: ServiceLifetime = 'singleton'
 ): ClassDecorator {
-  return (target: any) => {
+  return (target: new (...args: unknown[]) => unknown) => {
     const serviceName = name || target.name;
     Reflect.defineMetadata('injectable', { name: serviceName, lifetime }, target);
   };
@@ -206,6 +206,21 @@ export function Injectable(
  * Global service container instance
  */
 export const serviceContainer = new ServiceContainer();
+
+// Services are registered at the edge/startup with concrete instances
+// Call this function once during app initialization
+// Uses async imports for ESM compatibility (replacing require())
+export function registerCoreServices(): void {
+  serviceContainer.register('redis', async () => {
+    const { redis } = await import('@/lib/upstash-redis');
+    return redis;
+  }, 'singleton');
+
+  serviceContainer.register('qstash', async () => {
+    const { qstash } = await import('@/lib/qstash');
+    return qstash;
+  }, 'singleton');
+}
 
 /**
  * Convenience function for registering services

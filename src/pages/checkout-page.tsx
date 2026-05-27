@@ -54,7 +54,9 @@ export const CheckoutPage = () => {
 
   // Quote expiry countdown
   useEffect(() => {
-    if (!quoteExpiry) return;
+    if (!quoteExpiry) {
+return;
+}
     
     const interval = setInterval(() => {
       const now = new Date();
@@ -126,7 +128,9 @@ export const CheckoutPage = () => {
     const newErrors = {};
     Object.entries(guestInfo).forEach(([field, value]) => {
       const error = validateField(field, value);
-      if (error) newErrors[field] = error;
+      if (error) {
+newErrors[field] = error;
+}
     });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -178,7 +182,9 @@ export const CheckoutPage = () => {
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return "";
+    if (!dateStr) {
+return "";
+}
     return format(new Date(dateStr), "EEE, MMM d, yyyy");
   };
 
@@ -193,7 +199,7 @@ export const CheckoutPage = () => {
     return (
       <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-10 h-10 text-[#C9A84C] animate-spin mx-auto mb-4" />
           <p className="text-[#A1A1AA]">Loading your booking...</p>
         </div>
       </div>
@@ -213,7 +219,7 @@ export const CheckoutPage = () => {
         </p>
         <Button
           onClick={() => navigate(listing ? `/property/${listing._id}` : "/properties")}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Go Back
@@ -248,7 +254,7 @@ export const CheckoutPage = () => {
           <div>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-[#A1A1AA] hover:text-[#D4AF37] transition-colors mb-4"
+              className="flex items-center gap-2 text-[#A1A1AA] hover:text-[#C9A84C] transition-colors mb-4"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -279,7 +285,7 @@ export const CheckoutPage = () => {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                   step >= s.num
-                    ? "bg-[#D4AF37] text-[#0F0F10]"
+                    ? "bg-[#C9A84C] text-[#0F0F10]"
                     : "bg-white/10 text-[#A1A1AA]"
                 }`}
               >
@@ -301,7 +307,7 @@ export const CheckoutPage = () => {
                 {/* Guest Information */}
                 <div className="bg-[#161618] border border-white/10 p-6 md:p-8">
                   <h2 className="font-['Playfair_Display'] text-xl text-[#F5F5F0] mb-6 flex items-center gap-3">
-                    <User className="w-5 h-5 text-[#D4AF37]" />
+                    <User className="w-5 h-5 text-[#C9A84C]" />
                     Guest Information
                   </h2>
 
@@ -315,7 +321,7 @@ export const CheckoutPage = () => {
                         onChange={(e) => handleFieldChange("firstName", e.target.value)}
                         onBlur={() => handleFieldBlur("firstName")}
                         onKeyDown={(e) => handleKeyDown(e, lastNameRef)}
-                        className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37] ${
+                        className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C] ${
                           errors.firstName && touched.firstName ? "border-red-500" : ""
                         }`}
                         placeholder="John"
@@ -335,7 +341,7 @@ export const CheckoutPage = () => {
                         onChange={(e) => handleFieldChange("lastName", e.target.value)}
                         onBlur={() => handleFieldBlur("lastName")}
                         onKeyDown={(e) => handleKeyDown(e, emailRef)}
-                        className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37] ${
+                        className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C] ${
                           errors.lastName && touched.lastName ? "border-red-500" : ""
                         }`}
                         placeholder="Doe"
@@ -357,7 +363,7 @@ export const CheckoutPage = () => {
                           onChange={(e) => handleFieldChange("email", e.target.value)}
                           onBlur={() => handleFieldBlur("email")}
                           onKeyDown={(e) => handleKeyDown(e, phoneRef)}
-                          className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] pl-10 focus-visible:ring-[#D4AF37] ${
+                          className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] pl-10 focus-visible:ring-[#C9A84C] ${
                             errors.email && touched.email ? "border-red-500" : ""
                           }`}
                           placeholder="john@example.com"
@@ -379,7 +385,7 @@ export const CheckoutPage = () => {
                           value={guestInfo.phone}
                           onChange={(e) => handleFieldChange("phone", e.target.value)}
                           onBlur={() => handleFieldBlur("phone")}
-                          className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] pl-10 focus-visible:ring-[#D4AF37] ${
+                          className={`bg-[#0F0F10] border-white/10 rounded-none text-[#F5F5F0] pl-10 focus-visible:ring-[#C9A84C] ${
                             errors.phone && touched.phone ? "border-red-500" : ""
                           }`}
                           placeholder="+356 1234 5678"
@@ -406,14 +412,14 @@ export const CheckoutPage = () => {
                     value={specialRequests}
                     onChange={(e) => setSpecialRequests(e.target.value)}
                     rows={3}
-                    className="w-full bg-[#0F0F10] border border-white/10 rounded-none text-[#F5F5F0] p-4 focus:border-[#D4AF37] focus:outline-none resize-none"
+                    className="w-full bg-[#0F0F10] border border-white/10 rounded-none text-[#F5F5F0] p-4 focus:border-[#C9A84C] focus:outline-none resize-none"
                     placeholder="E.g., dietary requirements, accessibility needs..."
                   />
                 </div>
 
                 <Button
                   onClick={handleContinue}
-                  className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow"
+                  className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow"
                 >
                   Continue to Review
                   <ChevronRight className="w-4 h-4 ml-2" />
@@ -427,13 +433,13 @@ export const CheckoutPage = () => {
                 <div className="bg-[#161618] border border-white/10 p-6 md:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="font-['Playfair_Display'] text-xl text-[#F5F5F0] flex items-center gap-3">
-                      <User className="w-5 h-5 text-[#D4AF37]" />
+                      <User className="w-5 h-5 text-[#C9A84C]" />
                       Your Details
                     </h2>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="text-[#D4AF37] text-sm hover:underline"
+                      className="text-[#C9A84C] text-sm hover:underline"
                     >
                       Edit
                     </button>
@@ -461,7 +467,7 @@ export const CheckoutPage = () => {
                     {ratePlanMeta?.name && (
                       <div className="md:col-span-2">
                         <span className="text-[#A1A1AA]">Rate plan:</span>
-                        <span className="text-[#D4AF37] ml-2">{ratePlanMeta.name}</span>
+                        <span className="text-[#C9A84C] ml-2">{ratePlanMeta.name}</span>
                       </div>
                     )}
                   </div>
@@ -474,17 +480,17 @@ export const CheckoutPage = () => {
                   </h2>
                   <ul className="space-y-3 text-sm text-[#A1A1AA]">
                     <li className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                      <Info className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                       <span>Check-in: 4:00 PM • Check-out: 11:00 AM</span>
                     </li>
                     {cancellation && (
                       <li className="flex items-start gap-2">
-                        <Info className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                        <Info className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                         <span>Cancellation: {cancellation.label}</span>
                       </li>
                     )}
                     <li className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                      <Info className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                       <span>A valid ID or passport is required upon check-in</span>
                     </li>
                   </ul>
@@ -496,16 +502,16 @@ export const CheckoutPage = () => {
                     id="terms"
                     checked={acceptTerms}
                     onCheckedChange={setAcceptTerms}
-                    className="mt-1 border-white/20 data-[state=checked]:bg-[#D4AF37] data-[state=checked]:border-[#D4AF37]"
+                    className="mt-1 border-white/20 data-[state=checked]:bg-[#C9A84C] data-[state=checked]:border-[#C9A84C]"
                     data-testid="accept-terms"
                   />
                   <label htmlFor="terms" className="text-[#A1A1AA] text-sm leading-relaxed cursor-pointer">
                     I agree to the{" "}
-                    <a href="/terms" className="text-[#D4AF37] hover:underline">
+                    <a href="/terms" className="text-[#C9A84C] hover:underline">
                       Terms of Service
                     </a>{" "}
                     and{" "}
-                    <a href="/privacy-policy" className="text-[#D4AF37] hover:underline">
+                    <a href="/privacy-policy" className="text-[#C9A84C] hover:underline">
                       Privacy Policy
                     </a>
                     . I understand my booking is subject to the property's cancellation policy.
@@ -516,7 +522,9 @@ export const CheckoutPage = () => {
                 <CheckoutExtrasPanel
                   quoteId={quoteId}
                   listingId={quote?.listingId}
-                  onQuoteUpdate={(q) => { setQuote(q); setQuoteExpiry(q?.expiresAt); }}
+                  onQuoteUpdate={(q) => {
+ setQuote(q); setQuoteExpiry(q?.expiresAt); 
+}}
                 />
 
                 {/* Canonical Stripe Elements payment — inline, no redirect */}
@@ -577,7 +585,7 @@ export const CheckoutPage = () => {
                 {/* Dates & Guests */}
                 <div className="space-y-3 mb-6 pb-6 border-b border-white/10">
                   <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="w-4 h-4 text-[#D4AF37]" />
+                    <Calendar className="w-4 h-4 text-[#C9A84C]" />
                     <div>
                       <span className="text-[#F5F5F0]">{formatDate(quote.checkInDateLocalized)}</span>
                       <span className="text-[#A1A1AA] mx-2">→</span>
@@ -585,7 +593,7 @@ export const CheckoutPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <Users className="w-4 h-4 text-[#D4AF37]" />
+                    <Users className="w-4 h-4 text-[#C9A84C]" />
                     <span className="text-[#F5F5F0]">{quote.guestsCount} guest{quote.guestsCount > 1 ? "s" : ""}</span>
                     <span className="text-[#A1A1AA]">• {nights} night{nights > 1 ? "s" : ""}</span>
                   </div>
@@ -595,7 +603,7 @@ export const CheckoutPage = () => {
                 {breakdown && (
                   <div className="space-y-3 mb-6" data-testid="checkout-breakdown">
                     {ratePlanMeta?.name && (
-                      <p className="text-[10px] uppercase tracking-wider text-[#D4AF37] font-medium">
+                      <p className="text-[10px] uppercase tracking-wider text-[#C9A84C] font-medium">
                         {ratePlanMeta.name}
                       </p>
                     )}
@@ -660,7 +668,7 @@ export const CheckoutPage = () => {
                   <div className="pt-4 border-t border-white/10">
                     <div className="flex justify-between items-center">
                       <span className="text-[#F5F5F0] font-semibold">Total</span>
-                      <span className="font-['Playfair_Display'] text-2xl text-[#D4AF37]" data-testid="checkout-total">
+                      <span className="font-['Playfair_Display'] text-2xl text-[#C9A84C]" data-testid="checkout-total">
                         {formatMoney(breakdown.total, breakdown.currency)}
                       </span>
                     </div>

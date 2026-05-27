@@ -3,7 +3,9 @@ interface TypingIndicatorProps {
 }
 
 export default function TypingIndicator({ users }: TypingIndicatorProps) {
-  if (users.length === 0) return null;
+  if (users.length === 0) {
+return null;
+}
 
   return (
     <div className="flex items-center gap-2 text-muted-foreground text-sm">

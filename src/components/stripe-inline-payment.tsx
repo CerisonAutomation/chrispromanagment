@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/guestyPricing";
 import { supabase } from "@/integrations/supabase/client";
+import { tracing, metrics, logger } from "@/lib/otel-observability";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
@@ -103,7 +104,7 @@ function PaymentForm({
     <form onSubmit={handleSubmit} className="space-y-6" data-testid="stripe-elements-form">
       <div className="bg-[#161618] border border-white/10 p-6 md:p-8">
         <h2 className="font-['Playfair_Display'] text-xl text-[#F5F5F0] mb-4 flex items-center gap-3">
-          <CreditCard className="w-5 h-5 text-[#D4AF37]" />
+          <CreditCard className="w-5 h-5 text-[#C9A84C]" />
           Pay Securely
         </h2>
         <p className="text-[#A1A1AA] text-sm mb-6">
@@ -147,7 +148,7 @@ function PaymentForm({
       <Button
         type="submit"
         disabled={!stripe || !elements || isProcessing}
-        className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow disabled:opacity-50"
+        className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow disabled:opacity-50"
         data-testid="stripe-pay-btn"
       >
         {isProcessing ? (
@@ -199,7 +200,9 @@ export const StripeInlinePayment = ({
         const { data, error } = await supabase.functions.invoke("payments-create-intent", {
           body: { quoteId, ratePlanId, guest, specialRequests },
         });
-        if (cancelled) return;
+        if (cancelled) {
+return;
+}
         if (error || !data?.clientSecret) {
           setLoadError("Could not initialise payment. Please try again or contact support.");
           return;
@@ -209,7 +212,9 @@ export const StripeInlinePayment = ({
         setAmount(data.amount);
         setCurrency(data.currency || "EUR");
       } catch {
-        if (!cancelled) setLoadError("Network error while initialising payment.");
+        if (!cancelled) {
+setLoadError("Network error while initialising payment.");
+}
       }
     })();
     return () => {
@@ -228,7 +233,7 @@ export const StripeInlinePayment = ({
   if (!clientSecret) {
     return (
       <div className="bg-[#161618] border border-white/10 p-6 flex items-center gap-3 text-[#A1A1AA]" data-testid="stripe-loading">
-        <Loader2 className="w-4 h-4 animate-spin text-[#D4AF37]" />
+        <Loader2 className="w-4 h-4 animate-spin text-[#C9A84C]" />
         Preparing secure payment…
       </div>
     );
@@ -242,7 +247,7 @@ export const StripeInlinePayment = ({
         appearance: {
           theme: "night",
           variables: {
-            colorPrimary: "#D4AF37",
+            colorPrimary: "#C9A84C",
             colorBackground: "#0F0F10",
             colorText: "#F5F5F0",
             colorTextSecondary: "#A1A1AA",

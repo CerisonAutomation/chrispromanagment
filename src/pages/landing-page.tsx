@@ -91,8 +91,8 @@ export const LandingPage = () => {
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-32 pb-20">
           <div className="max-w-3xl">
             {/* Badge */}
-            <div className="inline-block px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 backdrop-blur-sm mb-6 animate-fade-in">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
+            <div className="inline-block px-4 py-2 border border-[#C9A84C]/30 bg-[#C9A84C]/5 backdrop-blur-sm mb-6 animate-fade-in">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] font-medium">
                 Malta's Premier Property Management
               </span>
             </div>
@@ -113,7 +113,7 @@ export const LandingPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in-up opacity-0 stagger-3">
               <Button
                 onClick={() => openOwnerModal()}
-                className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6 font-semibold btn-gold-glow group"
+                className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6 font-semibold btn-gold-glow group"
                 data-testid="hero-owner-btn"
               >
                 <Building className="w-4 h-4 mr-2" />
@@ -123,7 +123,7 @@ export const LandingPage = () => {
               <Button
                 onClick={() => navigate("/properties")}
                 variant="outline"
-                className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-transparent rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6"
+                className="border-white/30 text-[#F5F5F0] hover:border-[#C9A84C] hover:text-[#C9A84C] hover:bg-transparent rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6"
                 data-testid="hero-book-btn"
               >
                 <Home className="w-4 h-4 mr-2" />
@@ -139,7 +139,7 @@ export const LandingPage = () => {
                 { value: "4.9", label: "Average Rating" },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="font-['Playfair_Display'] text-[clamp(1.75rem,4vw,2.5rem)] text-[#D4AF37]">{stat.value}</span>
+                  <span className="font-['Playfair_Display'] text-[clamp(1.75rem,4vw,2.5rem)] text-[#C9A84C]">{stat.value}</span>
                   <span className="text-sm text-[#A1A1AA] leading-tight">{stat.label}</span>
                 </div>
               ))}
@@ -155,7 +155,7 @@ export const LandingPage = () => {
         {/* Scroll Indicator */}
         <button 
           onClick={() => scrollToSection('owners')}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-scroll-indicator hidden md:flex flex-col items-center gap-2 text-[#A1A1AA] hover:text-[#D4AF37] transition-colors cursor-pointer"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-scroll-indicator hidden md:flex flex-col items-center gap-2 text-[#A1A1AA] hover:text-[#C9A84C] transition-colors cursor-pointer"
           aria-label="Scroll to next section"
         >
           <span className="text-xs uppercase tracking-widest">Scroll</span>
@@ -170,13 +170,13 @@ export const LandingPage = () => {
         data-testid="owners-section"
       >
         {/* Background Accent */}
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#D4AF37]/5 to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#C9A84C]/5 to-transparent pointer-events-none" />
         
         <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Text Content */}
             <div>
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium">
                 For Property Owners
               </span>
               <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] mb-6 leading-tight">
@@ -197,8 +197,8 @@ export const LandingPage = () => {
                   "Comprehensive Services",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 group">
-                    <div className="w-6 h-6 bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#D4AF37]/20 transition-colors">
-                      <Check className="w-4 h-4 text-[#D4AF37]" />
+                    <div className="w-6 h-6 bg-[#C9A84C]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#C9A84C]/20 transition-colors">
+                      <Check className="w-4 h-4 text-[#C9A84C]" />
                     </div>
                     <span className="text-[#F5F5F0]">{item}</span>
                   </li>
@@ -209,7 +209,7 @@ export const LandingPage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={() => openOwnerModal()}
-                  className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold btn-gold-glow"
+                  className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold btn-gold-glow"
                 >
                   Get Started
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -217,7 +217,7 @@ export const LandingPage = () => {
                 <Button
                   onClick={() => navigate("/property-owners")}
                   variant="outline"
-                  className="border-white/20 text-[#F5F5F0] hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-8 py-4"
+                  className="border-white/20 text-[#F5F5F0] hover:border-[#C9A84C] hover:text-[#C9A84C] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-8 py-4"
                 >
                   View Pricing Plans
                 </Button>
@@ -234,9 +234,9 @@ export const LandingPage = () => {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="bg-[#161618] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-all duration-300 group"
+                  className="bg-[#161618] p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group"
                 >
-                  <item.icon className="w-8 h-8 text-[#D4AF37] mb-4 group-hover:scale-110 transition-transform" />
+                  <item.icon className="w-8 h-8 text-[#C9A84C] mb-4 group-hover:scale-110 transition-transform" />
                   <p className="text-[#F5F5F0] font-semibold mb-1">{item.label}</p>
                   <p className="text-[#A1A1AA] text-sm">{item.desc}</p>
                 </div>
@@ -252,7 +252,7 @@ export const LandingPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Text Content */}
             <div className="order-2 lg:order-1">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium">
                 About Us
               </span>
               <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] mb-8 leading-tight">
@@ -269,7 +269,7 @@ export const LandingPage = () => {
               <div className="flex gap-4 mt-8">
                 <Button
                   onClick={() => openContactModal()}
-                  className="bg-transparent border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0F10] rounded-none uppercase text-sm tracking-widest px-6 py-4"
+                  className="bg-transparent border border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] hover:text-[#0F0F10] rounded-none uppercase text-sm tracking-widest px-6 py-4"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Get in Touch
@@ -283,7 +283,7 @@ export const LandingPage = () => {
                 <img src={cms.about?.image || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/img_7990-standard.jpg"} alt="About Christiano Property Management" className="w-full h-full object-cover" loading="lazy" />
               </div>
               {/* Decorative element */}
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#D4AF37]/30 hidden lg:block" />
+              <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#C9A84C]/30 hidden lg:block" />
             </div>
           </div>
         </div>
@@ -295,7 +295,7 @@ export const LandingPage = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <div>
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium">
                 Featured Properties
               </span>
               <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] leading-tight">
@@ -305,7 +305,7 @@ export const LandingPage = () => {
             <Button
               onClick={() => navigate("/properties")}
               variant="outline"
-              className="border-white/20 text-[#F5F5F0] hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-6 py-4 w-fit"
+              className="border-white/20 text-[#F5F5F0] hover:border-[#C9A84C] hover:text-[#C9A84C] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-6 py-4 w-fit"
             >
               View All Properties
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -340,7 +340,7 @@ export const LandingPage = () => {
       <section className="relative py-24 md:py-32 overflow-hidden" data-testid="testimonials-section">
         <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-20">
           <div className="text-center mb-16">
-            <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium">
+            <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium">
               Guest Reviews
             </span>
             <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0]">
@@ -350,7 +350,7 @@ export const LandingPage = () => {
 
           {/* Testimonial Card */}
           <div className="relative bg-[#161618] border border-white/5 p-8 md:p-12">
-            <Quote className="absolute top-8 left-8 w-12 h-12 text-[#D4AF37]/20" />
+            <Quote className="absolute top-8 left-8 w-12 h-12 text-[#C9A84C]/20" />
             
             {cms.testimonials && cms.testimonials.length > 0 && (
               <div className="relative z-10">
@@ -358,7 +358,7 @@ export const LandingPage = () => {
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className={`w-5 h-5 ${i < (cms.testimonials[currentTestimonial]?.rating || 5) ? "text-[#D4AF37] fill-[#D4AF37]" : "text-[#A1A1AA]"}`} 
+                      className={`w-5 h-5 ${i < (cms.testimonials[currentTestimonial]?.rating || 5) ? "text-[#C9A84C] fill-[#C9A84C]" : "text-[#A1A1AA]"}`} 
                     />
                   ))}
                 </div>
@@ -379,7 +379,7 @@ export const LandingPage = () => {
                   key={i}
                   onClick={() => setCurrentTestimonial(i)}
                   className={`w-2 h-2 rounded-full transition-all ${
-                    i === currentTestimonial ? "bg-[#D4AF37] w-6" : "bg-white/20 hover:bg-white/40"
+                    i === currentTestimonial ? "bg-[#C9A84C] w-6" : "bg-white/20 hover:bg-white/40"
                   }`}
                   aria-label={`Go to testimonial ${i + 1}`}
                 />
@@ -394,13 +394,13 @@ export const LandingPage = () => {
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, #D4AF37 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 2px 2px, #C9A84C 1px, transparent 0)`,
             backgroundSize: '40px 40px'
           }} />
         </div>
 
         <div className="relative max-w-4xl mx-auto px-6 md:px-12 lg:px-20 text-center">
-          <HeartHandshake className="w-16 h-16 text-[#D4AF37] mx-auto mb-8" />
+          <HeartHandshake className="w-16 h-16 text-[#C9A84C] mx-auto mb-8" />
           <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] mb-6 leading-tight">
             Ready to Get Started?
           </h2>
@@ -412,7 +412,7 @@ export const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => openOwnerModal()}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold btn-gold-glow"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold btn-gold-glow"
             >
               <Building className="w-4 h-4 mr-2" />
               List Your Property
@@ -420,7 +420,7 @@ export const LandingPage = () => {
             <Button
               onClick={() => navigate("/properties")}
               variant="outline"
-              className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-8 py-6"
+              className="border-white/30 text-[#F5F5F0] hover:border-[#C9A84C] hover:text-[#C9A84C] hover:bg-transparent rounded-none uppercase text-sm tracking-widest px-8 py-6"
             >
               <Home className="w-4 h-4 mr-2" />
               Browse Properties
@@ -433,14 +433,14 @@ export const LandingPage = () => {
             <div className="flex flex-wrap justify-center gap-6">
               <a 
                 href={`tel:${cms.contact?.phone || '+35679790202'}`}
-                className="flex items-center gap-2 text-[#F5F5F0] hover:text-[#D4AF37] transition-colors"
+                className="flex items-center gap-2 text-[#F5F5F0] hover:text-[#C9A84C] transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 {cms.contact?.phone || '+356 7979 0202'}
               </a>
               <a 
                 href={`mailto:${cms.contact?.email || 'info@christianopropertymanagement.com'}`}
-                className="flex items-center gap-2 text-[#F5F5F0] hover:text-[#D4AF37] transition-colors"
+                className="flex items-center gap-2 text-[#F5F5F0] hover:text-[#C9A84C] transition-colors"
               >
                 <Mail className="w-4 h-4" />
                 {cms.contact?.email || 'info@christianopropertymanagement.com'}

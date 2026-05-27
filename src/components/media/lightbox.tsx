@@ -1,4 +1,3 @@
-// @ts-nocheck
 // TODO: Fix eslint issues and remove this blanket disable
 import { useEffect, useState, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, X, Download, Maximize2 } from "lucide-react";
@@ -28,8 +27,12 @@ export default function Lightbox({
   const stripRef = useRef(null);
   const touchStart = useRef(null);
 
-  useEffect(() => { setI(index); }, [index, open]);
-  useEffect(() => { onIndexChange?.(i); }, [i, onIndexChange]);
+  useEffect(() => {
+ setI(index); 
+}, [index, open]);
+  useEffect(() => {
+ onIndexChange?.(i); 
+}, [i, onIndexChange]);
 
   const total = images.length;
   const next = useCallback(() => setI((p) => (p + 1) % Math.max(1, total)), [total]);
@@ -37,11 +40,17 @@ export default function Lightbox({
 
   // Keyboard
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+return;
+}
     const h = (e) => {
-      if (e.key === "ArrowRight") next();
-      else if (e.key === "ArrowLeft") prev();
-      else if (e.key === "Escape") onOpenChange?.(false);
+      if (e.key === "ArrowRight") {
+next();
+} else if (e.key === "ArrowLeft") {
+prev();
+} else if (e.key === "Escape") {
+onOpenChange?.(false);
+}
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
@@ -49,11 +58,15 @@ export default function Lightbox({
 
   // Preload neighbors
   useEffect(() => {
-    if (!open || total === 0) return;
+    if (!open || total === 0) {
+return;
+}
     [-1, 1].forEach((d) => {
       const n = images[(i + d + total) % total];
       const src = n?.original || n?.large || n?.regular;
-      if (src) { const im = new Image(); im.src = src; }
+      if (src) {
+ const im = new Image(); im.src = src; 
+}
     });
   }, [i, open, images, total]);
 
@@ -63,7 +76,9 @@ export default function Lightbox({
     el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [i]);
 
-  if (total === 0) return null;
+  if (total === 0) {
+return null;
+}
   const current = images[i] || {};
   const src = current.original || current.large || current.regular;
 
@@ -90,11 +105,17 @@ export default function Lightbox({
           {/* Image area */}
           <div
             className="flex-1 relative flex items-center justify-center bg-black overflow-hidden min-h-0"
-            onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
+            onTouchStart={(e) => {
+ touchStart.current = e.touches[0].clientX; 
+}}
             onTouchEnd={(e) => {
-              if (touchStart.current == null) return;
+              if (touchStart.current == null) {
+return;
+}
               const dx = e.changedTouches[0].clientX - touchStart.current;
-              if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+              if (Math.abs(dx) > 50) {
+ dx < 0 ? next() : prev(); 
+}
               touchStart.current = null;
             }}
           >
@@ -140,7 +161,7 @@ export default function Lightbox({
                     key={idx}
                     data-thumb-i={idx}
                     onClick={() => setI(idx)}
-                    className={`flex-shrink-0 rounded overflow-hidden border-2 transition-all ${idx === i ? "border-[#D4AF37] opacity-100" : "border-transparent opacity-50 hover:opacity-80"}`}
+                    className={`flex-shrink-0 rounded overflow-hidden border-2 transition-all ${idx === i ? "border-[#C9A84C] opacity-100" : "border-transparent opacity-50 hover:opacity-80"}`}
                     style={{ width: 64, height: 44 }}
                     aria-label={`View photo ${idx + 1}`}
                   >

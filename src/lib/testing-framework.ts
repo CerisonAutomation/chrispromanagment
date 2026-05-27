@@ -2,6 +2,27 @@
 // Multi-Tier Testing Pyramid Framework
 // Enterprise-grade testing infrastructure with Unit, Integration, and E2E layers
 
+export interface Database {
+  query?: (sql: string, params?: unknown[]) => Promise<unknown>;
+  connect?: () => Promise<void>;
+  disconnect?: () => Promise<void>;
+  transaction?: <T>(callback: (db: Database) => Promise<T>) => Promise<T>;
+  [key: string]: unknown;
+}
+
+export interface ExternalService {
+  name: string;
+  connect?: () => Promise<void>;
+  disconnect?: () => Promise<void>;
+  [key: string]: unknown;
+}
+
+export interface Browser {
+  page?: () => Promise<unknown>;
+  close?: () => Promise<void>;
+  [key: string]: unknown;
+}
+
 export enum TestType {
   UNIT = 'unit',
   INTEGRATION = 'integration',
@@ -152,18 +173,18 @@ export class UnitTestRunner {
  */
 export class IntegrationTestRunner {
   private suites: Map<string, TestSuite> = new Map();
-  private database: any;
-  private externalServices = new Map<string, any>();
+  private database?: Database;
+  private externalServices = new Map<string, ExternalService>();
 
   registerSuite(suite: TestSuite): void {
     this.suites.set(suite.name, suite);
   }
 
-  setDatabase(db: any): void {
+  setDatabase(db: Database): void {
     this.database = db;
   }
 
-  registerExternalService(name: string, service: any): void {
+  registerExternalService(name: string, service: ExternalService): void {
     this.externalServices.set(name, service);
   }
 
@@ -267,7 +288,7 @@ export class IntegrationTestRunner {
  */
 export class E2ETestRunner {
   private suites: Map<string, TestSuite> = new Map();
-  private browser: any;
+  private browser?: Browser;
   private baseUrl: string;
 
   constructor(baseUrl: string = 'http://localhost:3000') {
@@ -278,7 +299,7 @@ export class E2ETestRunner {
     this.suites.set(suite.name, suite);
   }
 
-  setBrowser(browser: any): void {
+  setBrowser(browser: Browser): void {
     this.browser = browser;
   }
 
@@ -485,7 +506,9 @@ export class TestHelpers {
     }) as T & { calls: unknown[][]; mockClear: () => void };
 
     fn.calls = calls;
-    fn.mockClear = () => { calls.length = 0; };
+    fn.mockClear = () => {
+ calls.length = 0; 
+};
 
     return fn;
   }

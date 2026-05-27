@@ -11,7 +11,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
 };
 
 function json(data: unknown, status = 200) {
@@ -24,13 +24,19 @@ function json(data: unknown, status = 200) {
 async function requireAdmin(req: Request): Promise<Response | null> {
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!token) return json({ error: "Unauthorized" }, 401);
+  if (!token) {
+return json({ error: "Unauthorized" }, 401);
+}
   const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   const { data: { user } } = await userClient.auth.getUser();
-  if (!user) return json({ error: "Unauthorized" }, 401);
+  if (!user) {
+return json({ error: "Unauthorized" }, 401);
+}
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const { data: roles } = await service.from("user_roles").select("role").eq("user_id", user.id);
-  if (!roles?.some((r: { role: string }) => r.role === "admin")) return json({ error: "Admin required" }, 403);
+  if (!roles?.some((r: { role: string }) => r.role === "admin")) {
+return json({ error: "Admin required" }, 403);
+}
   return null;
 }
 
@@ -39,7 +45,9 @@ function b64url(input: string): string {
   // UTF-8 safe base64url
   const bytes = new TextEncoder().encode(input);
   let bin = "";
-  for (const b of bytes) bin += String.fromCharCode(b);
+  for (const b of bytes) {
+bin += String.fromCharCode(b);
+}
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
@@ -62,15 +70,25 @@ function buildRaw({
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "POST only" }, 405);
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
+  if (req.method !== "POST") {
+return json({ error: "POST only" }, 405);
+}
   const guard = await requireAdmin(req);
-  if (guard) return guard;
+  if (guard) {
+return guard;
+}
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const GOOGLE_MAIL_API_KEY = Deno.env.get("GOOGLE_MAIL_API_KEY");
-  if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
-  if (!GOOGLE_MAIL_API_KEY) return json({ error: "Gmail connector not linked" }, 500);
+  if (!LOVABLE_API_KEY) {
+return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+}
+  if (!GOOGLE_MAIL_API_KEY) {
+return json({ error: "Gmail connector not linked" }, 500);
+}
 
   try {
     const body = await req.json().catch(() => ({}));

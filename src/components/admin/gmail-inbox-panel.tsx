@@ -27,10 +27,14 @@ export default function GmailInboxPanel() {
       setMessages(data.messages || []);
     } catch (e) {
       toast.error(e.message || "Failed to load inbox");
-    } finally { setLoading(false); }
+    } finally {
+ setLoading(false); 
+}
   };
 
-  useEffect(() => { load();   }, []);
+  useEffect(() => {
+ load();   
+}, []);
 
   const openMessage = async (m) => {
     try {
@@ -40,7 +44,9 @@ export default function GmailInboxPanel() {
         await gmail.markRead(m.id).catch(() => {});
         setMessages((prev) => prev.map((x) => x.id === m.id ? { ...x, unread: false } : x));
       }
-    } catch (e) { toast.error(e.message || "Failed to open message"); }
+    } catch (e) {
+ toast.error(e.message || "Failed to open message"); 
+}
   };
 
   const doAction = async (m, fn, label) => {
@@ -48,8 +54,12 @@ export default function GmailInboxPanel() {
       await fn(m.id);
       toast.success(label);
       setMessages((prev) => prev.filter((x) => x.id !== m.id));
-      if (selected?.meta?.id === m.id) setSelected(null);
-    } catch (e) { toast.error(e.message || `Failed: ${label}`); }
+      if (selected?.meta?.id === m.id) {
+setSelected(null);
+}
+    } catch (e) {
+ toast.error(e.message || `Failed: ${label}`); 
+}
   };
 
   const bodyText = decodeMessageBody(selected?.full);
@@ -66,7 +76,9 @@ export default function GmailInboxPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <form
-          onSubmit={(e) => { e.preventDefault(); load(); }}
+          onSubmit={(e) => {
+ e.preventDefault(); load(); 
+}}
           className="flex gap-2"
         >
           <div className="relative flex-1">
@@ -149,16 +161,22 @@ export default function GmailInboxPanel() {
 }
 
 function parseFromName(from) {
-  if (!from) return "(unknown)";
+  if (!from) {
+return "(unknown)";
+}
   const m = from.match(/^"?(.+?)"?\s*<.+>$/);
   return m ? m[1] : from;
 }
 
 function decodeMessageBody(full) {
-  if (!full?.payload) return "";
+  if (!full?.payload) {
+return "";
+}
   const parts = flattenParts(full.payload);
   const textPart = parts.find((p) => p.mimeType === "text/plain") || parts.find((p) => p.mimeType === "text/html");
-  if (!textPart?.body?.data) return "";
+  if (!textPart?.body?.data) {
+return "";
+}
   try {
     const b64 = textPart.body.data.replace(/-/g, "+").replace(/_/g, "/");
     const str = atob(b64);
@@ -166,10 +184,16 @@ function decodeMessageBody(full) {
       return str.replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, "").replace(/\s+\n/g, "\n").trim();
     }
     return str;
-  } catch { return ""; }
+  } catch {
+ return ""; 
+}
 }
 function flattenParts(part) {
   const out = [part];
-  if (Array.isArray(part.parts)) for (const p of part.parts) out.push(...flattenParts(p));
+  if (Array.isArray(part.parts)) {
+for (const p of part.parts) {
+out.push(...flattenParts(p));
+}
+}
   return out;
 }

@@ -26,7 +26,9 @@ export default function PropertyGallery({ images = [], title = "" }) {
     );
   }
 
-  const openAt = (i) => { setStartIndex(i); setOpen(true); };
+  const openAt = (i) => {
+ setStartIndex(i); setOpen(true); 
+};
   const desktopTiles = list.slice(0, 5);
   const extra = Math.max(0, list.length - 5);
 
@@ -45,14 +47,18 @@ export default function PropertyGallery({ images = [], title = "" }) {
         {list.length > 1 && (
           <>
             <button
-              onClick={(e) => { e.stopPropagation(); setMobileIdx((p) => (p - 1 + list.length) % list.length); }}
+              onClick={(e) => {
+ e.stopPropagation(); setMobileIdx((p) => (p - 1 + list.length) % list.length); 
+}}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center"
               aria-label="Previous photo"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); setMobileIdx((p) => (p + 1) % list.length); }}
+              onClick={(e) => {
+ e.stopPropagation(); setMobileIdx((p) => (p + 1) % list.length); 
+}}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center"
               aria-label="Next photo"
             >
@@ -102,7 +108,7 @@ export default function PropertyGallery({ images = [], title = "" }) {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pb-4 md:pb-2">
         <button
           onClick={() => openAt(0)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 text-[#F5F5F0] text-sm hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all rounded-md"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 text-[#F5F5F0] text-sm hover:border-[#C9A84C]/40 hover:text-[#C9A84C] transition-all rounded-md"
           data-testid="view-all-photos-btn"
         >
           <Grid3x3 className="w-4 h-4" />

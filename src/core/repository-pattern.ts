@@ -50,8 +50,7 @@ export interface PaginatedResult<T> {
  * Base Repository with common functionality
  */
 export abstract class BaseRepository<TEntity, TId = string>
-  implements IRepository<TEntity, TId>
-{
+  implements IRepository<TEntity, TId> {
   abstract findById(id: TId): Promise<TEntity | null>;
   abstract findMany(filter?: RepositoryFilter<TEntity>): Promise<TEntity[]>;
   abstract create(entity: TEntity): Promise<TEntity>;
@@ -103,8 +102,7 @@ export abstract class BaseRepository<TEntity, TId = string>
  * In-memory repository for testing and simple use cases
  */
 export class InMemoryRepository<TEntity extends { id: TId }, TId = string>
-  extends BaseRepository<TEntity, TId>
-{
+  extends BaseRepository<TEntity, TId> {
   protected data: Map<TId, TEntity> = new Map();
 
   async findById(id: TId): Promise<TEntity | null> {
@@ -184,8 +182,12 @@ export class InMemoryRepository<TEntity extends { id: TId }, TId = string>
       const aVal = a[orderBy];
       const bVal = b[orderBy];
 
-      if (aVal === bVal) return 0;
-      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+      if (aVal === bVal) {
+return 0;
+}
+      if (aVal < bVal) {
+return direction === 'asc' ? -1 : 1;
+}
       return direction === 'asc' ? 1 : -1;
     });
   }
@@ -193,63 +195,76 @@ export class InMemoryRepository<TEntity extends { id: TId }, TId = string>
 
 /**
  * Caching decorator for repositories
+ * Uses Upstash Redis (via REST API) for distributed caching
  */
 export class CachedRepository<TEntity, TId = string>
-  implements IRepository<TEntity, TId>
-{
-  private cache = new Map<TId, TEntity>();
-  private cacheTimeout = 5 * 60 * 1000; // 5 minutes
-  private cacheTimestamps = new Map<TId, number>();
+  implements IRepository<TEntity, TId> {
+  private cacheTimeout = 300; // seconds for Redis EX
 
   constructor(
     private repository: IRepository<TEntity, TId>,
-    timeoutMs?: number
+    private redisClient = redis,
+    timeoutSeconds?: number
   ) {
-    if (timeoutMs) {
-      this.cacheTimeout = timeoutMs;
+    if (timeoutSeconds) {
+      this.cacheTimeout = timeoutSeconds;
     }
   }
 
   async findById(id: TId): Promise<TEntity | null> {
-    const cached = this.getFromCache(id);
-    if (cached) {
+    const cacheKey = `repo:${this.repository.constructor.name}:${String(id)}`;
+    const cached = await this.redisClient.getJSON<TEntity>(cacheKey);
+    if (cached !== null) {
+      metrics.incrementCounter('repo_cache_hits', 1, { operation: 'findById' });
       return cached;
     }
+    metrics.incrementCounter('repo_cache_misses', 1, { operation: 'findById' });
 
     const result = await this.repository.findById(id);
     if (result) {
-      this.setToCache(id, result);
+      await this.redisClient.setJSON(cacheKey, result, { ex: this.cacheTimeout });
     }
     return result;
   }
 
   async findMany(filter?: RepositoryFilter<TEntity>): Promise<TEntity[]> {
-    return this.repository.findMany(filter);
+    // FindMany is not cached by ID - use a hash of the filter
+    const filterKey = `repo:${this.repository.constructor.name}:findMany:${JSON.stringify(filter || {})}`;
+    const cached = await this.redisClient.getJSON<TEntity[]>(filterKey);
+    if (cached !== null) {
+      metrics.incrementCounter('repo_cache_hits', 1, { operation: 'findMany' });
+      return cached;
+    }
+
+    const results = await this.repository.findMany(filter);
+    await this.redisClient.setJSON(filterKey, results, { ex: 60 }); // shorter TTL for list queries
+    return results;
   }
 
   async create(entity: TEntity): Promise<TEntity> {
     const result = await this.repository.create(entity);
-    this.invalidateCache((entity as any).id);
+    await this.invalidateCache((entity as any).id);
     return result;
   }
 
   async update(id: TId, updates: Partial<TEntity>): Promise<TEntity> {
     const result = await this.repository.update(id, updates);
-    this.invalidateCache(id);
+    await this.invalidateCache(id);
     return result;
   }
 
   async delete(id: TId): Promise<boolean> {
     const result = await this.repository.delete(id);
-    this.invalidateCache(id);
+    await this.invalidateCache(id);
     return result;
   }
 
   async exists(id: TId): Promise<boolean> {
-    const cached = this.getFromCache(id);
-    if (cached) {
-      return true;
-    }
+    const cacheKey = `repo:${this.repository.constructor.name}:${String(id)}`;
+    const cached = await this.redisClient.get(cacheKey);
+    if (cached !== null) {
+return true;
+}
     return this.repository.exists(id);
   }
 
@@ -258,34 +273,24 @@ export class CachedRepository<TEntity, TId = string>
   }
 
   /**
-   * Clear entire cache
+   * Clear entire cache for this repository
    */
-  clearCache(): void {
-    this.cache.clear();
-    this.cacheTimestamps.clear();
-  }
-
-  private getFromCache(id: TId): TEntity | null {
-    const timestamp = this.cacheTimestamps.get(id);
-    if (!timestamp) return null;
-
-    const age = Date.now() - timestamp;
-    if (age > this.cacheTimeout) {
-      this.cache.delete(id);
-      this.cacheTimestamps.delete(id);
-      return null;
+  async clearCache(): Promise<void> {
+    // Use Redis SCAN to find and delete keys matching our prefix
+    const pattern = `repo:${this.repository.constructor.name}:*`;
+    logger.info('Clearing cache', { pattern });
+    // Note: REST API doesn't support SCAN directly - use a known keyset
+    // For simplicity, we track keys in a Redis set
+    const keysKey = `repo:${this.repository.constructor.name}:_keys`;
+    const keys = await this.redisClient.smembers(keysKey);
+    if (keys.length > 0) {
+      await this.redisClient.del(...keys);
+      await this.redisClient.del(keysKey);
     }
-
-    return this.cache.get(id) || null;
   }
 
-  private setToCache(id: TId, entity: TEntity): void {
-    this.cache.set(id, entity);
-    this.cacheTimestamps.set(id, Date.now());
-  }
-
-  private invalidateCache(id: TId): void {
-    this.cache.delete(id);
-    this.cacheTimestamps.delete(id);
+  private async invalidateCache(id: TId): Promise<void> {
+    const cacheKey = `repo:${this.repository.constructor.name}:${String(id)}`;
+    await this.redisClient.del(cacheKey);
   }
 }

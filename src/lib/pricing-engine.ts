@@ -29,7 +29,9 @@ export class PricingEngine {
   }
 
   async trainModel(historicalData: PropertyPricingInput[]) {
-    if (!this.model) await this.initializeModel();
+    if (!this.model) {
+await this.initializeModel();
+}
 
     const inputs = historicalData.map(d => [
       d.base_price,
@@ -52,7 +54,9 @@ export class PricingEngine {
   }
 
   async predictPrice(input: PropertyPricingInput): Promise<number> {
-    if (!this.model) await this.initializeModel();
+    if (!this.model) {
+await this.initializeModel();
+}
 
     const features = [
       input.base_price,
@@ -78,7 +82,9 @@ export class PricingEngine {
       .eq('id', propertyId)
       .single();
 
-    if (!property) throw new Error('Property not found');
+    if (!property) {
+throw new Error('Property not found');
+}
 
     const forecast: PricingForecast[] = [];
     const today = new Date();
@@ -112,8 +118,12 @@ export class PricingEngine {
   private getSeason(date: Date): 'low' | 'medium' | 'high' {
     const month = date.getMonth() + 1;
     // Simple season logic for Malta
-    if (month >= 6 && month <= 8) return 'high';
-    if (month >= 4 && month <= 5 || month >= 9 && month <= 10) return 'medium';
+    if (month >= 6 && month <= 8) {
+return 'high';
+}
+    if (month >= 4 && month <= 5 || month >= 9 && month <= 10) {
+return 'medium';
+}
     return 'low';
   }
 }

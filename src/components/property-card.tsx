@@ -60,13 +60,13 @@ interface PropertyCardProps {
  * @param props - Component props (listing, checkIn, checkOut, guests, viewMode)
  * @returns React component
  */
-export const PropertyCard = memo(function PropertyCard({
+export const PropertyCard = memo(({
   listing,
   checkIn,
   checkOut,
   guests,
   viewMode = "grid",
-}: PropertyCardProps) {
+}: PropertyCardProps) => {
   const {
     _id,
     title,
@@ -87,7 +87,9 @@ export const PropertyCard = memo(function PropertyCard({
   const displayPrice = useMemo(() => {
     if (nightlyRates && Object.keys(nightlyRates).length) {
       const rates = Object.values(nightlyRates).filter((v) => Number.isFinite(v) && v > 0);
-      if (rates.length) return Math.min(...rates);
+      if (rates.length) {
+return Math.min(...rates);
+}
     }
     return Number.isFinite(prices?.basePrice) ? prices.basePrice : 0;
   }, [nightlyRates, prices?.basePrice]);
@@ -128,9 +130,15 @@ export const PropertyCard = memo(function PropertyCard({
 
   const buildLink = useCallback(() => {
     const params = new URLSearchParams();
-    if (checkIn) params.set("checkIn", checkIn);
-    if (checkOut) params.set("checkOut", checkOut);
-    if (guests) params.set("guests", String(guests));
+    if (checkIn) {
+params.set("checkIn", checkIn);
+}
+    if (checkOut) {
+params.set("checkOut", checkOut);
+}
+    if (guests) {
+params.set("guests", String(guests));
+}
     const queryString = params.toString();
     return `/property/${_id}${queryString ? `?${queryString}` : ""}`;
   }, [checkIn, checkOut, guests, _id]);
@@ -155,8 +163,12 @@ export const PropertyCard = memo(function PropertyCard({
   }, [picture]);
 
   const formatCount = useCallback((n: number, singular: string, plural: string) => {
-    if (!Number.isFinite(n)) return null;
-    if (n === 1) return `1 ${singular}`;
+    if (!Number.isFinite(n)) {
+return null;
+}
+    if (n === 1) {
+return `1 ${singular}`;
+}
     return `${n} ${plural}`;
   }, []);
 
@@ -168,15 +180,21 @@ export const PropertyCard = memo(function PropertyCard({
 
   const ariaLabel = useMemo(() => {
     const parts = [title];
-    if (locationText) parts.push(locationText);
-    if (displayPrice > 0) parts.push(`From ${formatPrice(displayPrice, currency)} per night`);
+    if (locationText) {
+parts.push(locationText);
+}
+    if (displayPrice > 0) {
+parts.push(`From ${formatPrice(displayPrice, currency)} per night`);
+}
     return parts.join(". ");
   }, [title, locationText, displayPrice, currency, formatPrice]);
 
   // Rating chip
   const ratingOutOfFive = useMemo(() => {
     const avg = reviews?.avg;
-    if (!Number.isFinite(avg) || avg <= 0) return null;
+    if (!Number.isFinite(avg) || avg <= 0) {
+return null;
+}
     const scaled = avg > 5 ? avg / 2 : avg;
     return Math.round(scaled * 20) / 20;
   }, [reviews?.avg]);
@@ -184,7 +202,7 @@ export const PropertyCard = memo(function PropertyCard({
   const RatingChip = useCallback(() => (
     ratingOutOfFive ? (
       <div className="flex items-center gap-1 text-sm" data-testid="rating-chip">
-        <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
+        <Star className="w-3.5 h-3.5 text-[#C9A84C] fill-current" />
         <span className="text-[#F5F5F0] font-medium">
           {ratingOutOfFive.toFixed(ratingOutOfFive % 1 === 0 ? 0 : 2)}
         </span>
@@ -207,7 +225,7 @@ export const PropertyCard = memo(function PropertyCard({
               From
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="font-['Playfair_Display'] text-2xl text-[#D4AF37]">
+              <span className="font-['Playfair_Display'] text-2xl text-[#C9A84C]">
                 {formatPrice(displayPrice, currency)}
               </span>
             </div>
@@ -222,7 +240,7 @@ export const PropertyCard = memo(function PropertyCard({
       </div>
       <span
         className={cn(
-          "bg-[#D4AF37] text-[#0F0F10] text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-[#E5C158] transition-colors whitespace-nowrap"
+          "bg-[#C9A84C] text-[#0F0F10] text-xs uppercase tracking-widest px-4 py-2.5 hover:bg-[#D4B85C] transition-colors whitespace-nowrap"
         )}
         data-testid="book-now-card-btn"
         aria-label="Book now"
@@ -262,7 +280,7 @@ export const PropertyCard = memo(function PropertyCard({
         <div className="flex-1 p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-start justify-between gap-4 mb-2">
-              <h3 className="font-['Playfair_Display'] text-xl text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors">
+              <h3 className="font-['Playfair_Display'] text-xl text-[#F5F5F0] group-hover:text-[#C9A84C] transition-colors">
                 {title || "Untitled Property"}
               </h3>
               <RatingChip />
@@ -333,7 +351,7 @@ export const PropertyCard = memo(function PropertyCard({
 
       <div className="p-5 md:p-6 flex flex-col h-[calc(100%-300px)]">
         <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="font-['Playfair_Display'] text-lg md:text-xl text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors line-clamp-2 flex-1">
+          <h3 className="font-['Playfair_Display'] text-lg md:text-xl text-[#F5F5F0] group-hover:text-[#C9A84C] transition-colors line-clamp-2 flex-1">
             {title || "Untitled Property"}
           </h3>
         </div>

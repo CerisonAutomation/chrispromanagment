@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
 };
 
 const STATIC_ROUTES = [
@@ -22,7 +22,9 @@ function escapeXml(s: string) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+return new Response("ok", { headers: corsHeaders });
+}
 
   // Base URL — prefer x-forwarded-host (live custom domain), else request origin.
   const fwdHost = req.headers.get("x-forwarded-host");
@@ -57,7 +59,9 @@ Deno.serve(async (req) => {
   }).filter(Boolean) as Array<{ path: string; changefreq?: string; priority?: string; lastmod?: string }>;
 
   for (const [slug, meta] of seoBySlug.entries()) {
-    if (seen.has(slug) || meta.noindex) continue;
+    if (seen.has(slug) || meta.noindex) {
+continue;
+}
     entries.push({ path: slug, lastmod: meta.lastmod, changefreq: "monthly", priority: "0.5" });
   }
 

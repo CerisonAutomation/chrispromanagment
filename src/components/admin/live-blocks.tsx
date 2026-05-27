@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * LiveBlocks.jsx — Exact mirror renderers of every frontend section
  * Each block matches the actual page pixel-for-pixel, with InlineText editing.
@@ -24,18 +23,28 @@ const ICON_MAP = {
 
 // ─── Field resolvers — match PropertyCard.jsx exactly (zero hardcoding) ─────
 const resolveImage = (l) => {
-  if (l?.picture?.large)     return l.picture.large;
-  if (l?.picture?.original)  return l.picture.original;
-  if (l?.picture?.thumbnail) return l.picture.thumbnail;
+  if (l?.picture?.large)     {
+return l.picture.large;
+}
+  if (l?.picture?.original)  {
+return l.picture.original;
+}
+  if (l?.picture?.thumbnail) {
+return l.picture.thumbnail;
+}
   const p = l?.pictures;
-  if (Array.isArray(p) && p.length) return p[0]?.original || p[0]?.large || p[0]?.thumbnail || "";
+  if (Array.isArray(p) && p.length) {
+return p[0]?.original || p[0]?.large || p[0]?.thumbnail || "";
+}
   return "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80";
 };
 const resolvePrice = (l) => {
   const rates = l?.nightlyRates;
   if (rates && typeof rates === "object") {
     const vals = Object.values(rates).filter(v => Number.isFinite(v) && v > 0);
-    if (vals.length) return Math.min(...vals);
+    if (vals.length) {
+return Math.min(...vals);
+}
   }
   return l?.prices?.basePrice || 0;
 };
@@ -45,14 +54,21 @@ const resolveLocation = (l) => {
 };
 const resolveRating = (l) => {
   const r = l?.reviews;
-  if (!r) return null;
+  if (!r) {
+return null;
+}
   const avg = r.avg ?? r.averageRating ?? null;
-  if (avg == null) return null;
+  if (avg == null) {
+return null;
+}
   return avg > 5 ? +(avg / 2).toFixed(1) : +avg.toFixed(1);
 };
 const formatMoney = (amount, currency = "EUR") => {
-  try { return new Intl.NumberFormat("en-EU", { style:"currency", currency, minimumFractionDigits:0, maximumFractionDigits:0 }).format(Number(amount)||0); }
-  catch { return `€${Math.round(Number(amount)||0)}`; }
+  try {
+ return new Intl.NumberFormat("en-EU", { style:"currency", currency, minimumFractionDigits:0, maximumFractionDigits:0 }).format(Number(amount)||0); 
+} catch {
+ return `€${Math.round(Number(amount)||0)}`; 
+}
 };
 
 // ─── useGuestyListings — shared data hook, ALL property blocks use this ──────
@@ -70,10 +86,16 @@ function useGuestyListings({ limit = 6, filters = {} } = {}) {
         .select("guesty_id, title, address_full, city, accommodates, bedrooms, bathrooms, base_price, currency, thumbnail, amenities")
         .eq("active", true)
         .limit(Math.min(limit, 50));
-      if (filters.guests)   query = query.gte("accommodates", filters.guests);
-      if (filters.bedrooms) query = query.gte("bedrooms", filters.bedrooms);
+      if (filters.guests)   {
+query = query.gte("accommodates", filters.guests);
+}
+      if (filters.bedrooms) {
+query = query.gte("bedrooms", filters.bedrooms);
+}
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setListings((data || []).map(p => ({
         _id: p.guesty_id, title: p.title,
         address: { full: p.address_full, city: p.city },
@@ -81,12 +103,17 @@ function useGuestyListings({ limit = 6, filters = {} } = {}) {
         prices: { basePrice: p.base_price, currency: p.currency },
         picture: { thumbnail: p.thumbnail }, amenities: p.amenities,
       })));
-    } catch (e) { setError(e instanceof Error ? e.message : "Failed to load properties"); }
-    finally { setLoading(false); }
+    } catch (e) {
+ setError(e instanceof Error ? e.message : "Failed to load properties"); 
+} finally {
+ setLoading(false); 
+}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, filterKey]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+ load(); 
+}, [load]);
   return { listings, loading, error, reload: load };
 }
 
@@ -106,14 +133,16 @@ const ListingCard = ({ listing }) => {
   const location = resolveLocation(listing);
   const rating   = resolveRating(listing);
   return (
-    <a href={`/property/${listing._id}`} className="group bg-[#161618] border border-white/5 hover:border-[#D4AF37]/30 transition-all overflow-hidden block">
+    <a href={`/property/${listing._id}`} className="group bg-[#161618] border border-white/5 hover:border-[#C9A84C]/30 transition-all overflow-hidden block">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img src={image} alt={listing.title || listing.nickname || "Property"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onError={e => { e.target.src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"; }} />
-        {price > 0 && <span className="absolute top-3 right-3 bg-[#D4AF37] text-[#0F0F10] text-[11px] font-bold px-3 py-1 leading-none">from {formatMoney(price, currency)}/night</span>}
+        <img src={image} alt={listing.title || listing.nickname || "Property"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onError={e => {
+ e.target.src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80"; 
+}} />
+        {price > 0 && <span className="absolute top-3 right-3 bg-[#C9A84C] text-[#0F0F10] text-[11px] font-bold px-3 py-1 leading-none">from {formatMoney(price, currency)}/night</span>}
       </div>
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-['Playfair_Display'] text-base text-[#F5F5F0] group-hover:text-[#D4AF37] transition-colors leading-tight">{listing.title || listing.nickname || "Property"}</h3>
+          <h3 className="font-['Playfair_Display'] text-base text-[#F5F5F0] group-hover:text-[#C9A84C] transition-colors leading-tight">{listing.title || listing.nickname || "Property"}</h3>
           <ExternalLink className="w-3.5 h-3.5 text-[#A1A1AA] shrink-0 mt-0.5" />
         </div>
         <p className="text-[11px] text-[#A1A1AA] uppercase tracking-wider mb-3">{location}</p>
@@ -121,7 +150,7 @@ const ListingCard = ({ listing }) => {
           {listing.accommodates > 0 && <span className="flex items-center gap-1"><Users size={11}/>{listing.accommodates} guests</span>}
           {listing.bedrooms > 0     && <span className="flex items-center gap-1"><BedDouble size={11}/>{listing.bedrooms} bed</span>}
           {listing.bathrooms > 0    && <span className="flex items-center gap-1"><Bath size={11}/>{listing.bathrooms} bath</span>}
-          {rating                   && <span className="flex items-center gap-1 ml-auto"><Star size={11} className="text-[#D4AF37]"/>{rating}</span>}
+          {rating                   && <span className="flex items-center gap-1 ml-auto"><Star size={11} className="text-[#C9A84C]"/>{rating}</span>}
         </div>
       </div>
     </a>
@@ -137,7 +166,9 @@ export const InlineText = memo(({ value, onChange, tag: Tag = "span", className 
     setEditing(false);
     if (ref.current && onChange) {
       const next = ref.current.innerText;
-      if (next !== value) onChange(next);
+      if (next !== value) {
+onChange(next);
+}
     }
   };
 
@@ -149,10 +180,16 @@ export const InlineText = memo(({ value, onChange, tag: Tag = "span", className 
       onFocus={() => setEditing(true)}
       onBlur={handleBlur}
       onKeyDown={e => {
-        if (e.key === "Enter" && !multiline) { e.preventDefault(); ref.current?.blur(); }
-        if (e.key === "Escape") { if (ref.current) ref.current.innerText = value || ""; ref.current?.blur(); }
+        if (e.key === "Enter" && !multiline) {
+ e.preventDefault(); ref.current?.blur(); 
+}
+        if (e.key === "Escape") {
+ if (ref.current) {
+ref.current.innerText = value || "";
+} ref.current?.blur(); 
+}
       }}
-      className={`${className} ${onChange ? `outline-none transition-all ${editing ? "ring-2 ring-[#D4AF37] ring-offset-1 ring-offset-black/20 rounded bg-black/10 px-0.5" : "hover:ring-1 hover:ring-[#D4AF37]/40 hover:bg-black/5 hover:rounded cursor-text"}` : ""}`}
+      className={`${className} ${onChange ? `outline-none transition-all ${editing ? "ring-2 ring-[#C9A84C] ring-offset-1 ring-offset-black/20 rounded bg-black/10 px-0.5" : "hover:ring-1 hover:ring-[#C9A84C]/40 hover:bg-black/5 hover:rounded cursor-text"}` : ""}`}
       style={style}
     >
       {value}
@@ -174,11 +211,11 @@ export const LiveHero = memo(({ d, onEdit }) => (
     <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F10]/60 to-transparent" />
     <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-16">
       <div className="max-w-3xl">
-        <div className="inline-block px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 mb-6">
+        <div className="inline-block px-4 py-2 border border-[#C9A84C]/30 bg-[#C9A84C]/5 mb-6">
           <InlineText
             value={d.badge || "Malta's Premier Property Management"}
             onChange={onEdit && (v => onEdit("badge", v))}
-            className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium"
+            className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] font-medium"
           />
         </div>
         <h1 className="font-['Playfair_Display'] text-[clamp(2.5rem,6vw,5rem)] text-[#F5F5F0] mb-6 leading-[1.05]">
@@ -189,7 +226,7 @@ export const LiveHero = memo(({ d, onEdit }) => (
             onChange={onEdit && (v => onEdit("headlineAccent", v))}
             tag="span"
             className="italic"
-            style={{ background: "linear-gradient(135deg,#D4AF37,#E5C158)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+            style={{ background: "linear-gradient(135deg,#C9A84C,#D4B85C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
           />
         </h1>
         <InlineText
@@ -200,12 +237,12 @@ export const LiveHero = memo(({ d, onEdit }) => (
           className="text-lg text-[#A1A1AA] mb-10 max-w-2xl leading-relaxed"
         />
         <div className="flex flex-wrap gap-4 mb-12">
-          <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6 font-semibold">
+          <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6 font-semibold">
             <Building className="w-4 h-4 mr-2" />
             <InlineText value={d.cta1Text || "List Your Property"} onChange={onEdit && (v => onEdit("cta1Text", v))} />
             <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
-          <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6">
+          <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#C9A84C] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6">
             <Home className="w-4 h-4 mr-2" />
             <InlineText value={d.cta2Text || "Book a Stay"} onChange={onEdit && (v => onEdit("cta2Text", v))} />
           </Button>
@@ -215,13 +252,17 @@ export const LiveHero = memo(({ d, onEdit }) => (
             <div key={i} className="flex items-center gap-3">
               <InlineText
                 value={s.value}
-                onChange={onEdit && (v => { const stats = [...(d.stats||[])]; stats[i]={...stats[i],value:v}; onEdit("stats",stats); })}
+                onChange={onEdit && (v => {
+ const stats = [...(d.stats||[])]; stats[i]={...stats[i],value:v}; onEdit("stats",stats); 
+})}
                 tag="span"
-                className="font-['Playfair_Display'] text-3xl text-[#D4AF37]"
+                className="font-['Playfair_Display'] text-3xl text-[#C9A84C]"
               />
               <InlineText
                 value={s.label}
-                onChange={onEdit && (v => { const stats = [...(d.stats||[])]; stats[i]={...stats[i],label:v}; onEdit("stats",stats); })}
+                onChange={onEdit && (v => {
+ const stats = [...(d.stats||[])]; stats[i]={...stats[i],label:v}; onEdit("stats",stats); 
+})}
                 tag="span"
                 className="text-sm text-[#A1A1AA] leading-tight"
               />
@@ -236,14 +277,14 @@ export const LiveHero = memo(({ d, onEdit }) => (
 // ─── 2. OWNERS SECTION — exact match of LandingPage owners section ──────────
 export const LiveOwnersSection = memo(({ d, onEdit }) => (
   <section className="relative py-24 bg-[#0A0A0B] overflow-hidden">
-    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#D4AF37]/5 to-transparent pointer-events-none" />
+    <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#C9A84C]/5 to-transparent pointer-events-none" />
     <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div>
-          <InlineText value={d.badge || "For Property Owners"} onChange={onEdit && (v => onEdit("badge",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+          <InlineText value={d.badge || "For Property Owners"} onChange={onEdit && (v => onEdit("badge",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
           <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] mb-6 leading-tight">
             <InlineText value={d.title || "Maximize Your Property's"} onChange={onEdit && (v => onEdit("title",v))} tag="span" />{" "}
-            <span style={{ background: "linear-gradient(135deg,#D4AF37,#E5C158)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            <span style={{ background: "linear-gradient(135deg,#C9A84C,#D4B85C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               <InlineText value={d.titleAccent || "Full Potential"} onChange={onEdit && (v => onEdit("titleAccent",v))} tag="span" />
             </span>
           </h2>
@@ -259,23 +300,25 @@ export const LiveOwnersSection = memo(({ d, onEdit }) => (
               {text:"Selective Portfolio Approach"},{text:"Comprehensive Services"}
             ]).map((item, i) => (
               <li key={i} className="flex items-center gap-3 group">
-                <div className="w-6 h-6 bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#D4AF37]/20 transition-colors">
-                  <Check className="w-4 h-4 text-[#D4AF37]" />
+                <div className="w-6 h-6 bg-[#C9A84C]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#C9A84C]/20 transition-colors">
+                  <Check className="w-4 h-4 text-[#C9A84C]" />
                 </div>
                 <InlineText
                   value={item.text}
-                  onChange={onEdit && (v => { const b=[...(d.benefits||[])]; b[i]={...b[i],text:v}; onEdit("benefits",b); })}
+                  onChange={onEdit && (v => {
+ const b=[...(d.benefits||[])]; b[i]={...b[i],text:v}; onEdit("benefits",b); 
+})}
                   tag="span" className="text-[#F5F5F0]"
                 />
               </li>
             ))}
           </ul>
           <div className="flex flex-wrap gap-4">
-            <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold">
+            <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold">
               <InlineText value={d.cta1 || "Get Started"} onChange={onEdit && (v => onEdit("cta1",v))} />
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-            <Button variant="outline" className="border-white/20 text-[#F5F5F0] hover:border-[#D4AF37] rounded-none uppercase text-sm tracking-widest px-8 py-4">
+            <Button variant="outline" className="border-white/20 text-[#F5F5F0] hover:border-[#C9A84C] rounded-none uppercase text-sm tracking-widest px-8 py-4">
               <InlineText value={d.cta2 || "View Pricing Plans"} onChange={onEdit && (v => onEdit("cta2",v))} />
             </Button>
           </div>
@@ -289,8 +332,8 @@ export const LiveOwnersSection = memo(({ d, onEdit }) => (
           ]).map((item, i) => {
             const Icon = ICON_MAP[item.icon] || Star;
             return (
-              <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-all duration-300 group">
-                <Icon className="w-8 h-8 text-[#D4AF37] mb-4 group-hover:scale-110 transition-transform" />
+              <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all duration-300 group">
+                <Icon className="w-8 h-8 text-[#C9A84C] mb-4 group-hover:scale-110 transition-transform" />
                 <p className="text-[#F5F5F0] font-semibold mb-1">{item.label}</p>
                 <p className="text-[#A1A1AA] text-sm">{item.desc}</p>
               </div>
@@ -308,7 +351,7 @@ export const LiveAbout = memo(({ d, onEdit }) => (
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div className="order-2 lg:order-1">
-          <InlineText value={d.label || "About Us"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+          <InlineText value={d.label || "About Us"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
           <h2 className="font-['Playfair_Display'] text-[clamp(2rem,5vw,3.5rem)] text-[#F5F5F0] mb-8 leading-tight">
             <InlineText value={d.title || "We Know What a Good"} onChange={onEdit && (v => onEdit("title",v))} tag="span" />{" "}
             <InlineText value={d.titleAccent || "Stay Feels Like"} onChange={onEdit && (v => onEdit("titleAccent",v))} tag="span" className="italic" />
@@ -322,13 +365,15 @@ export const LiveAbout = memo(({ d, onEdit }) => (
               <InlineText
                 key={i}
                 value={p.text}
-                onChange={onEdit && (v => { const ps=[...(d.paragraphs||[])]; ps[i]={...ps[i],text:v}; onEdit("paragraphs",ps); })}
+                onChange={onEdit && (v => {
+ const ps=[...(d.paragraphs||[])]; ps[i]={...ps[i],text:v}; onEdit("paragraphs",ps); 
+})}
                 tag="p" multiline
               />
             ))}
           </div>
           <div className="flex gap-4 mt-8">
-            <Button className="bg-transparent border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0F10] rounded-none uppercase text-sm tracking-widest px-6 py-4">
+            <Button className="bg-transparent border border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] hover:text-[#0F0F10] rounded-none uppercase text-sm tracking-widest px-6 py-4">
               <MessageCircle className="w-4 h-4 mr-2" />
               <InlineText value={d.ctaText || "Get in Touch"} onChange={onEdit && (v => onEdit("ctaText",v))} />
             </Button>
@@ -342,7 +387,7 @@ export const LiveAbout = memo(({ d, onEdit }) => (
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#D4AF37]/30 hidden lg:block" />
+          <div className="absolute -bottom-4 -left-4 w-24 h-24 border-2 border-[#C9A84C]/30 hidden lg:block" />
         </div>
       </div>
     </div>
@@ -362,11 +407,11 @@ export const LiveProperties = memo(({ d, onEdit }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
           <div>
-            <InlineText value={d.label || "Featured Properties"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+            <InlineText value={d.label || "Featured Properties"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
             <InlineText value={d.title || "Explore Our Portfolio"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0] leading-tight" />
           </div>
           {d.ctaText && (
-            <a href="/properties" className="flex items-center gap-2 border border-white/20 text-[#F5F5F0] hover:border-[#D4AF37] text-sm uppercase tracking-widest px-6 py-3 transition-all self-start">
+            <a href="/properties" className="flex items-center gap-2 border border-white/20 text-[#F5F5F0] hover:border-[#C9A84C] text-sm uppercase tracking-widest px-6 py-3 transition-all self-start">
               <InlineText value={d.ctaText} onChange={onEdit && (v => onEdit("ctaText",v))} />
               <ArrowRight className="w-4 h-4 shrink-0" />
             </a>
@@ -378,12 +423,12 @@ export const LiveProperties = memo(({ d, onEdit }) => {
             <div className="col-span-3 py-12 text-center">
               <AlertCircle className="w-10 h-10 text-[#A1A1AA] opacity-30 mx-auto mb-3" />
               <p className="text-sm text-[#A1A1AA] mb-3">{error}</p>
-              <button onClick={reload} className="text-xs text-[#D4AF37] flex items-center gap-1.5 mx-auto"><RefreshCw size={12}/>Retry</button>
+              <button onClick={reload} className="text-xs text-[#C9A84C] flex items-center gap-1.5 mx-auto"><RefreshCw size={12}/>Retry</button>
             </div>
           )}
           {!loading && !error && listings.slice(0, d.limit||d.showCount||6).map(l => <ListingCard key={l._id} listing={l} />)}
         </div>
-        {!loading && <div className="mt-4 flex justify-end"><button onClick={reload} className="text-[11px] text-[#D4AF37]/40 hover:text-[#D4AF37] flex items-center gap-1.5 transition-colors"><RefreshCw size={10}/>Refresh from Guesty</button></div>}
+        {!loading && <div className="mt-4 flex justify-end"><button onClick={reload} className="text-[11px] text-[#C9A84C]/40 hover:text-[#C9A84C] flex items-center gap-1.5 transition-colors"><RefreshCw size={10}/>Refresh from Guesty</button></div>}
       </div>
     </section>
   );
@@ -403,12 +448,16 @@ export const LiveStats = memo(({ d, onEdit }) => (
           <div key={i} className="flex items-center gap-3">
             <InlineText
               value={s.value}
-              onChange={onEdit && (v => { const items=[...(d.items||[])]; items[i]={...items[i],value:v}; onEdit("items",items); })}
-              tag="span" className="font-['Playfair_Display'] text-3xl text-[#D4AF37]"
+              onChange={onEdit && (v => {
+ const items=[...(d.items||[])]; items[i]={...items[i],value:v}; onEdit("items",items); 
+})}
+              tag="span" className="font-['Playfair_Display'] text-3xl text-[#C9A84C]"
             />
             <InlineText
               value={s.label}
-              onChange={onEdit && (v => { const items=[...(d.items||[])]; items[i]={...items[i],label:v}; onEdit("items",items); })}
+              onChange={onEdit && (v => {
+ const items=[...(d.items||[])]; items[i]={...items[i],label:v}; onEdit("items",items); 
+})}
               tag="span" className="text-sm text-[#A1A1AA] leading-tight"
             />
           </div>
@@ -423,7 +472,7 @@ export const LiveFeatures = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0F0F10]">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-12">
-        <InlineText value={d.label || "What We Do"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+        <InlineText value={d.label || "What We Do"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
         <InlineText value={d.title || "Full-service property care"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
       </div>
       <div className={`grid md:grid-cols-2 ${d.columns === "4" ? "lg:grid-cols-4" : d.columns === "2" ? "lg:grid-cols-2" : "lg:grid-cols-3"} gap-6`}>
@@ -434,10 +483,14 @@ export const LiveFeatures = memo(({ d, onEdit }) => (
         ]).map((f, i) => {
           const Icon = ICON_MAP[f.icon] || Star;
           return (
-            <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-all">
-              <Icon className="w-10 h-10 text-[#D4AF37] mb-4" />
-              <InlineText value={f.title} onChange={onEdit && (v => { const items=[...(d.items||[])]; items[i]={...items[i],title:v}; onEdit("items",items); })} tag="h3" className="text-[#F5F5F0] font-semibold mb-2" />
-              <InlineText value={f.desc} onChange={onEdit && (v => { const items=[...(d.items||[])]; items[i]={...items[i],desc:v}; onEdit("items",items); })} tag="p" multiline className="text-[#A1A1AA] text-sm leading-relaxed" />
+            <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all">
+              <Icon className="w-10 h-10 text-[#C9A84C] mb-4" />
+              <InlineText value={f.title} onChange={onEdit && (v => {
+ const items=[...(d.items||[])]; items[i]={...items[i],title:v}; onEdit("items",items); 
+})} tag="h3" className="text-[#F5F5F0] font-semibold mb-2" />
+              <InlineText value={f.desc} onChange={onEdit && (v => {
+ const items=[...(d.items||[])]; items[i]={...items[i],desc:v}; onEdit("items",items); 
+})} tag="p" multiline className="text-[#A1A1AA] text-sm leading-relaxed" />
             </div>
           );
         })}
@@ -455,16 +508,16 @@ export const LiveTestimonials = memo(({ d, onEdit }) => {
     <section className="relative py-24 overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-20">
         <div className="text-center mb-16">
-          <InlineText value={d.label || "Guest Reviews"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+          <InlineText value={d.label || "Guest Reviews"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
           <InlineText value={d.title || "What Our Guests Say"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
         </div>
         {items.length > 0 && (
           <div className="relative bg-[#161618] border border-white/5 p-8 md:p-12">
-            <Quote className="absolute top-8 left-8 w-12 h-12 text-[#D4AF37]/20" />
+            <Quote className="absolute top-8 left-8 w-12 h-12 text-[#C9A84C]/20" />
             <div className="relative z-10">
               <div className="flex gap-1 mb-6 justify-center">
                 {[...Array(5)].map((_, j) => (
-                  <Star key={j} className={`w-5 h-5 ${j < (item.rating || 5) ? "text-[#D4AF37] fill-[#D4AF37]" : "text-[#A1A1AA]"}`} />
+                  <Star key={j} className={`w-5 h-5 ${j < (item.rating || 5) ? "text-[#C9A84C] fill-[#C9A84C]" : "text-[#A1A1AA]"}`} />
                 ))}
               </div>
               <blockquote className="text-lg md:text-xl text-[#F5F5F0] text-center mb-8 leading-relaxed max-w-3xl mx-auto">
@@ -477,7 +530,7 @@ export const LiveTestimonials = memo(({ d, onEdit }) => {
             </div>
             <div className="flex justify-center gap-2 mt-8">
               {items.map((_, i) => (
-                <button key={i} onClick={() => setCurrent(i)} className={`h-2 rounded-full transition-all ${i === current ? "bg-[#D4AF37] w-6" : "bg-white/20 hover:bg-white/40 w-2"}`} />
+                <button key={i} onClick={() => setCurrent(i)} className={`h-2 rounded-full transition-all ${i === current ? "bg-[#C9A84C] w-6" : "bg-white/20 hover:bg-white/40 w-2"}`} />
               ))}
             </div>
           </div>
@@ -491,18 +544,18 @@ export const LiveTestimonials = memo(({ d, onEdit }) => {
 export const LiveCTA = memo(({ d, onEdit }) => (
   <section className="relative py-24 bg-[#0A0A0B] overflow-hidden">
     <div className="absolute inset-0 opacity-5">
-      <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, #D4AF37 1px, transparent 0)`, backgroundSize: "40px 40px" }} />
+      <div className="absolute inset-0" style={{ backgroundImage: `radial-gradient(circle at 2px 2px, #C9A84C 1px, transparent 0)`, backgroundSize: "40px 40px" }} />
     </div>
     <div className="relative max-w-4xl mx-auto px-6 md:px-12 lg:px-20 text-center">
-      <HeartHandshake className="w-16 h-16 text-[#D4AF37] mx-auto mb-8" />
+      <HeartHandshake className="w-16 h-16 text-[#C9A84C] mx-auto mb-8" />
       <InlineText value={d.title || "Ready to Get Started?"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0] mb-6 leading-tight" />
       <InlineText value={d.subtitle || "Whether you're a guest looking for the perfect stay or a property owner seeking professional management, we're here to help."} onChange={onEdit && (v => onEdit("subtitle",v))} tag="p" multiline className="text-[#A1A1AA] text-lg mb-10 max-w-2xl mx-auto leading-relaxed" />
       <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-        <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold">
+        <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold">
           <Building className="w-4 h-4 mr-2" />
           <InlineText value={d.cta1Text || "List Your Property"} onChange={onEdit && (v => onEdit("cta1Text",v))} />
         </Button>
-        <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] rounded-none uppercase text-sm tracking-widest px-8 py-6">
+        <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#C9A84C] rounded-none uppercase text-sm tracking-widest px-8 py-6">
           <Home className="w-4 h-4 mr-2" />
           <InlineText value={d.cta2Text || "Browse Properties"} onChange={onEdit && (v => onEdit("cta2Text",v))} />
         </Button>
@@ -521,14 +574,14 @@ export const LiveCTA = memo(({ d, onEdit }) => (
 // ─── 9. OWNERS HERO (for Owners page) ───────────────────────────────────────
 export const LiveOwnersHero = memo(({ d, onEdit }) => (
   <section className="py-16 md:py-24 relative overflow-hidden bg-[#0F0F10]">
-    <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/5 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-br from-[#C9A84C]/5 to-transparent" />
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 relative">
       <div className="max-w-3xl">
-        <InlineText value={d.badge || "For Property Owners"} onChange={onEdit && (v => onEdit("badge",v))} tag="span" className="text-xs uppercase tracking-widest text-[#D4AF37] mb-4 block" />
+        <InlineText value={d.badge || "For Property Owners"} onChange={onEdit && (v => onEdit("badge",v))} tag="span" className="text-xs uppercase tracking-widest text-[#C9A84C] mb-4 block" />
         <h1 className="font-['Playfair_Display'] text-4xl sm:text-5xl lg:text-6xl text-[#F5F5F0] mb-6 leading-tight">
           <InlineText value={d.title || "Maximize Your Property's"} onChange={onEdit && (v => onEdit("title",v))} tag="span" />
           <br />
-          <span style={{ background: "linear-gradient(135deg,#D4AF37,#E5C158)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <span style={{ background: "linear-gradient(135deg,#C9A84C,#D4B85C)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             <InlineText value={d.titleAccent || "Full Potential"} onChange={onEdit && (v => onEdit("titleAccent",v))} tag="span" />
           </span>
         </h1>
@@ -539,11 +592,11 @@ export const LiveOwnersHero = memo(({ d, onEdit }) => (
           className="text-lg md:text-xl text-[#A1A1AA] mb-8 max-w-2xl"
         />
         <div className="flex flex-col sm:flex-row gap-4">
-          <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold">
+          <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-6 font-semibold">
             <Building className="w-4 h-4 mr-2" />
             <InlineText value={d.cta1 || "List Your Property"} onChange={onEdit && (v => onEdit("cta1",v))} />
           </Button>
-          <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] rounded-none uppercase text-sm tracking-widest px-8 py-6">
+          <Button variant="outline" className="border-white/30 text-[#F5F5F0] hover:border-[#C9A84C] rounded-none uppercase text-sm tracking-widest px-8 py-6">
             <Phone className="w-4 h-4 mr-2" />
             <InlineText value={d.cta2 || "Schedule a Call"} onChange={onEdit && (v => onEdit("cta2",v))} />
           </Button>
@@ -558,7 +611,7 @@ export const LivePricing = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0A0A0B]">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-16">
-        <InlineText value={d.label || "Management Plans"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#D4AF37] mb-4 block" />
+        <InlineText value={d.label || "Management Plans"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#C9A84C] mb-4 block" />
         <InlineText value={d.title || "One fee. No surprises."} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0] mb-4" />
         <InlineText value={d.note || "A single commission on net room revenue. All new properties launch with Superhost credibility from day one."} onChange={onEdit && (v => onEdit("note",v))} tag="p" multiline className="text-[#A1A1AA] max-w-2xl mx-auto" />
       </div>
@@ -568,31 +621,31 @@ export const LivePricing = memo(({ d, onEdit }) => (
           <h3 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-2">Essentials</h3>
           <p className="text-[#A1A1AA] text-sm mb-6">Core operations. Your property listed, managed, and maintained.</p>
           <div className="flex items-baseline gap-2 mb-8">
-            <span className="font-['Playfair_Display'] text-5xl text-[#D4AF37]">15%</span>
+            <span className="font-['Playfair_Display'] text-5xl text-[#C9A84C]">15%</span>
             <span className="text-[#A1A1AA]">of Net Room Revenue + VAT</span>
           </div>
           <ul className="space-y-2 text-sm text-[#A1A1AA] mb-8">
             {["Multi-channel listing creation & management","Superhost status from day one","Smart seasonal pricing optimization","Reviews & reputation management","Guest communication & 24/7 concierge","Professional cleaning & laundry"].map((f,i) => (
-              <li key={i} className="flex items-start gap-2"><Check className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />{f}</li>
+              <li key={i} className="flex items-start gap-2"><Check className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />{f}</li>
             ))}
           </ul>
-          <Button variant="outline" className="w-full border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0F0F10] rounded-none uppercase tracking-widest py-4">Get Started</Button>
+          <Button variant="outline" className="w-full border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C] hover:text-[#0F0F10] rounded-none uppercase tracking-widest py-4">Get Started</Button>
         </div>
         {/* Complete */}
-        <div className="bg-[#161618] border-2 border-[#D4AF37]/30 p-8 relative">
-          <div className="absolute -top-3 left-8 bg-[#D4AF37] text-[#0F0F10] px-4 py-1 text-xs uppercase tracking-widest font-semibold">Most Popular</div>
+        <div className="bg-[#161618] border-2 border-[#C9A84C]/30 p-8 relative">
+          <div className="absolute -top-3 left-8 bg-[#C9A84C] text-[#0F0F10] px-4 py-1 text-xs uppercase tracking-widest font-semibold">Most Popular</div>
           <h3 className="font-['Playfair_Display'] text-2xl text-[#F5F5F0] mb-2">Complete</h3>
           <p className="text-[#A1A1AA] text-sm mb-6">Full-service management. The guest experience that drives better returns.</p>
           <div className="flex items-baseline gap-2 mb-8">
-            <span className="font-['Playfair_Display'] text-5xl text-[#D4AF37]">18%</span>
+            <span className="font-['Playfair_Display'] text-5xl text-[#C9A84C]">18%</span>
             <span className="text-[#A1A1AA]">of Net Room Revenue + VAT</span>
           </div>
           <ul className="space-y-2 text-sm text-[#A1A1AA] mb-8">
             {["Everything in Essentials","Welcome amenities — wine, coffee, toiletries","Monthly reporting included","All callout fees included","Annual photography refresh included","Quarterly performance reviews","Priority 24-hour owner response time"].map((f,i) => (
-              <li key={i} className="flex items-start gap-2"><Check className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />{f}</li>
+              <li key={i} className="flex items-start gap-2"><Check className="w-4 h-4 text-[#C9A84C] flex-shrink-0 mt-0.5" />{f}</li>
             ))}
           </ul>
-          <Button className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-4">Get Started</Button>
+          <Button className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-4">Get Started</Button>
         </div>
       </div>
     </div>
@@ -604,7 +657,7 @@ export const LiveWhyUs = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0F0F10]">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-16">
-        <InlineText value={d.label || "Why Partner With Us"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#D4AF37] mb-4 block" />
+        <InlineText value={d.label || "Why Partner With Us"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#C9A84C] mb-4 block" />
         <InlineText value={d.title || "Expertise You Can Trust"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
       </div>
       <div className="grid md:grid-cols-2 gap-8">
@@ -614,12 +667,16 @@ export const LiveWhyUs = memo(({ d, onEdit }) => (
           {title:"Transparent Reporting",description:"Detailed monthly statements with no hidden fees or surprise deductions."},
           {title:"Full Legal Compliance",description:"We handle MTA licensing, eco-tax, and all regulatory requirements."},
         ]).map((item, i) => (
-          <div key={i} className="bg-[#161618] p-8 border border-white/5 hover:border-[#D4AF37]/20 transition-colors">
-            <div className="w-12 h-12 bg-[#D4AF37]/10 flex items-center justify-center mb-6">
-              <Check className="w-6 h-6 text-[#D4AF37]" />
+          <div key={i} className="bg-[#161618] p-8 border border-white/5 hover:border-[#C9A84C]/20 transition-colors">
+            <div className="w-12 h-12 bg-[#C9A84C]/10 flex items-center justify-center mb-6">
+              <Check className="w-6 h-6 text-[#C9A84C]" />
             </div>
-            <InlineText value={item.title} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],title:v}; onEdit("items",its); })} tag="h3" className="font-['Playfair_Display'] text-xl text-[#F5F5F0] mb-3" />
-            <InlineText value={item.description} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],description:v}; onEdit("items",its); })} tag="p" multiline className="text-[#A1A1AA] leading-relaxed" />
+            <InlineText value={item.title} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],title:v}; onEdit("items",its); 
+})} tag="h3" className="font-['Playfair_Display'] text-xl text-[#F5F5F0] mb-3" />
+            <InlineText value={item.description} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],description:v}; onEdit("items",its); 
+})} tag="p" multiline className="text-[#A1A1AA] leading-relaxed" />
           </div>
         ))}
       </div>
@@ -632,7 +689,7 @@ export const LiveServices = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0A0A0B]">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-16">
-        <InlineText value={d.subtitle || "What We Offer"} onChange={onEdit && (v => onEdit("subtitle",v))} tag="span" className="text-xs uppercase tracking-widest text-[#D4AF37] mb-4 block" />
+        <InlineText value={d.subtitle || "What We Offer"} onChange={onEdit && (v => onEdit("subtitle",v))} tag="span" className="text-xs uppercase tracking-widest text-[#C9A84C] mb-4 block" />
         <InlineText value={d.title || "Our Services"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -648,8 +705,8 @@ export const LiveServices = memo(({ d, onEdit }) => (
         ]).map((s, i) => {
           const Icon = ICON_MAP[s.icon] || Star;
           return (
-            <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-all group">
-              <Icon className="w-8 h-8 text-[#D4AF37] mb-4 group-hover:scale-110 transition-transform" />
+            <div key={i} className="bg-[#161618] p-6 border border-white/5 hover:border-[#C9A84C]/20 transition-all group">
+              <Icon className="w-8 h-8 text-[#C9A84C] mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-[#F5F5F0] font-semibold mb-2">{s.title}</h3>
               <p className="text-[#A1A1AA] text-sm">{s.desc}</p>
             </div>
@@ -667,7 +724,7 @@ export const LiveFAQ = memo(({ d, onEdit }) => {
     <section className="py-24 bg-[#0F0F10]">
       <div className="max-w-3xl mx-auto px-6 md:px-12 lg:px-20">
         <div className="text-center mb-12">
-          <InlineText value={d.label || "Common Questions"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#D4AF37] mb-4 block" />
+          <InlineText value={d.label || "Common Questions"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-widest text-[#C9A84C] mb-4 block" />
           <InlineText value={d.title || "Frequently Asked Questions"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
         </div>
         <div className="space-y-4">
@@ -679,12 +736,16 @@ export const LiveFAQ = memo(({ d, onEdit }) => {
           ]).map((item, i) => (
             <div key={i} className="bg-[#161618] border border-white/5">
               <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between px-6 py-5 text-left gap-4">
-                <InlineText value={item.q} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],q:v}; onEdit("items",its); })} tag="span" className="text-[#F5F5F0] font-medium" />
-                <ChevronDown className={`w-5 h-5 text-[#D4AF37] flex-shrink-0 transition-transform ${open===i?"rotate-180":""}`} />
+                <InlineText value={item.q} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],q:v}; onEdit("items",its); 
+})} tag="span" className="text-[#F5F5F0] font-medium" />
+                <ChevronDown className={`w-5 h-5 text-[#C9A84C] flex-shrink-0 transition-transform ${open===i?"rotate-180":""}`} />
               </button>
               {open === i && (
                 <div className="px-6 pb-5">
-                  <InlineText value={item.a} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],a:v}; onEdit("items",its); })} tag="p" multiline className="text-[#A1A1AA] leading-relaxed" />
+                  <InlineText value={item.a} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],a:v}; onEdit("items",its); 
+})} tag="p" multiline className="text-[#A1A1AA] leading-relaxed" />
                 </div>
               )}
             </div>
@@ -701,8 +762,8 @@ export const LiveFooter = memo(({ d, onEdit }) => (
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-8 md:py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <div className="h-10 w-32 bg-[#D4AF37]/10 flex items-center justify-center mb-3 rounded">
-            <span className="text-[#D4AF37] text-xs font-semibold tracking-widest uppercase">LOGO</span>
+          <div className="h-10 w-32 bg-[#C9A84C]/10 flex items-center justify-center mb-3 rounded">
+            <span className="text-[#C9A84C] text-xs font-semibold tracking-widest uppercase">LOGO</span>
           </div>
           <InlineText value={d.tagline || "Luxury short-term rentals across Malta."} onChange={onEdit && (v => onEdit("tagline",v))} tag="p" multiline className="text-[#A1A1AA] text-xs leading-relaxed mb-2" />
         </div>
@@ -710,7 +771,7 @@ export const LiveFooter = memo(({ d, onEdit }) => (
           <h4 className="font-['Playfair_Display'] text-sm text-[#F5F5F0] mb-3 font-semibold">For Guests</h4>
           <nav className="flex flex-col gap-2">
             {["Browse Properties","Book a Stay","Contact Us"].map((l,i) => (
-              <span key={i} className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors cursor-pointer">{l}</span>
+              <span key={i} className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors cursor-pointer">{l}</span>
             ))}
           </nav>
         </div>
@@ -718,7 +779,7 @@ export const LiveFooter = memo(({ d, onEdit }) => (
           <h4 className="font-['Playfair_Display'] text-sm text-[#F5F5F0] mb-3 font-semibold">For Owners</h4>
           <nav className="flex flex-col gap-2">
             {["Our Services","List Your Property","Pricing Plans"].map((l,i) => (
-              <span key={i} className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] transition-colors cursor-pointer">{l}</span>
+              <span key={i} className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] transition-colors cursor-pointer">{l}</span>
             ))}
           </nav>
         </div>
@@ -738,15 +799,15 @@ export const LiveFooter = memo(({ d, onEdit }) => (
           <p className="text-xs text-[#71717A]">© {new Date().getFullYear()} Christiano Vincenti PM. All rights reserved.</p>
           <div className="flex items-center gap-2">
             {[Instagram, Facebook, MessageCircle].map((Icon, i) => (
-              <div key={i} className="w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all cursor-pointer">
+              <div key={i} className="w-7 h-7 flex items-center justify-center border border-white/10 hover:border-[#C9A84C] hover:bg-[#C9A84C]/10 transition-all cursor-pointer">
                 <Icon className="w-3.5 h-3.5 text-[#A1A1AA]" />
               </div>
             ))}
           </div>
           <div className="flex gap-3 text-xs">
-            <span className="text-[#71717A] hover:text-[#D4AF37] cursor-pointer">Privacy</span>
+            <span className="text-[#71717A] hover:text-[#C9A84C] cursor-pointer">Privacy</span>
             <span className="text-[#71717A]">·</span>
-            <span className="text-[#71717A] hover:text-[#D4AF37] cursor-pointer">Terms</span>
+            <span className="text-[#71717A] hover:text-[#C9A84C] cursor-pointer">Terms</span>
           </div>
         </div>
       </div>
@@ -757,15 +818,15 @@ export const LiveFooter = memo(({ d, onEdit }) => (
 // ─── 15. HEADER PREVIEW ──────────────────────────────────────────────────────
 export const LiveHeader = memo(({ d }) => (
   <header className="bg-[#0F0F10]/95 border-b border-white/5 py-3 px-6 flex items-center justify-between">
-    <div className="h-10 w-32 bg-[#D4AF37]/10 flex items-center justify-center rounded">
-      <span className="text-[#D4AF37] text-xs font-semibold tracking-widest uppercase">LOGO</span>
+    <div className="h-10 w-32 bg-[#C9A84C]/10 flex items-center justify-center rounded">
+      <span className="text-[#C9A84C] text-xs font-semibold tracking-widest uppercase">LOGO</span>
     </div>
     <nav className="hidden md:flex items-center gap-6">
       {["For Owners","Book a Stay","Contact"].map((l,i) => (
         <span key={i} className="text-xs uppercase tracking-widest text-[#A1A1AA] hover:text-[#F5F5F0] cursor-pointer transition-colors">{l}</span>
       ))}
     </nav>
-    <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest px-4 py-2 font-semibold">Book Now</Button>
+    <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-4 py-2 font-semibold">Book Now</Button>
   </header>
 ));
 
@@ -774,8 +835,8 @@ export const LiveSpacer = memo(({ d }) => <div style={{ height: d.height || 80, 
 export const LiveDivider = memo(({ d }) => (
   <div className="py-4 bg-[#0F0F10]">
     <div className="max-w-4xl mx-auto px-6" style={
-      d.style === "gradient" ? { background: `linear-gradient(to right, transparent, #D4AF37, transparent)`, height: 1 }
-      : d.style === "dots" ? { backgroundImage: `radial-gradient(circle, #D4AF37 1px, transparent 1px)`, backgroundSize: "8px 8px", height: 4 }
+      d.style === "gradient" ? { background: `linear-gradient(to right, transparent, #C9A84C, transparent)`, height: 1 }
+      : d.style === "dots" ? { backgroundImage: `radial-gradient(circle, #C9A84C 1px, transparent 1px)`, backgroundSize: "8px 8px", height: 4 }
       : { borderTop: `1px solid rgba(255,255,255,0.1)` }
     } />
   </div>
@@ -809,12 +870,12 @@ export const LiveTeam = memo(({ d, onEdit }) => (
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {(d.items || [{initials:"CV",name:"Christiano Vincenti",role:"Founder & Director",bio:"Twenty years in Maltese hospitality."}]).map((m, i) => (
-          <div key={i} className="bg-[#161618] border border-white/5 p-6 text-center hover:border-[#D4AF37]/20 transition-all">
-            <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-[#D4AF37]">
+          <div key={i} className="bg-[#161618] border border-white/5 p-6 text-center hover:border-[#C9A84C]/20 transition-all">
+            <div className="w-20 h-20 rounded-full bg-[#C9A84C]/20 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-[#C9A84C]">
               {m.image ? <img src={m.image} alt={m.name} className="w-full h-full rounded-full object-cover" /> : (m.initials || "?")}
             </div>
             <h3 className="text-[#F5F5F0] font-semibold mb-1">{m.name}</h3>
-            <p className="text-[#D4AF37] text-xs uppercase tracking-wider mb-3">{m.role}</p>
+            <p className="text-[#C9A84C] text-xs uppercase tracking-wider mb-3">{m.role}</p>
             <p className="text-[#A1A1AA] text-sm">{m.bio}</p>
           </div>
         ))}
@@ -830,39 +891,39 @@ export const LiveSearch = memo(({ d, onEdit }) => (
     <div className="max-w-5xl mx-auto px-6 md:px-12 lg:px-20">
       {d.label && (
         <div className="text-center mb-6">
-          <InlineText value={d.label} onChange={onEdit && (v => onEdit("label",v))} tag="p" className="text-xs uppercase tracking-widest text-[#D4AF37]" />
+          <InlineText value={d.label} onChange={onEdit && (v => onEdit("label",v))} tag="p" className="text-xs uppercase tracking-widest text-[#C9A84C]" />
         </div>
       )}
       <div className="bg-[#161618] border border-white/10 p-2 flex flex-col md:flex-row gap-2 shadow-2xl">
         <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5 min-w-0">
-          <MapPin className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <MapPin className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-widest text-[#71717A]">Location</p>
             <p className="text-sm text-[#F5F5F0] truncate">Valletta, Malta</p>
           </div>
         </div>
         <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5 min-w-0">
-          <CalendarIcon className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <CalendarIcon className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-widest text-[#71717A]">Check-in</p>
             <p className="text-sm text-[#F5F5F0]">Select date</p>
           </div>
         </div>
         <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5 min-w-0">
-          <CalendarIcon className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <CalendarIcon className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-widest text-[#71717A]">Check-out</p>
             <p className="text-sm text-[#F5F5F0]">Select date</p>
           </div>
         </div>
         <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5">
-          <Users className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+          <Users className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
           <div>
             <p className="text-[10px] uppercase tracking-widest text-[#71717A]">Guests</p>
             <p className="text-sm text-[#F5F5F0]">2 guests</p>
           </div>
         </div>
-        <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold shrink-0 h-auto">
+        <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold shrink-0 h-auto">
           Search
         </Button>
       </div>
@@ -876,7 +937,7 @@ export const LiveContact = memo(({ d, onEdit }) => (
     <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="grid lg:grid-cols-2 gap-12">
         <div>
-          <InlineText value={d.label || "Get in Touch"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+          <InlineText value={d.label || "Get in Touch"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
           <InlineText value={d.title || "We'd love to hear from you"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl text-[#F5F5F0] mb-6" />
           <InlineText value={d.description || "Whether you're a guest looking for your perfect stay, or a property owner interested in our management services, our team is here to help."} onChange={onEdit && (v => onEdit("description",v))} tag="p" multiline className="text-[#A1A1AA] leading-relaxed mb-8" />
           <div className="space-y-4">
@@ -886,8 +947,8 @@ export const LiveContact = memo(({ d, onEdit }) => (
               { icon: MapPin, text: "The Fives A7, St Julian's, Malta", label: "Address" },
             ].map(({ icon: Icon, text, label }, i) => (
               <div key={i} className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#D4AF37]/10 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-[#D4AF37]" />
+                <div className="w-10 h-10 bg-[#C9A84C]/10 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-5 h-5 text-[#C9A84C]" />
                 </div>
                 <div>
                   <p className="text-xs text-[#A1A1AA] uppercase tracking-wider">{label}</p>
@@ -901,23 +962,23 @@ export const LiveContact = memo(({ d, onEdit }) => (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] block mb-2">First Name</label>
+                <label className="text-[10px] uppercase tracking-widest text-[#C9A84C] block mb-2">First Name</label>
                 <div className="bg-[#0F0F10] border border-white/10 h-10 px-3 flex items-center"><span className="text-[#71717A] text-sm">Your name</span></div>
               </div>
               <div>
-                <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] block mb-2">Last Name</label>
+                <label className="text-[10px] uppercase tracking-widest text-[#C9A84C] block mb-2">Last Name</label>
                 <div className="bg-[#0F0F10] border border-white/10 h-10 px-3 flex items-center"><span className="text-[#71717A] text-sm">Your surname</span></div>
               </div>
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] block mb-2">Email</label>
+              <label className="text-[10px] uppercase tracking-widest text-[#C9A84C] block mb-2">Email</label>
               <div className="bg-[#0F0F10] border border-white/10 h-10 px-3 flex items-center"><span className="text-[#71717A] text-sm">your@email.com</span></div>
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] block mb-2">Message</label>
+              <label className="text-[10px] uppercase tracking-widest text-[#C9A84C] block mb-2">Message</label>
               <div className="bg-[#0F0F10] border border-white/10 h-24 px-3 py-3"><span className="text-[#71717A] text-sm">How can we help you?</span></div>
             </div>
-            <Button className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-4 font-semibold">
+            <Button className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-4 font-semibold">
               <InlineText value={d.ctaText || "Send Message"} onChange={onEdit && (v => onEdit("ctaText",v))} />
             </Button>
           </div>
@@ -935,11 +996,11 @@ export const LiveTextImage = memo(({ d, onEdit }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         <div className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-center ${imageRight ? "" : "lg:grid-flow-dense"}`}>
           <div className={imageRight ? "lg:order-1" : "lg:order-2"}>
-            <InlineText value={d.label || ""} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+            <InlineText value={d.label || ""} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
             <InlineText value={d.title || "Your Section Title Here"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0] mb-6 leading-tight" />
             <InlineText value={d.description || "Add your section description here. This flexible block lets you pair any text with an image on either side."} onChange={onEdit && (v => onEdit("description",v))} tag="p" multiline className="text-[#A1A1AA] text-lg mb-8 leading-relaxed" />
             {d.ctaText && (
-              <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold">
+              <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 py-4 font-semibold">
                 <InlineText value={d.ctaText} onChange={onEdit && (v => onEdit("ctaText",v))} />
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -963,7 +1024,7 @@ export const LiveTextImage = memo(({ d, onEdit }) => {
 export const LivePullQuote = memo(({ d, onEdit }) => (
   <section className="py-16 bg-[#0A0A0B]">
     <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-20 text-center">
-      <Quote className="w-12 h-12 text-[#D4AF37]/30 mx-auto mb-6" />
+      <Quote className="w-12 h-12 text-[#C9A84C]/30 mx-auto mb-6" />
       <InlineText
         value={d.quote || "The most professional property management team we have ever worked with. Revenue up 40% in year one."}
         onChange={onEdit && (v => onEdit("quote",v))}
@@ -971,9 +1032,9 @@ export const LivePullQuote = memo(({ d, onEdit }) => (
         className="font-['Playfair_Display'] text-2xl md:text-3xl text-[#F5F5F0] leading-relaxed mb-8 italic"
       />
       <div className="flex items-center justify-center gap-3">
-        <div className="w-12 h-px bg-[#D4AF37]/30" />
+        <div className="w-12 h-px bg-[#C9A84C]/30" />
         <InlineText value={d.author || "— Maria C., Property Owner"} onChange={onEdit && (v => onEdit("author",v))} tag="cite" className="text-[#A1A1AA] not-italic text-sm" />
-        <div className="w-12 h-px bg-[#D4AF37]/30" />
+        <div className="w-12 h-px bg-[#C9A84C]/30" />
       </div>
     </div>
   </section>
@@ -990,7 +1051,9 @@ export function LiveReviewsLive({ d, onEdit }) {
       .select("reviewer_name, rating, comment, created_at, property_id")
       .order("created_at", { ascending: false })
       .limit(d.limit || 6)
-      .then(({ data }) => { setReviews(data || []); setLoading(false); })
+      .then(({ data }) => {
+ setReviews(data || []); setLoading(false); 
+})
       .catch(() => setLoading(false));
   }, [d.limit]);
 
@@ -998,7 +1061,7 @@ export function LiveReviewsLive({ d, onEdit }) {
     <section className="py-24 bg-[#0F0F10]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         <div className="text-center mb-12">
-          <InlineText value={d.label || "Guest Reviews"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+          <InlineText value={d.label || "Guest Reviews"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
           <InlineText value={d.title || "What Our Guests Are Saying"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
         </div>
         {loading ? (
@@ -1013,18 +1076,18 @@ export function LiveReviewsLive({ d, onEdit }) {
               const text = raw.public_review || raw.content?.positive || "Wonderful stay!";
               const reviewer = raw.reviewer?.name || raw.from?.first_name || "Guest";
               return (
-                <div key={i} className="bg-[#161618] border border-white/5 p-6 hover:border-[#D4AF37]/20 transition-all">
+                <div key={i} className="bg-[#161618] border border-white/5 p-6 hover:border-[#C9A84C]/20 transition-all">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] font-bold">
+                    <div className="w-10 h-10 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] font-bold">
                       {reviewer[0]?.toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[#F5F5F0]">{reviewer}</p>
                       <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, j) => <Star key={j} className="w-3 h-3 text-[#D4AF37] fill-current" />)}
+                        {[...Array(5)].map((_, j) => <Star key={j} className="w-3 h-3 text-[#C9A84C] fill-current" />)}
                       </div>
                     </div>
-                    {score && <span className="ml-auto text-[#D4AF37] font-bold text-sm">{score}</span>}
+                    {score && <span className="ml-auto text-[#C9A84C] font-bold text-sm">{score}</span>}
                   </div>
                   <p className="text-[#A1A1AA] text-sm leading-relaxed line-clamp-3">{text}</p>
                   <p className="text-xs text-[#5a5a5e] mt-3 capitalize">{r.channelId}</p>
@@ -1051,7 +1114,7 @@ export const LivePropertySlider = memo(({ d, onEdit }) => {
     <section className="py-24 bg-[#0F0F10]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         <div className="text-center mb-12">
-          <InlineText value={d.label || "Featured"} onChange={onEdit && (v => onEdit("label", v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-3 block" />
+          <InlineText value={d.label || "Featured"} onChange={onEdit && (v => onEdit("label", v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-3 block" />
           <InlineText value={d.title || "Featured Properties"} onChange={onEdit && (v => onEdit("title", v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
         </div>
         {loading ? (
@@ -1080,7 +1143,7 @@ export const LiveNumbers = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0A0A0B]">
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-16">
-        <InlineText value={d.label || "By the Numbers"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+        <InlineText value={d.label || "By the Numbers"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
         <InlineText value={d.title || "Our Impact in Malta"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -1091,9 +1154,15 @@ export const LiveNumbers = memo(({ d, onEdit }) => (
           { value: "94%", label: "Occupancy Rate", desc: "Annual average" },
         ]).map((s, i) => (
           <div key={i} className="text-center">
-            <InlineText value={s.value} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],value:v}; onEdit("items",its); })} tag="div" className="font-['Playfair_Display'] text-5xl md:text-6xl text-[#D4AF37] mb-2" />
-            <InlineText value={s.label} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],label:v}; onEdit("items",its); })} tag="p" className="text-[#F5F5F0] font-semibold mb-1" />
-            <InlineText value={s.desc} onChange={onEdit && (v => { const its=[...(d.items||[])]; its[i]={...its[i],desc:v}; onEdit("items",its); })} tag="p" className="text-[#A1A1AA] text-sm" />
+            <InlineText value={s.value} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],value:v}; onEdit("items",its); 
+})} tag="div" className="font-['Playfair_Display'] text-5xl md:text-6xl text-[#C9A84C] mb-2" />
+            <InlineText value={s.label} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],label:v}; onEdit("items",its); 
+})} tag="p" className="text-[#F5F5F0] font-semibold mb-1" />
+            <InlineText value={s.desc} onChange={onEdit && (v => {
+ const its=[...(d.items||[])]; its[i]={...its[i],desc:v}; onEdit("items",its); 
+})} tag="p" className="text-[#A1A1AA] text-sm" />
           </div>
         ))}
       </div>
@@ -1103,7 +1172,7 @@ export const LiveNumbers = memo(({ d, onEdit }) => (
 
 // ─── 26. BANNER / ANNOUNCEMENT ───────────────────────────────────────────────
 export const LiveBanner = memo(({ d, onEdit }) => (
-  <div className={`py-3 px-6 flex items-center justify-center gap-4 ${d.style === "gold" ? "bg-[#D4AF37]" : d.style === "dark" ? "bg-[#0A0A0B] border-y border-white/10" : "bg-[#161618] border-y border-white/5"}`}>
+  <div className={`py-3 px-6 flex items-center justify-center gap-4 ${d.style === "gold" ? "bg-[#C9A84C]" : d.style === "dark" ? "bg-[#0A0A0B] border-y border-white/10" : "bg-[#161618] border-y border-white/5"}`}>
     <InlineText
       value={d.text || "🏖️ Summer 2026 bookings now open — book early for the best rates!"}
       onChange={onEdit && (v => onEdit("text",v))}
@@ -1111,7 +1180,7 @@ export const LiveBanner = memo(({ d, onEdit }) => (
       className={`text-sm font-medium ${d.style === "gold" ? "text-[#0F0F10]" : "text-[#F5F5F0]"}`}
     />
     {d.ctaText && (
-      <span className={`text-xs uppercase tracking-widest underline cursor-pointer font-semibold ${d.style === "gold" ? "text-[#0F0F10]" : "text-[#D4AF37]"}`}>
+      <span className={`text-xs uppercase tracking-widest underline cursor-pointer font-semibold ${d.style === "gold" ? "text-[#0F0F10]" : "text-[#C9A84C]"}`}>
         <InlineText value={d.ctaText} onChange={onEdit && (v => onEdit("ctaText",v))} />
       </span>
     )}
@@ -1143,7 +1212,7 @@ export const LiveMap = memo(({ d, onEdit }) => (
       )}
       <div className="bg-[#161618] border border-white/5 overflow-hidden" style={{ height: d.height || 400 }}>
         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#161618] to-[#0F0F10]">
-          <MapPin className="w-12 h-12 text-[#D4AF37] mb-3" />
+          <MapPin className="w-12 h-12 text-[#C9A84C] mb-3" />
           <p className="text-[#A1A1AA] text-sm">Interactive Leaflet Map</p>
           <p className="text-[#71717A] text-xs mt-1">Malta, {d.lat || 35.9}, {d.lng || 14.5}</p>
         </div>
@@ -1189,7 +1258,7 @@ export const LiveVideo = memo(({ d, onEdit }) => (
       <div className="relative aspect-video bg-[#161618] border border-white/5 overflow-hidden group cursor-pointer">
         {d.thumbnail && <img src={d.thumbnail} alt="Video" className="w-full h-full object-cover" />}
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-[#D4AF37] flex items-center justify-center group-hover:bg-[#E5C158] transition-colors shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-[#C9A84C] flex items-center justify-center group-hover:bg-[#D4B85C] transition-colors shadow-lg">
             <Play className="w-6 h-6 text-[#0F0F10] ml-1" fill="currentColor" />
           </div>
         </div>
@@ -1208,11 +1277,11 @@ export const LiveTimeline = memo(({ d, onEdit }) => (
   <section className="py-24 bg-[#0F0F10]">
     <div className="max-w-4xl mx-auto px-6 md:px-12 lg:px-20">
       <div className="text-center mb-16">
-        <InlineText value={d.label || "How It Works"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />
+        <InlineText value={d.label || "How It Works"} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />
         <InlineText value={d.title || "Getting Started is Simple"} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl md:text-4xl text-[#F5F5F0]" />
       </div>
       <div className="relative">
-        <div className="absolute left-6 top-0 bottom-0 w-px bg-[#D4AF37]/20 hidden md:block" style={{ left: "1.25rem" }} />
+        <div className="absolute left-6 top-0 bottom-0 w-px bg-[#C9A84C]/20 hidden md:block" style={{ left: "1.25rem" }} />
         <div className="space-y-8">
           {(d.steps || [
             { number: "01", title: "Get in Touch", desc: "Contact us to discuss your property and management needs." },
@@ -1221,12 +1290,16 @@ export const LiveTimeline = memo(({ d, onEdit }) => (
             { number: "04", title: "Earn More", desc: "We handle everything while you enjoy passive income." },
           ]).map((step, i) => (
             <div key={i} className="flex items-start gap-6 relative">
-              <div className="w-10 h-10 rounded-full bg-[#D4AF37] flex items-center justify-center text-[#0F0F10] font-bold text-sm z-10 flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[#C9A84C] flex items-center justify-center text-[#0F0F10] font-bold text-sm z-10 flex-shrink-0">
                 {step.number}
               </div>
-              <div className="flex-1 bg-[#161618] border border-white/5 p-5 hover:border-[#D4AF37]/20 transition-all">
-                <InlineText value={step.title} onChange={onEdit && (v => { const s=[...(d.steps||[])]; s[i]={...s[i],title:v}; onEdit("steps",s); })} tag="h3" className="text-[#F5F5F0] font-semibold mb-2" />
-                <InlineText value={step.desc} onChange={onEdit && (v => { const s=[...(d.steps||[])]; s[i]={...s[i],desc:v}; onEdit("steps",s); })} tag="p" multiline className="text-[#A1A1AA] text-sm" />
+              <div className="flex-1 bg-[#161618] border border-white/5 p-5 hover:border-[#C9A84C]/20 transition-all">
+                <InlineText value={step.title} onChange={onEdit && (v => {
+ const s=[...(d.steps||[])]; s[i]={...s[i],title:v}; onEdit("steps",s); 
+})} tag="h3" className="text-[#F5F5F0] font-semibold mb-2" />
+                <InlineText value={step.desc} onChange={onEdit && (v => {
+ const s=[...(d.steps||[])]; s[i]={...s[i],desc:v}; onEdit("steps",s); 
+})} tag="p" multiline className="text-[#A1A1AA] text-sm" />
               </div>
             </div>
           ))}
@@ -1246,7 +1319,7 @@ export const LiveNewsletter = memo(({ d, onEdit }) => (
         <div className="flex-1 bg-[#0F0F10] border border-white/10 h-12 px-4 flex items-center">
           <span className="text-[#71717A] text-sm">your@email.com</span>
         </div>
-        <Button className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs tracking-widest px-6 h-12 font-semibold shrink-0">
+        <Button className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs tracking-widest px-6 h-12 font-semibold shrink-0">
           <InlineText value={d.ctaText || "Subscribe"} onChange={onEdit && (v => onEdit("ctaText",v))} />
         </Button>
       </div>
@@ -1287,7 +1360,7 @@ export const LiveIconRow = memo(({ d, onEdit }) => (
           const Icon = ICON_MAP[item.icon] || Star;
           return (
             <div key={i} className="flex flex-col items-center gap-2 text-center">
-              <Icon className="w-7 h-7 text-[#D4AF37]" />
+              <Icon className="w-7 h-7 text-[#C9A84C]" />
               <span className="text-xs uppercase tracking-widest text-[#A1A1AA] font-medium">{item.label}</span>
             </div>
           );
@@ -1311,7 +1384,7 @@ export const LiveComparison = memo(({ d, onEdit }) => (
             <tr>
               <th className="px-6 py-4 text-left text-[#A1A1AA] font-medium">Feature</th>
               <th className="px-6 py-4 text-center text-[#F5F5F0] font-semibold">Essentials (15%)</th>
-              <th className="px-6 py-4 text-center text-[#D4AF37] font-semibold border-l border-[#D4AF37]/20">Complete (18%)</th>
+              <th className="px-6 py-4 text-center text-[#C9A84C] font-semibold border-l border-[#C9A84C]/20">Complete (18%)</th>
             </tr>
           </thead>
           <tbody>
@@ -1326,7 +1399,7 @@ export const LiveComparison = memo(({ d, onEdit }) => (
               <tr key={i} className={`border-t border-white/5 ${i % 2 === 0 ? "bg-[#0F0F10]" : "bg-[#161618]/50"}`}>
                 <td className="px-6 py-3 text-[#A1A1AA]">{row.feature}</td>
                 <td className="px-6 py-3 text-center">{row.essentials ? <Check className="w-4 h-4 text-green-400 mx-auto" /> : <X className="w-4 h-4 text-[#5a5a5e] mx-auto" />}</td>
-                <td className="px-6 py-3 text-center border-l border-[#D4AF37]/10">{row.complete ? <Check className="w-4 h-4 text-[#D4AF37] mx-auto" /> : <X className="w-4 h-4 text-[#5a5a5e] mx-auto" />}</td>
+                <td className="px-6 py-3 text-center border-l border-[#C9A84C]/10">{row.complete ? <Check className="w-4 h-4 text-[#C9A84C] mx-auto" /> : <X className="w-4 h-4 text-[#5a5a5e] mx-auto" />}</td>
               </tr>
             ))}
           </tbody>
@@ -1352,7 +1425,7 @@ export const LiveGuestyListings = memo(({ d, onEdit }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         {(d.label || d.title) && (
           <div className="text-center mb-10">
-            {d.label && <InlineText value={d.label} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-4 block font-medium" />}
+            {d.label && <InlineText value={d.label} onChange={onEdit && (v => onEdit("label",v))} tag="span" className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] mb-4 block font-medium" />}
             {d.title && <InlineText value={d.title} onChange={onEdit && (v => onEdit("title",v))} tag="h2" className="font-['Playfair_Display'] text-3xl text-[#F5F5F0]" />}
           </div>
         )}
@@ -1363,22 +1436,22 @@ export const LiveGuestyListings = memo(({ d, onEdit }) => {
               {icon:CalendarIcon,label:"Check-out", el:<input type="date" value={checkOut} onChange={e=>setCheckOut(e.target.value)} className="bg-transparent text-sm text-[#F5F5F0] outline-none" />},
             ].map(({icon:Ic,label,el},i) => (
               <div key={i} className="flex-1 flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5">
-                <Ic className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <Ic className="w-4 h-4 text-[#C9A84C] shrink-0" />
                 <div><p className="text-[10px] uppercase tracking-widest text-[#71717A]">{label}</p>{el}</div>
               </div>
             ))}
             <div className="flex items-center gap-3 px-4 py-3 bg-[#0F0F10] border border-white/5">
-              <Users className="w-4 h-4 text-[#D4AF37] shrink-0" />
+              <Users className="w-4 h-4 text-[#C9A84C] shrink-0" />
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-[#71717A]">Guests</p>
                 <div className="flex items-center gap-2">
-                  <button onClick={()=>setGuests(g=>Math.max(1,g-1))} className="w-5 h-5 border border-white/20 flex items-center justify-center text-[#A1A1AA] hover:text-[#D4AF37]"><Minus size={10}/></button>
+                  <button onClick={()=>setGuests(g=>Math.max(1,g-1))} className="w-5 h-5 border border-white/20 flex items-center justify-center text-[#A1A1AA] hover:text-[#C9A84C]"><Minus size={10}/></button>
                   <span className="text-sm text-[#F5F5F0] w-4 text-center">{guests}</span>
-                  <button onClick={()=>setGuests(g=>g+1)} className="w-5 h-5 border border-white/20 flex items-center justify-center text-[#A1A1AA] hover:text-[#D4AF37]"><Plus size={10}/></button>
+                  <button onClick={()=>setGuests(g=>g+1)} className="w-5 h-5 border border-white/20 flex items-center justify-center text-[#A1A1AA] hover:text-[#C9A84C]"><Plus size={10}/></button>
                 </div>
               </div>
             </div>
-            <Button onClick={handleSearch} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-widest px-8 font-semibold h-auto">
+            <Button onClick={handleSearch} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-sm tracking-widest px-8 font-semibold h-auto">
               <Search className="w-4 h-4 mr-2"/>Search
             </Button>
           </div>
@@ -1390,7 +1463,7 @@ export const LiveGuestyListings = memo(({ d, onEdit }) => {
         </div>
         {!loading && listings.length > 0 && d.ctaText && (
           <div className="text-center mt-8">
-            <a href="/properties" className="inline-flex items-center gap-2 border border-white/20 text-[#F5F5F0] hover:border-[#D4AF37] text-sm uppercase tracking-widest px-8 py-3 transition-all">
+            <a href="/properties" className="inline-flex items-center gap-2 border border-white/20 text-[#F5F5F0] hover:border-[#C9A84C] text-sm uppercase tracking-widest px-8 py-3 transition-all">
               <InlineText value={d.ctaText} onChange={onEdit&&(v=>onEdit("ctaText",v))}/><ArrowRight className="w-4 h-4"/>
             </a>
           </div>

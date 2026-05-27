@@ -23,13 +23,17 @@ export const CarouselHero = ({ data }) => {
   }, [slides.length]);
 
   useEffect(() => {
-    if (!autoplay || slides.length <= 1) return;
+    if (!autoplay || slides.length <= 1) {
+return;
+}
 
     const timer = setInterval(nextSlide, interval);
     return () => clearInterval(timer);
   }, [autoplay, interval, nextSlide, slides.length]);
 
-  if (!slides.length) return null;
+  if (!slides.length) {
+return null;
+}
 
   return (
     <section className="relative min-h-screen overflow-hidden">
@@ -62,8 +66,8 @@ export const CarouselHero = ({ data }) => {
               <div className="max-w-3xl animate-fade-in">
                 {/* Badge */}
                 {slide.badge && (
-                  <div className="inline-block px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 backdrop-blur-sm mb-6">
-                    <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
+                  <div className="inline-block px-4 py-2 border border-[#C9A84C]/30 bg-[#C9A84C]/5 backdrop-blur-sm mb-6">
+                    <span className="text-xs uppercase tracking-[0.2em] text-[#C9A84C] font-medium">
                       {slide.badge}
                     </span>
                   </div>
@@ -82,7 +86,7 @@ export const CarouselHero = ({ data }) => {
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
-                    className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] px-8 py-6 text-lg font-semibold rounded-none uppercase tracking-widest"
+                    className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] px-8 py-6 text-lg font-semibold rounded-none uppercase tracking-widest"
                     onClick={() => window.location.href = slide.cta1Link}
                   >
                     {slide.cta1Text}
@@ -108,14 +112,14 @@ export const CarouselHero = ({ data }) => {
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-[#0F0F10]/80 hover:bg-[#D4AF37] text-[#F5F5F0] p-3 backdrop-blur-sm transition-all group"
+            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-[#0F0F10]/80 hover:bg-[#C9A84C] text-[#F5F5F0] p-3 backdrop-blur-sm transition-all group"
             aria-label="Previous slide"
           >
             <ChevronLeft className="w-6 h-6 group-hover:scale-110 transition-transform" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-[#0F0F10]/80 hover:bg-[#D4AF37] text-[#F5F5F0] p-3 backdrop-blur-sm transition-all group"
+            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-[#0F0F10]/80 hover:bg-[#C9A84C] text-[#F5F5F0] p-3 backdrop-blur-sm transition-all group"
             aria-label="Next slide"
           >
             <ChevronRight className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -132,7 +136,7 @@ export const CarouselHero = ({ data }) => {
               onClick={() => setCurrentSlide(index)}
               className={`h-2 transition-all ${
                 index === currentSlide
-                  ? 'w-8 bg-[#D4AF37]'
+                  ? 'w-8 bg-[#C9A84C]'
                   : 'w-2 bg-[#F5F5F0]/30 hover:bg-[#F5F5F0]/50'
               }`}
               aria-label={`Go to slide ${index + 1}`}

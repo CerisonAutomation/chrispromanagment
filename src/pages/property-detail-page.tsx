@@ -115,7 +115,9 @@ export const PropertyDetailPage = () => {
   const getDisabledDates = () => {
     // Guesty BEAPI returns days array directly or in a 'days' property
     const days = Array.isArray(calendarData) ? calendarData : calendarData?.days;
-    if (!days) return [];
+    if (!days) {
+return [];
+}
     return days
       .filter(day => day.status !== "available" || day.minNights > 30)
       .map(day => new Date(day.date));
@@ -124,7 +126,9 @@ export const PropertyDetailPage = () => {
   const disabledDates = getDisabledDates();
 
   const fetchQuote = async () => {
-    if (!listing || !checkIn || !checkOut) return;
+    if (!listing || !checkIn || !checkOut) {
+return;
+}
     setIsQuoteLoading(true);
     try {
       const data = await guesty.createQuote({
@@ -168,7 +172,9 @@ export const PropertyDetailPage = () => {
 
   // ── Coupons (canonical Guesty BEAPI) ─────────────────────────
   const applyCoupon = async () => {
-    if (!quote?._id || !couponInput.trim()) return;
+    if (!quote?._id || !couponInput.trim()) {
+return;
+}
     setCouponLoading(true);
     try {
       const data = await guesty.applyCoupon(quote._id, couponInput.trim().toUpperCase());
@@ -220,7 +226,7 @@ export const PropertyDetailPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#C9A84C] animate-spin" />
       </div>
     );
   }
@@ -231,7 +237,7 @@ export const PropertyDetailPage = () => {
         <h1 className="text-2xl text-[#F5F5F0]">Property not found</h1>
         <Button
           onClick={() => navigate("/properties")}
-          className="mt-6 bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+          className="mt-6 bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
         >
           Back to Properties
         </Button>
@@ -275,19 +281,19 @@ export const PropertyDetailPage = () => {
               <div className="flex flex-wrap items-center gap-6 text-[#A1A1AA]">
                 {listing.accommodates && (
                   <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-[#D4AF37]" />
+                    <Users className="w-5 h-5 text-[#C9A84C]" />
                     <span>{listing.accommodates} Guests</span>
                   </div>
                 )}
                 {listing.bedrooms !== undefined && (
                   <div className="flex items-center gap-2">
-                    <Bed className="w-5 h-5 text-[#D4AF37]" />
+                    <Bed className="w-5 h-5 text-[#C9A84C]" />
                     <span>{listing.bedrooms} Bedrooms</span>
                   </div>
                 )}
                 {listing.bathrooms !== undefined && (
                   <div className="flex items-center gap-2">
-                    <Bath className="w-5 h-5 text-[#D4AF37]" />
+                    <Bath className="w-5 h-5 text-[#C9A84C]" />
                     <span>{listing.bathrooms} Bathrooms</span>
                   </div>
                 )}
@@ -297,8 +303,8 @@ export const PropertyDetailPage = () => {
               {listing.reviews?.avg > 0 && (
                 <div className="flex items-center gap-3 mt-4 pt-4 border-t border-white/5">
                   <div className="flex items-center gap-1.5">
-                    <Star className="w-5 h-5 text-[#D4AF37] fill-current" />
-                    <span className="font-['Playfair_Display'] text-xl text-[#D4AF37]">
+                    <Star className="w-5 h-5 text-[#C9A84C] fill-current" />
+                    <span className="font-['Playfair_Display'] text-xl text-[#C9A84C]">
                       {listing.reviews.avg > 5 ? (listing.reviews.avg / 2).toFixed(1) : listing.reviews.avg.toFixed(1)}
                     </span>
                     <span className="text-[#A1A1AA] text-sm">/5</span>
@@ -316,14 +322,14 @@ export const PropertyDetailPage = () => {
                 <div className="flex flex-wrap gap-6 mt-4 pt-4 border-t border-white/5">
                   {listing.defaultCheckInTime && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-[#D4AF37]" />
+                      <Calendar className="w-4 h-4 text-[#C9A84C]" />
                       <span className="text-[#A1A1AA]">Check-in:</span>
                       <span className="text-[#F5F5F0] font-medium">{listing.defaultCheckInTime}</span>
                     </div>
                   )}
                   {listing.defaultCheckOutTime && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="w-4 h-4 text-[#D4AF37]" />
+                      <Calendar className="w-4 h-4 text-[#C9A84C]" />
                       <span className="text-[#A1A1AA]">Check-out:</span>
                       <span className="text-[#F5F5F0] font-medium">{listing.defaultCheckOutTime}</span>
                     </div>
@@ -421,7 +427,7 @@ export const PropertyDetailPage = () => {
                   
                   return sortedCategories.map(([category, amenities]) => (
                     <div key={category} className="mb-6">
-                      <h3 className="text-sm uppercase tracking-widest text-[#D4AF37] mb-3">
+                      <h3 className="text-sm uppercase tracking-widest text-[#C9A84C] mb-3">
                         {AMENITY_CATEGORIES[category]?.label || category}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -430,9 +436,9 @@ export const PropertyDetailPage = () => {
                           return (
                             <div
                               key={index}
-                              className="flex items-center gap-3 p-3 bg-[#161618] border border-white/5 hover:border-[#D4AF37]/20 transition-colors"
+                              className="flex items-center gap-3 p-3 bg-[#161618] border border-white/5 hover:border-[#C9A84C]/20 transition-colors"
                             >
-                              <Icon className="w-5 h-5 text-[#D4AF37] flex-shrink-0" />
+                              <Icon className="w-5 h-5 text-[#C9A84C] flex-shrink-0" />
                               <span className="text-[#F5F5F0] text-sm">
                                 {label}
                               </span>
@@ -497,7 +503,7 @@ export const PropertyDetailPage = () => {
                   Location
                 </h2>
                 <div className="flex items-start gap-3 text-[#A1A1AA] mb-6">
-                  <MapPin className="w-5 h-5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-5 h-5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                   <div>
                     <p>{listing.address.full || `${listing.address.street || ""}, ${listing.address.city || ""}, Malta`}</p>
                     {listing.publicDescription?.neighborhood && (
@@ -535,7 +541,7 @@ export const PropertyDetailPage = () => {
               {/* Price — from Guesty quote when available, else from listing.prices.basePrice */}
               <div className="mb-6 pb-6 border-b border-white/10">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-['Playfair_Display'] text-3xl text-[#D4AF37]" data-testid="nightly-price">
+                  <span className="font-['Playfair_Display'] text-3xl text-[#C9A84C]" data-testid="nightly-price">
                     {breakdown && nights > 0
                       ? formatMoney(breakdown.subtotal / nights, breakdown.currency)
                       : formatPrice(listing.prices?.basePrice || 0, listing.prices?.currency)}
@@ -550,10 +556,10 @@ export const PropertyDetailPage = () => {
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
-                      className="w-full flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/10 hover:border-[#D4AF37]/30 transition-colors text-left"
+                      className="w-full flex items-center gap-3 p-4 bg-[#0F0F10] border border-white/10 hover:border-[#C9A84C]/30 transition-colors text-left"
                       data-testid="booking-date-picker"
                     >
-                      <Calendar className="w-5 h-5 text-[#D4AF37]" />
+                      <Calendar className="w-5 h-5 text-[#C9A84C]" />
                       <span className="text-[#F5F5F0]">
                         {checkIn && checkOut
                           ? `${format(checkIn, "MMM d")} - ${format(checkOut, "MMM d, yyyy")}`
@@ -595,12 +601,12 @@ export const PropertyDetailPage = () => {
               <div className="mb-6">
                 <label className="form-label">Guests</label>
                 <div className="flex items-center justify-between p-4 bg-[#0F0F10] border border-white/10">
-                  <Users className="w-5 h-5 text-[#D4AF37]" />
+                  <Users className="w-5 h-5 text-[#C9A84C]" />
                   <div className="flex items-center gap-4">
                     <Button
                       variant="outline"
                       size="icon"
-                      className="w-8 h-8 rounded-none border-white/20 hover:border-[#D4AF37] hover:bg-transparent"
+                      className="w-8 h-8 rounded-none border-white/20 hover:border-[#C9A84C] hover:bg-transparent"
                       onClick={() => setGuests(Math.max(1, guests - 1))}
                       data-testid="guests-decrement"
                     >
@@ -610,7 +616,7 @@ export const PropertyDetailPage = () => {
                     <Button
                       variant="outline"
                       size="icon"
-                      className="w-8 h-8 rounded-none border-white/20 hover:border-[#D4AF37] hover:bg-transparent"
+                      className="w-8 h-8 rounded-none border-white/20 hover:border-[#C9A84C] hover:bg-transparent"
                       onClick={() => setGuests(Math.min(listing.accommodates || 20, guests + 1))}
                       data-testid="guests-increment"
                     >
@@ -623,7 +629,7 @@ export const PropertyDetailPage = () => {
               {/* Quote/Price Breakdown — pulled directly from Guesty invoiceItems */}
               {isQuoteLoading ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="w-6 h-6 text-[#D4AF37] animate-spin" />
+                  <Loader2 className="w-6 h-6 text-[#C9A84C] animate-spin" />
                 </div>
               ) : quote && breakdown ? (
                 <div className="mb-6 space-y-4" data-testid="quote-breakdown">
@@ -642,16 +648,16 @@ export const PropertyDetailPage = () => {
                             onClick={() => setSelectedRatePlanIdx(i)}
                             className={`w-full text-left p-3 border transition-all ${
                               selected
-                                ? "bg-[#D4AF37]/10 border-[#D4AF37]"
+                                ? "bg-[#C9A84C]/10 border-[#C9A84C]"
                                 : "bg-[#0F0F10] border-white/10 hover:border-white/30"
                             }`}
                             data-testid={`rate-plan-${i}`}
                           >
                             <div className="flex justify-between items-center gap-3">
-                              <span className={`text-sm font-medium ${selected ? "text-[#D4AF37]" : "text-[#F5F5F0]"}`}>
+                              <span className={`text-sm font-medium ${selected ? "text-[#C9A84C]" : "text-[#F5F5F0]"}`}>
                                 {meta.name || "Standard rate"}
                               </span>
-                              <span className={`text-sm font-semibold ${selected ? "text-[#D4AF37]" : "text-[#F5F5F0]"}`}>
+                              <span className={`text-sm font-semibold ${selected ? "text-[#C9A84C]" : "text-[#F5F5F0]"}`}>
                                 {formatMoney(m.hostPayout || 0, m.currency || breakdown.currency)}
                               </span>
                             </div>
@@ -664,7 +670,7 @@ export const PropertyDetailPage = () => {
                   {/* Cancellation policy hint */}
                   {cancellation && (
                     <div className="flex items-start gap-2 text-xs text-[#A1A1AA] bg-[#0F0F10] border border-white/5 p-3">
-                      <Info className="w-3.5 h-3.5 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+                      <Info className="w-3.5 h-3.5 text-[#C9A84C] flex-shrink-0 mt-0.5" />
                       <span>{cancellation.label}</span>
                     </div>
                   )}
@@ -677,7 +683,7 @@ export const PropertyDetailPage = () => {
                           const code = c.code || c;
                           return (
                             <div key={code} className="flex justify-between items-center text-xs">
-                              <span className="text-[#D4AF37]">Coupon · {code}</span>
+                              <span className="text-[#C9A84C]">Coupon · {code}</span>
                               <button
                                 type="button"
                                 onClick={() => removeCoupon(code)}
@@ -696,7 +702,7 @@ export const PropertyDetailPage = () => {
                       <button
                         type="button"
                         onClick={() => setCouponOpen(true)}
-                        className="text-xs text-[#A1A1AA] hover:text-[#D4AF37] underline underline-offset-2"
+                        className="text-xs text-[#A1A1AA] hover:text-[#C9A84C] underline underline-offset-2"
                         data-testid="toggle-coupon-btn"
                       >
                         I have a coupon
@@ -708,7 +714,7 @@ export const PropertyDetailPage = () => {
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value)}
                           placeholder="ENTER CODE"
-                          className="flex-1 bg-[#0F0F10] border border-white/10 px-3 py-2 text-xs text-[#F5F5F0] focus:border-[#D4AF37] focus:outline-none uppercase tracking-widest"
+                          className="flex-1 bg-[#0F0F10] border border-white/10 px-3 py-2 text-xs text-[#F5F5F0] focus:border-[#C9A84C] focus:outline-none uppercase tracking-widest"
                           data-testid="coupon-input"
                           onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
                         />
@@ -716,7 +722,7 @@ export const PropertyDetailPage = () => {
                           type="button"
                           onClick={applyCoupon}
                           disabled={couponLoading || !couponInput.trim()}
-                          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-xs px-3 py-2 h-auto"
+                          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase text-xs px-3 py-2 h-auto"
                           data-testid="apply-coupon-btn"
                         >
                           {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Apply"}
@@ -786,7 +792,7 @@ export const PropertyDetailPage = () => {
                   {/* Total */}
                   <div className="flex justify-between items-baseline pt-3 border-t border-white/10">
                     <span className="text-[#F5F5F0] font-semibold">Total</span>
-                    <span className="font-['Playfair_Display'] text-2xl text-[#D4AF37]" data-testid="quote-total">
+                    <span className="font-['Playfair_Display'] text-2xl text-[#C9A84C]" data-testid="quote-total">
                       {formatMoney(breakdown.total, breakdown.currency)}
                     </span>
                   </div>
@@ -804,7 +810,7 @@ export const PropertyDetailPage = () => {
               <Button
                 onClick={handleBookNow}
                 disabled={!quote || isQuoteLoading}
-                className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-6 text-sm font-semibold btn-gold-glow disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="book-now-btn"
               >
                 {!checkIn || !checkOut

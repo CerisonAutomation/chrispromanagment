@@ -43,7 +43,9 @@ export function useRealtimeBookings() {
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+ supabase.removeChannel(channel); 
+};
   }, [fetchRecent]);
 
   return { bookings, newBooking };

@@ -37,7 +37,7 @@ interface ContactModalProps {
  * @param props - Component props
  * @returns React component
  */
-export const ContactModal = memo(function ContactModal() {
+export const ContactModal = memo(() => {
   const { contactModalOpen, closeContactModal, contactPreFill } = useModal();
   const { cms } = useCMS();
   const { content: copy } = useBlock("contactModal");
@@ -80,7 +80,9 @@ export const ContactModal = memo(function ContactModal() {
         subject: form.subject || "General Inquiry",
         message: form.message,
       });
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       setIsSuccess(true);
       toast.success("Message sent! We'll be in touch within 24 hours.");
     } catch (error: unknown) {
@@ -119,7 +121,7 @@ export const ContactModal = memo(function ContactModal() {
             </p>
             <Button
               onClick={handleClose}
-              className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none"
+              className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none"
               aria-label="Close modal"
             >
               Close
@@ -141,7 +143,7 @@ export const ContactModal = memo(function ContactModal() {
               <a
                 href={`tel:${cms.contact?.phone}`}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#D4AF37]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#D4AF37]"
+                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#C9A84C]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#C9A84C]"
                 )}
                 data-testid="contact-call-btn"
                 aria-label="Call us"
@@ -154,7 +156,7 @@ export const ContactModal = memo(function ContactModal() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#D4AF37]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#D4AF37]"
+                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#C9A84C]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#C9A84C]"
                 )}
                 data-testid="contact-whatsapp-btn"
                 aria-label="Chat on WhatsApp"
@@ -165,7 +167,7 @@ export const ContactModal = memo(function ContactModal() {
               <a
                 href={`mailto:${cms.contact?.email}`}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#D4AF37]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#D4AF37]"
+                  "flex items-center gap-2 px-4 py-2 bg-[#161618] border border-white/10 hover:border-[#C9A84C]/30 transition-colors text-sm text-[#A1A1AA] hover:text-[#C9A84C]"
                 )}
                 data-testid="contact-email-btn"
                 aria-label="Email us"
@@ -178,7 +180,7 @@ export const ContactModal = memo(function ContactModal() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Quick Subject Selection */}
               <div>
-                <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                   What's this about?
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -190,7 +192,7 @@ export const ContactModal = memo(function ContactModal() {
                       className={cn(
                         "px-3 py-1.5 text-sm border transition-colors",
                         form.subject === subject
-                          ? "border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10"
+                          ? "border-[#C9A84C] text-[#C9A84C] bg-[#C9A84C]/10"
                           : "border-white/10 text-[#A1A1AA] hover:border-white/30"
                       )}
                       aria-label={`Select subject: ${subject}`}
@@ -203,7 +205,7 @@ export const ContactModal = memo(function ContactModal() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Name *
                   </label>
                   <Input
@@ -212,12 +214,12 @@ export const ContactModal = memo(function ContactModal() {
                     onChange={(e) => handleFormChange("name", e.target.value)}
                     required
                     placeholder="Your name"
-                    className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37]"
+                    className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C]"
                     data-testid="contact-modal-name"
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                  <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                     Phone
                   </label>
                   <Input
@@ -225,14 +227,14 @@ export const ContactModal = memo(function ContactModal() {
                     value={form.phone}
                     onChange={(e) => handleFormChange("phone", e.target.value)}
                     placeholder="+356..."
-                    className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37]"
+                    className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C]"
                     data-testid="contact-modal-phone"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                   Email *
                 </label>
                 <Input
@@ -241,13 +243,13 @@ export const ContactModal = memo(function ContactModal() {
                   onChange={(e) => handleFormChange("email", e.target.value)}
                   required
                   placeholder="your@email.com"
-                  className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37]"
+                  className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C]"
                   data-testid="contact-modal-email"
                 />
               </div>
 
               <div>
-                <label className="text-xs uppercase tracking-widest text-[#D4AF37] mb-2 block">
+                <label className="text-xs uppercase tracking-widest text-[#C9A84C] mb-2 block">
                   Message *
                 </label>
                 <Textarea
@@ -256,7 +258,7 @@ export const ContactModal = memo(function ContactModal() {
                   required
                   rows={3}
                   placeholder="How can we help?"
-                  className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#D4AF37] resize-none"
+                  className="bg-[#161618] border-white/10 rounded-none text-[#F5F5F0] focus-visible:ring-[#C9A84C] resize-none"
                   data-testid="contact-modal-message"
                 />
               </div>
@@ -264,7 +266,7 @@ export const ContactModal = memo(function ContactModal() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase tracking-widest py-4 font-semibold"
+                className="w-full bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] rounded-none uppercase tracking-widest py-4 font-semibold"
                 data-testid="contact-modal-submit"
                 aria-label="Send message"
               >

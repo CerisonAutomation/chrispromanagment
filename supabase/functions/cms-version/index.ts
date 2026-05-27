@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-correlation-id",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -23,8 +23,12 @@ function json(data: unknown, status = 200) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (req.method === "OPTIONS") {
+return new Response(null, { headers: corsHeaders });
+}
+  if (req.method !== "POST") {
+return json({ error: "Method not allowed" }, 405);
+}
 
   try {
     const url = Deno.env.get("SUPABASE_URL")!;
@@ -35,7 +39,9 @@ Deno.serve(async (req) => {
     // user-context client validates the caller's JWT
     const userClient = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) return json({ error: "Unauthorized" }, 401);
+    if (userErr || !userData?.user) {
+return json({ error: "Unauthorized" }, 401);
+}
     const userId = userData.user.id;
 
     // role check via SECURITY DEFINER has_role
@@ -43,7 +49,9 @@ Deno.serve(async (req) => {
       userClient.rpc("has_role", { _user_id: userId, _role: "admin" }),
       userClient.rpc("has_role", { _user_id: userId, _role: "editor" }),
     ]);
-    if (!isAdmin && !isEditor) return json({ error: "Forbidden" }, 403);
+    if (!isAdmin && !isEditor) {
+return json({ error: "Forbidden" }, 403);
+}
 
     // service-role client for cross-table reads/writes
     const admin = createClient(url, service);
@@ -57,16 +65,24 @@ Deno.serve(async (req) => {
         .select("id,label,note,status,content_count,image_count,setting_count,created_at,published_at,created_by")
         .order("created_at", { ascending: false })
         .limit(200);
-      if (error) return json({ error: error.message }, 500);
+      if (error) {
+return json({ error: error.message }, 500);
+}
       return json({ versions: data });
     }
 
     if (action === "get") {
       const id = String(body?.id || "");
-      if (!id) return json({ error: "id required" }, 400);
+      if (!id) {
+return json({ error: "id required" }, 400);
+}
       const { data, error } = await admin.from("cms_versions").select("*").eq("id", id).maybeSingle();
-      if (error) return json({ error: error.message }, 500);
-      if (!data) return json({ error: "Not found" }, 404);
+      if (error) {
+return json({ error: error.message }, 500);
+}
+      if (!data) {
+return json({ error: "Not found" }, 404);
+}
       return json({ version: data });
     }
 
@@ -84,7 +100,9 @@ Deno.serve(async (req) => {
         admin.from("cms_page_seo").select("*"),
       ]);
       for (const r of [content, images, settings, seo]) {
-        if (r.error) return json({ error: r.error.message }, 500);
+        if (r.error) {
+return json({ error: r.error.message }, 500);
+}
       }
 
       const snapshot = {
@@ -111,28 +129,40 @@ Deno.serve(async (req) => {
         })
         .select("id,label,status,created_at,content_count,image_count,setting_count")
         .single();
-      if (insert.error) return json({ error: insert.error.message }, 500);
+      if (insert.error) {
+return json({ error: insert.error.message }, 500);
+}
       return json({ version: insert.data });
     }
 
     if (action === "publish") {
-      if (!isAdmin) return json({ error: "Admin required" }, 403);
+      if (!isAdmin) {
+return json({ error: "Admin required" }, 403);
+}
       const id = String(body?.id || "");
-      if (!id) return json({ error: "id required" }, 400);
+      if (!id) {
+return json({ error: "id required" }, 400);
+}
       const { data, error } = await admin
         .from("cms_versions")
         .update({ status: "published", published_at: new Date().toISOString() })
         .eq("id", id)
         .select("id,status,published_at")
         .single();
-      if (error) return json({ error: error.message }, 500);
+      if (error) {
+return json({ error: error.message }, 500);
+}
       return json({ version: data });
     }
 
     if (action === "revert") {
-      if (!isAdmin) return json({ error: "Admin required" }, 403);
+      if (!isAdmin) {
+return json({ error: "Admin required" }, 403);
+}
       const id = String(body?.id || "");
-      if (!id) return json({ error: "id required" }, 400);
+      if (!id) {
+return json({ error: "id required" }, 400);
+}
 
       // Auto-snapshot current state before destructive revert
       const [content, images, settings, seo] = await Promise.all([
@@ -161,8 +191,12 @@ Deno.serve(async (req) => {
 
       const { data: ver, error: verErr } = await admin
         .from("cms_versions").select("snapshot").eq("id", id).maybeSingle();
-      if (verErr) return json({ error: verErr.message }, 500);
-      if (!ver?.snapshot) return json({ error: "Snapshot not found" }, 404);
+      if (verErr) {
+return json({ error: verErr.message }, 500);
+}
+      if (!ver?.snapshot) {
+return json({ error: "Snapshot not found" }, 404);
+}
 
       const snap = ver.snapshot as Record<string, unknown[]>;
 
@@ -173,11 +207,29 @@ Deno.serve(async (req) => {
       await admin.from("cms_page_seo").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
       const errs: string[] = [];
-      if (snap.cms_content?.length)  { const r = await admin.from("cms_content").insert(snap.cms_content);  if (r.error) errs.push("content: "+r.error.message); }
-      if (snap.cms_images?.length)   { const r = await admin.from("cms_images").insert(snap.cms_images);   if (r.error) errs.push("images: "+r.error.message); }
-      if (snap.cms_settings?.length) { const r = await admin.from("cms_settings").insert(snap.cms_settings); if (r.error) errs.push("settings: "+r.error.message); }
-      if (snap.cms_page_seo?.length) { const r = await admin.from("cms_page_seo").insert(snap.cms_page_seo); if (r.error) errs.push("seo: "+r.error.message); }
-      if (errs.length) return json({ error: "Partial revert", details: errs }, 500);
+      if (snap.cms_content?.length)  {
+ const r = await admin.from("cms_content").insert(snap.cms_content);  if (r.error) {
+errs.push(`content: ${r.error.message}`);
+} 
+}
+      if (snap.cms_images?.length)   {
+ const r = await admin.from("cms_images").insert(snap.cms_images);   if (r.error) {
+errs.push(`images: ${r.error.message}`);
+} 
+}
+      if (snap.cms_settings?.length) {
+ const r = await admin.from("cms_settings").insert(snap.cms_settings); if (r.error) {
+errs.push(`settings: ${r.error.message}`);
+} 
+}
+      if (snap.cms_page_seo?.length) {
+ const r = await admin.from("cms_page_seo").insert(snap.cms_page_seo); if (r.error) {
+errs.push(`seo: ${r.error.message}`);
+} 
+}
+      if (errs.length) {
+return json({ error: "Partial revert", details: errs }, 500);
+}
 
       await admin.from("cms_sync_log").insert({
         source: "cms-version",

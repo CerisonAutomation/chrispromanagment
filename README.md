@@ -558,3 +558,54 @@ Proprietary - All rights reserved.
 **Version**: 2.0.0-enterprise  
 **Last Updated**: 2026-05-26  
 **Architecture Status**: Production-Ready, Zero-Trust, Hyper-Scalable
+## 🚀 Upstash Integration (New)
+
+### Upstash Redis (Serverless Cache)
+- **REST API client** - no TCP connections, works in serverless/edge environments
+- **Location**: `src/lib/upstash-redis.ts`
+- **Features**: String, Hash, Set, Sorted Set, List operations + JSON helpers
+- **Cache decorator**: `@Cacheable(keyPrefix, ttlSeconds)` for automatic method caching
+- **Integration**: `CachedRepository` in `src/core/repository-pattern.ts` uses Upstash Redis
+
+### Upstash QStash (Serverless Job Queue)
+- **HTTP-based queue** - replaces BullMQ/Bull, no Redis TCP needed
+- **Location**: `src/lib/qstash.ts`
+- **Features**: Job publishing, cron scheduling, webhook delivery, signature verification
+- **Integration**: `CommandBus.executeAsync()` in `src/core/cqrs-pattern.ts`
+- **Webhook Handler**: `supabase/functions/qstash-webhook/index.ts`
+
+### Environment Variables
+```bash
+# Upstash Redis
+KV_REST_API_URL=https://your-redis.upstash.io
+KV_REST_API_TOKEN=your-token
+KV_REST_API_READ_ONLY_TOKEN=your-read-only-token
+REDIS_URL=rediss://default:token@your-redis.upstash.io:6379
+
+# Upstash QStash
+QSTASH_URL=https://qstash-your-region.upstash.io
+QSTASH_TOKEN=your-token
+QSTASH_CURRENT_SIGNING_KEY=your-signing-key
+QSTASH_NEXT_SIGNING_KEY=your-next-signing-key
+```
+
+### Quick Usage
+```typescript
+// Cache with Redis
+import { redis } from '@/lib/upstash-redis';
+await redis.setJSON('user:123', userData, { ex: 300 });
+const user = await redis.getJSON('user:123');
+
+// Queue async job
+import { qstash } from '@/lib/qstash';
+await qstash.publish({
+  url: '/api/workers/ai-generation',
+  body: { type: 'content', prompt: '...' },
+  retries: 2,
+  timeout: 120,
+});
+
+// Async CQRS command
+import { commandBus } from '@/core/cqrs-pattern';
+await commandBus.executeAsync('CreateBooking', bookingData);
+```

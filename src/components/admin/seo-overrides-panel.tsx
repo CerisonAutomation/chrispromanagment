@@ -1,4 +1,3 @@
-// @ts-nocheck
 // SEO Overrides admin panel (P4). Read/write cms_page_seo.
 import { useEffect, useState } from "react";
 import { Search, Save, Trash2, Plus, ExternalLink } from "lucide-react";
@@ -25,12 +24,16 @@ export default function SeoOverridesPanel() {
       .from("cms_page_seo")
       .select("*")
       .order("page_slug");
-    if (error) toast.error(error.message);
+    if (error) {
+toast.error(error.message);
+}
     setRows(data ?? []);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+ load(); 
+}, []);
 
   const pick = (row) => {
     setActive(row.page_slug);
@@ -39,7 +42,9 @@ export default function SeoOverridesPanel() {
 
   const newOverride = () => {
     const slug = window.prompt("Page slug (e.g. /, /properties, /property/123)");
-    if (!slug) return;
+    if (!slug) {
+return;
+}
     const row = {
       page_slug: slug.trim(),
       meta_title: "",
@@ -53,21 +58,31 @@ export default function SeoOverridesPanel() {
   };
 
   const save = async () => {
-    if (!draft) return;
+    if (!draft) {
+return;
+}
     setSaving(true);
     const { error } = await supabase.from("cms_page_seo").upsert(draft, { onConflict: "page_slug" });
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+return toast.error(error.message);
+}
     toast.success("SEO override saved");
     load();
   };
 
   const remove = async (slug) => {
-    if (!window.confirm(`Remove SEO override for ${slug}?`)) return;
+    if (!window.confirm(`Remove SEO override for ${slug}?`)) {
+return;
+}
     const { error } = await supabase.from("cms_page_seo").delete().eq("page_slug", slug);
-    if (error) return toast.error(error.message);
+    if (error) {
+return toast.error(error.message);
+}
     toast.success("Removed");
-    if (active === slug) { setActive(null); setDraft(null); }
+    if (active === slug) {
+ setActive(null); setDraft(null); 
+}
     load();
   };
 
@@ -79,7 +94,7 @@ export default function SeoOverridesPanel() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-[#F5F5F0]">
-            <Search className="w-4 h-4 text-[#D4AF37]" />
+            <Search className="w-4 h-4 text-[#C9A84C]" />
             <h2 className="text-base font-semibold">Per-page SEO Overrides</h2>
           </div>
           <p className="text-xs text-[#71717A] mt-1">
@@ -93,7 +108,7 @@ export default function SeoOverridesPanel() {
           <a
             href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sitemap-xml`}
             target="_blank" rel="noreferrer"
-            className="inline-flex items-center text-xs text-[#D4AF37] hover:underline"
+            className="inline-flex items-center text-xs text-[#C9A84C] hover:underline"
           >
             sitemap.xml <ExternalLink className="w-3 h-3 ml-1" />
           </a>
@@ -112,7 +127,7 @@ export default function SeoOverridesPanel() {
               onClick={() => pick(r)}
               className={`w-full text-left px-3 py-2 rounded text-sm border ${
                 active === r.page_slug
-                  ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#F5F5F0]"
+                  ? "border-[#C9A84C] bg-[#C9A84C]/10 text-[#F5F5F0]"
                   : "border-white/5 text-[#A1A1AA] hover:bg-white/5"
               }`}
             >
@@ -127,7 +142,7 @@ export default function SeoOverridesPanel() {
                 <button
                   key={s}
                   onClick={() => pick({ page_slug: s, robots: "index,follow" })}
-                  className="block w-full text-left text-xs text-[#A1A1AA] hover:text-[#D4AF37] px-3 py-1 font-mono"
+                  className="block w-full text-left text-xs text-[#A1A1AA] hover:text-[#C9A84C] px-3 py-1 font-mono"
                 >
                   + {s}
                 </button>
@@ -184,7 +199,7 @@ export default function SeoOverridesPanel() {
               </div>
 
               <div className="flex justify-end pt-2">
-                <Button onClick={save} disabled={saving} className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]">
+                <Button onClick={save} disabled={saving} className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]">
                   <Save className="w-4 h-4 mr-2" /> {saving ? "Saving…" : "Save override"}
                 </Button>
               </div>

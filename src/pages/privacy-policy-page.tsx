@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
 
       <div className="max-w-3xl mx-auto px-6 md:px-12">
         <div className="mb-10">
-          <p className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3">Legal</p>
+          <p className="text-xs uppercase tracking-widest text-[#C9A84C] mb-3">Legal</p>
           <h1 className="font-['Playfair_Display'] text-4xl text-[#F5F5F0] mb-4">Privacy Policy</h1>
           <p className="text-[#71717A] text-sm">Last updated: 1 January 2025 · Effective under GDPR / Maltese Data Protection Act (Cap. 586)</p>
         </div>
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
               personal data collected via this website and our booking platform.
             </p>
             <p className="mt-2">
-              Contact our data protection point of contact: <a href="mailto:info@christianopropertymanagement.com" className="text-[#D4AF37] hover:underline">info@christianopropertymanagement.com</a>
+              Contact our data protection point of contact: <a href="mailto:info@christianopropertymanagement.com" className="text-[#C9A84C] hover:underline">info@christianopropertymanagement.com</a>
             </p>
           </section>
 
@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-[#F5F5F0] text-xl font-semibold mb-3">7. Your Rights (GDPR)</h2>
-            <p>You have the right to: access your data, rectify inaccurate data, erasure ("right to be forgotten"), restrict or object to processing, and data portability. To exercise any right, email us at <a href="mailto:info@christianopropertymanagement.com" className="text-[#D4AF37] hover:underline">info@christianopropertymanagement.com</a>. We will respond within 30 days. You may also lodge a complaint with the <a href="https://idpc.org.mt" target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] hover:underline">Information and Data Protection Commissioner (Malta)</a>.</p>
+            <p>You have the right to: access your data, rectify inaccurate data, erasure ("right to be forgotten"), restrict or object to processing, and data portability. To exercise any right, email us at <a href="mailto:info@christianopropertymanagement.com" className="text-[#C9A84C] hover:underline">info@christianopropertymanagement.com</a>. We will respond within 30 days. You may also lodge a complaint with the <a href="https://idpc.org.mt" target="_blank" rel="noopener noreferrer" className="text-[#C9A84C] hover:underline">Information and Data Protection Commissioner (Malta)</a>.</p>
           </section>
 
           <section>
@@ -95,8 +95,8 @@ export default function PrivacyPolicyPage() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/5 flex gap-4 text-sm">
-          <Link to="/" className="text-[#D4AF37] hover:underline">← Home</Link>
-          <Link to="/terms" className="text-[#A1A1AA] hover:text-[#D4AF37]">Terms & Conditions →</Link>
+          <Link to="/" className="text-[#C9A84C] hover:underline">← Home</Link>
+          <Link to="/terms" className="text-[#A1A1AA] hover:text-[#C9A84C]">Terms & Conditions →</Link>
         </div>
       </div>
     </div>

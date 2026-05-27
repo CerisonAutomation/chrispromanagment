@@ -33,8 +33,12 @@ export const StickyCallToAction = () => {
   };
 
   // Don't show on checkout or admin pages
-  if (isCheckoutPage || location.pathname.startsWith("/admin")) return null;
-  if (!isVisible) return null;
+  if (isCheckoutPage || location.pathname.startsWith("/admin")) {
+return null;
+}
+  if (!isVisible) {
+return null;
+}
 
   // Context-aware actions
   const getActions = () => {
@@ -131,8 +135,8 @@ export const StickyCallToAction = () => {
                 }}
                 className={`flex items-center gap-2 px-4 py-3 rounded-full shadow-lg font-medium text-sm transition-all ${
                   action.primary
-                    ? "bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]"
-                    : "bg-[#161618] text-[#F5F5F0] border border-white/10 hover:border-[#D4AF37]/50"
+                    ? "bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]"
+                    : "bg-[#161618] text-[#F5F5F0] border border-white/10 hover:border-[#C9A84C]/50"
                 }`}
                 data-testid={`sticky-action-${i}`}
               >
@@ -144,9 +148,9 @@ export const StickyCallToAction = () => {
           
           <button
             onClick={scrollToTop}
-            className="flex items-center gap-2 bg-[#161618] text-[#F5F5F0] px-4 py-3 rounded-full shadow-lg border border-white/10 hover:border-[#D4AF37]/50 transition-all font-medium text-sm"
+            className="flex items-center gap-2 bg-[#161618] text-[#F5F5F0] px-4 py-3 rounded-full shadow-lg border border-white/10 hover:border-[#C9A84C]/50 transition-all font-medium text-sm"
           >
-            <ChevronUp className="w-4 h-4 text-[#D4AF37]" />
+            <ChevronUp className="w-4 h-4 text-[#C9A84C]" />
             Back to Top
           </button>
         </div>
@@ -154,7 +158,7 @@ export const StickyCallToAction = () => {
 
       {/* Context Label */}
       {!isExpanded && (
-        <div className="bg-[#0F0F10]/90 text-[#D4AF37] text-xs px-3 py-1.5 rounded-full border border-[#D4AF37]/30 backdrop-blur-sm">
+        <div className="bg-[#0F0F10]/90 text-[#C9A84C] text-xs px-3 py-1.5 rounded-full border border-[#C9A84C]/30 backdrop-blur-sm">
           {isPropertyPage && "Ready to book?"}
           {isOwnerPage && "List your property"}
           {isHomePage && "How can we help?"}
@@ -168,7 +172,7 @@ export const StickyCallToAction = () => {
         className={`w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 group ${
           isExpanded
             ? "bg-[#161618] text-[#F5F5F0] border border-white/10 rotate-45"
-            : "bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158]"
+            : "bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C]"
         }`}
         data-testid="sticky-cta-toggle"
       >

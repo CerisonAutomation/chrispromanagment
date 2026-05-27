@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useState } from 'react';
@@ -18,13 +17,15 @@ export default function ContractSigning({ propertyId, checkIn, checkOut, price, 
   const handleSign = async () => {
     setLoading(true);
     try {
-      const provider = new (window as unknown as { ethereum: new () => { BrowserProvider: typeof BrowserProvider } }).ethereum;
       const { BrowserProvider } = await import('ethers');
+      const provider = (window as unknown as { ethereum: unknown }).ethereum;
       const ethersProvider = new BrowserProvider(provider);
       const signer = await ethersProvider.getSigner();
 
       const contractAddress = import.meta.env.VITE_BOOKING_CONTRACT_ADDRESS;
-      if (!contractAddress) throw new Error('Contract address not configured');
+      if (!contractAddress) {
+throw new Error('Contract address not configured');
+}
 
       const txHash = await createBookingContract(
         contractAddress,
@@ -36,8 +37,8 @@ export default function ContractSigning({ propertyId, checkIn, checkOut, price, 
       );
 
       onSuccess(txHash);
-    } catch (err: Error) {
-      
+    } catch {
+      // sign error silently — caller sees loading return to false
     } finally {
       setLoading(false);
     }

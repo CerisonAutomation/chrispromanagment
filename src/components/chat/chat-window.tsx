@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useRef, useEffect } from 'react';
 import { useChat } from '@/hooks/use-chat';
 import MessageBubble from './message-bubble';
@@ -31,7 +30,9 @@ export default function ChatWindow({ roomId }: ChatWindowProps) {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || sending) return;
+    if (!newMessage.trim() || sending) {
+return;
+}
     setSending(true);
     try {
       await sendMessage(newMessage.trim(), roomId);
@@ -47,7 +48,7 @@ export default function ChatWindow({ roomId }: ChatWindowProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-white/10 flex items-center gap-3 bg-[#161618]">
-        <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-sm font-bold">
+        <div className="w-9 h-9 rounded-full bg-[#C9A84C]/20 flex items-center justify-center text-[#C9A84C] text-sm font-bold">
           {firstSender.charAt(0).toUpperCase()}
         </div>
         <div>
@@ -59,7 +60,7 @@ export default function ChatWindow({ roomId }: ChatWindowProps) {
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <RefreshCw className="w-5 h-5 text-[#D4AF37] animate-spin" />
+            <RefreshCw className="w-5 h-5 text-[#C9A84C] animate-spin" />
           </div>
         ) : messages.length === 0 ? (
           <p className="text-center text-[#71717A] text-sm py-8">No messages yet — start the conversation.</p>
@@ -86,7 +87,7 @@ export default function ChatWindow({ roomId }: ChatWindowProps) {
           disabled={sending}
         />
         <Button type="submit" disabled={sending || !newMessage.trim()}
-          className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] px-3">
+          className="bg-[#C9A84C] text-[#0F0F10] hover:bg-[#D4B85C] px-3">
           {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
       </form>

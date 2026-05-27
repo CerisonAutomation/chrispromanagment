@@ -58,14 +58,26 @@ export const useAuditStore = create<AuditState>((set, get) => ({
         .order('created_at', { ascending: false })
         .range(from, to);
 
-      if (filter.action) q = q.eq('action', filter.action);
-      if (filter.entityType) q = q.eq('entity_type', filter.entityType);
-      if (filter.userId) q = q.eq('user_id', filter.userId);
-      if (filter.dateFrom) q = q.gte('created_at', filter.dateFrom);
-      if (filter.dateTo) q = q.lte('created_at', filter.dateTo);
+      if (filter.action) {
+q = q.eq('action', filter.action);
+}
+      if (filter.entityType) {
+q = q.eq('entity_type', filter.entityType);
+}
+      if (filter.userId) {
+q = q.eq('user_id', filter.userId);
+}
+      if (filter.dateFrom) {
+q = q.gte('created_at', filter.dateFrom);
+}
+      if (filter.dateTo) {
+q = q.lte('created_at', filter.dateTo);
+}
 
       const { data, error, count } = await q;
-      if (error) throw error;
+      if (error) {
+throw error;
+}
       set({ logs: (data as AuditLog[]) || [], total: count ?? 0 });
     } catch (e: unknown) {
       set({ error: (e as Error).message });

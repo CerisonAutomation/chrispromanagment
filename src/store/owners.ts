@@ -60,22 +60,32 @@ export const useOwnersStore = create<OwnersState>((set, get) => ({
       .from('owners')
       .select('*')
       .order('full_name');
-    if (error) set({ error: error.message });
-    else set({ owners: (data as Owner[]) || [] });
+    if (error) {
+set({ error: error.message });
+} else {
+set({ owners: (data as Owner[]) || [] });
+}
     set({ loading: false });
   },
 
   async fetchReports(ownerId) {
     let q = supabase.from('owner_reports').select('*').order('period_start', { ascending: false });
-    if (ownerId) q = q.eq('owner_id', ownerId);
+    if (ownerId) {
+q = q.eq('owner_id', ownerId);
+}
     const { data, error } = await q;
-    if (error) set({ error: error.message });
-    else set({ reports: (data as OwnerReport[]) || [] });
+    if (error) {
+set({ error: error.message });
+} else {
+set({ reports: (data as OwnerReport[]) || [] });
+}
   },
 
   async create(owner) {
     const { data, error } = await supabase.from('owners').insert(owner).select().single();
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     const created = data as Owner;
     set(s => ({ owners: [...s.owners, created] }));
     return created;
@@ -83,7 +93,9 @@ export const useOwnersStore = create<OwnersState>((set, get) => ({
 
   async update(id, patch) {
     const { error } = await supabase.from('owners').update(patch).eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({
       owners: s.owners.map(o => o.id === id ? { ...o, ...patch } : o),
       selected: s.selected?.id === id ? { ...s.selected, ...patch } : s.selected,
@@ -92,7 +104,9 @@ export const useOwnersStore = create<OwnersState>((set, get) => ({
 
   async remove(id) {
     const { error } = await supabase.from('owners').delete().eq('id', id);
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     set(s => ({
       owners: s.owners.filter(o => o.id !== id),
       selected: s.selected?.id === id ? null : s.selected,
@@ -105,7 +119,9 @@ export const useOwnersStore = create<OwnersState>((set, get) => ({
     const { error } = await supabase.functions.invoke('generate-owner-report', {
       body: { owner_id: ownerId, property_id: propertyId, period_start: periodStart, period_end: periodEnd },
     });
-    if (error) throw error;
+    if (error) {
+throw error;
+}
     await get().fetchReports(ownerId);
   },
 }));

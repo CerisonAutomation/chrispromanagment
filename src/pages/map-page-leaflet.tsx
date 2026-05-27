@@ -20,12 +20,12 @@ L.Icon.Default.mergeOptions({
 
 // Custom gold marker icon
 const goldIcon = new L.Icon({
-  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+  iconUrl: `data:image/svg+xml;base64,${  btoa(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="30" height="45">
-      <path fill="#D4AF37" stroke="#0F0F10" stroke-width="2" d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8z"/>
+      <path fill="#C9A84C" stroke="#0F0F10" stroke-width="2" d="M12 0C7.58 0 4 3.58 4 8c0 5.25 8 16 8 16s8-10.75 8-16c0-4.42-3.58-8-8-8z"/>
       <circle cx="12" cy="8" r="3" fill="#0F0F10"/>
     </svg>
-  `),
+  `)}`,
   iconSize: [30, 45],
   iconAnchor: [15, 45],
   popupAnchor: [0, -45]
@@ -68,10 +68,14 @@ export const MapPage = () => {
           .limit(100);
 
         const city = searchParams.get("city");
-        if (city) query = query.eq("city", city);
+        if (city) {
+query = query.eq("city", city);
+}
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+throw error;
+}
         // Normalise to the shape the map components expect
         setListings(
           (data || []).map(p => ({
@@ -97,10 +101,14 @@ export const MapPage = () => {
 
   // Calculate default center
   const defaultCenter = useMemo(() => {
-    if (!listings.length) return [35.9, 14.5]; // Malta center
+    if (!listings.length) {
+return [35.9, 14.5];
+} // Malta center
     
     const validListings = listings.filter(l => l.address?.lat && l.address?.lng);
-    if (!validListings.length) return [35.9, 14.5];
+    if (!validListings.length) {
+return [35.9, 14.5];
+}
     
     const avgLat = validListings.reduce((sum, l) => sum + l.address.lat, 0) / validListings.length;
     const avgLng = validListings.reduce((sum, l) => sum + l.address.lng, 0) / validListings.length;
@@ -119,7 +127,7 @@ export const MapPage = () => {
         to={`/property/${listing._id}`}
         className={`block bg-[#161618] border transition-all ${
           isSelected 
-            ? "border-[#D4AF37] ring-1 ring-[#D4AF37]/20" 
+            ? "border-[#C9A84C] ring-1 ring-[#C9A84C]/20" 
             : "border-white/5 hover:border-white/20"
         }`}
         onMouseEnter={() => setSelectedListing(listing._id)}
@@ -173,7 +181,7 @@ export const MapPage = () => {
             
             {price && (
               <div className="flex items-baseline gap-1">
-                <span className="text-[#D4AF37] font-semibold">
+                <span className="text-[#C9A84C] font-semibold">
                   {currency === "EUR" ? "€" : "$"}{price}
                 </span>
                 <span className="text-xs text-[#71717A]">/ night</span>
@@ -188,7 +196,7 @@ export const MapPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0F0F10] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#C9A84C] animate-spin" />
       </div>
     );
   }
@@ -213,7 +221,7 @@ export const MapPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => setViewMode("list")}
-              className={`rounded-none ${viewMode === "list" ? "bg-[#D4AF37] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
+              className={`rounded-none ${viewMode === "list" ? "bg-[#C9A84C] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
             >
               <List className="w-4 h-4 mr-2" />
               List
@@ -222,7 +230,7 @@ export const MapPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => setViewMode("split")}
-              className={`rounded-none ${viewMode === "split" ? "bg-[#D4AF37] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
+              className={`rounded-none ${viewMode === "split" ? "bg-[#C9A84C] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
             >
               <Grid className="w-4 h-4 mr-2" />
               Split
@@ -231,7 +239,7 @@ export const MapPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => setViewMode("map")}
-              className={`rounded-none ${viewMode === "map" ? "bg-[#D4AF37] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
+              className={`rounded-none ${viewMode === "map" ? "bg-[#C9A84C] text-[#0F0F10]" : "text-[#A1A1AA]"}`}
             >
               <MapPin className="w-4 h-4 mr-2" />
               Map

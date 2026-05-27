@@ -12,7 +12,9 @@ export default function PricingEnginePage() {
   const { properties, fetch: fetchProperties, loading: propsLoading } = usePropertiesStore();
   const { forecasts, forecastLoading, loading, selectedPropertyId, setSelectedProperty } = usePricingStore();
 
-  useEffect(() => { fetchProperties(); }, [fetchProperties]);
+  useEffect(() => {
+ fetchProperties(); 
+}, [fetchProperties]);
 
   const forecast = selectedPropertyId ? (forecasts[selectedPropertyId] ?? []) : [];
 
@@ -25,7 +27,7 @@ export default function PricingEnginePage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F5F5F0] flex items-center gap-2">
-            <Zap className="w-6 h-6 text-[#D4AF37]" />
+            <Zap className="w-6 h-6 text-[#C9A84C]" />
             AI Pricing Engine
           </h1>
           <p className="text-sm text-[#71717A] mt-1">Dynamic forecast based on seasonality & market data</p>
@@ -58,7 +60,7 @@ export default function PricingEnginePage() {
       {forecastLoading && (
         <div className="flex items-center justify-center h-48">
           <div className="text-center">
-            <RefreshCw className="w-8 h-8 text-[#D4AF37] animate-spin mx-auto mb-3" />
+            <RefreshCw className="w-8 h-8 text-[#C9A84C] animate-spin mx-auto mb-3" />
             <p className="text-[#A1A1AA] text-sm">Generating forecast…</p>
           </div>
         </div>
@@ -75,7 +77,7 @@ export default function PricingEnginePage() {
         <div className="grid gap-6">
           <Card className="p-6 bg-[#161618] border-white/10">
             <h2 className="text-[#F5F5F0] font-semibold mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
+              <TrendingUp className="w-4 h-4 text-[#C9A84C]" />
               30-Day Price Forecast
             </h2>
             <PricingChart data={forecast} />
