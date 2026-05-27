@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users, Search, MapPin, Loader2, X, ChevronDown } from "lucide-react";

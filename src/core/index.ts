@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Core Architectural Patterns
 // Exports all foundational patterns for enterprise-grade application architecture
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { memo, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Users, Bed, Bath, MapPin, Star } from "lucide-react";

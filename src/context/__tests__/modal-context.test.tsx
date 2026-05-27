@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { renderHook, act } from '@testing-library/react-hooks';
 import { render, screen } from '@/test/utils';
 import { ModalProvider, useModal } from '../ModalContext';

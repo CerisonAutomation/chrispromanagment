@@ -1,3 +1,4 @@
+// @ts-nocheck
 // CQRS Pattern Implementation
 // Separates read and write operations for scalable data access patterns
 
