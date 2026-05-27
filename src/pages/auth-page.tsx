@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -152,7 +151,9 @@ throw error;
               src="https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png"
               alt="Christiano Property Management"
               className="h-14 w-auto object-contain"
-              onError={e => { (e.target as HTMLImageElement).src = "https://customer-assets.emergentagent.com/job_malta-stays-direct/artifacts/ta7za4jp_cv_logo_no_bg_gold.png"; }}
+              onError={e => {
+ (e.target as HTMLImageElement).src = "https://customer-assets.emergentagent.com/job_malta-stays-direct/artifacts/ta7za4jp_cv_logo_no_bg_gold.png"; 
+}}
             />
           </div>
 
@@ -178,7 +179,9 @@ throw error;
               src="https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png"
               alt="Christiano Property Management"
               className="h-12 w-auto object-contain"
-              onError={e => { (e.target as HTMLImageElement).src = "https://customer-assets.emergentagent.com/job_malta-stays-direct/artifacts/ta7za4jp_cv_logo_no_bg_gold.png"; }}
+              onError={e => {
+ (e.target as HTMLImageElement).src = "https://customer-assets.emergentagent.com/job_malta-stays-direct/artifacts/ta7za4jp_cv_logo_no_bg_gold.png"; 
+}}
             />
           </div>
 
@@ -334,7 +337,9 @@ throw error;
                         provider: "google",
                         options: { redirectTo: `${window.location.origin}/admin` },
                       });
-                      if (error) { toast.error(error.message); setBusy(false); }
+                      if (error) {
+ toast.error(error.message); setBusy(false); 
+}
                     }}
                     className="w-full h-12 flex items-center justify-center gap-3 border border-white/10 hover:border-[#C9A84C]/40 text-[#A1A1AA] hover:text-[#F5F5F0] transition-all text-xs uppercase tracking-widest disabled:opacity-50"
                   >
