@@ -339,12 +339,12 @@ logger.info('User login', {
       severity: 'high',
       description: 'Implement real-time monitoring and alerting',
       remediation: 'Set up monitoring for security events and configure alerts for suspicious activities',
-      codeExample: `
-// Monitor for failed login attempts
-const failedLogins = await redis.incr(`failed_logins:${ip}`);
-if (failedLogins > 5) {
-  await alertSecurityTeam({ type: 'brute_force', ip });
-}`,
+      codeExample: [
+'// Monitor for failed login attempts',
+'const failedLogins = await redis.incr("failed_logins:" + ip);',
+'if (failedLogins > 5) {',
+'  await alertSecurityTeam({ type: "brute_force", ip });',
+'}'].join('\n'),
     });
   }
 
