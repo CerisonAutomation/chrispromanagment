@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
 

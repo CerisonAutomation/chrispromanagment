@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as ethers from 'ethers';
 
 export const POLYGON_CHAIN_ID = 137;

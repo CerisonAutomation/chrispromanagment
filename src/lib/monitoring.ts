@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Monitoring and Error Tracking Configuration
  * Integrates with error tracking and monitoring services

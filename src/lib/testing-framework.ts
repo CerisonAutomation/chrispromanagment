@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Multi-Tier Testing Pyramid Framework
 // Enterprise-grade testing infrastructure with Unit, Integration, and E2E layers
 

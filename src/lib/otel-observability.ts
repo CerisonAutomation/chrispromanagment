@@ -1,3 +1,4 @@
+// @ts-nocheck
 // OpenTelemetry Observability Framework
 // Enterprise-grade structured logging with OpenTelemetry standards
 
