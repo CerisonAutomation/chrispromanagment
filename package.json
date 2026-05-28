@@ -132,5 +132,9 @@
   "overrides": {
     "@ai-sdk/react": "$@ai-sdk/react",
     "ai": "$ai"
-  }
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
