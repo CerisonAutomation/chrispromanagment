@@ -1,21 +1,6 @@
 {
-  "framework": "nextjs",
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Cache-Control", "value": "no-store, no-cache" },
-        { "key": "X-Robots-Tag", "value": "noindex" }
-      ]
-    }
-  ],
-  "crons": [
-    { "path": "/api/cron/sync-listings", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/sync-reservations", "schedule": "0 4 * * *" }
-  ]
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
