@@ -1,0 +1,480 @@
+# Pages CMS Configuration File
+# This configuration defines the structure for content management
+# Reference: https://pagescms.org/docs/configuration/
+
+# ============================================================================
+# MEDIA CONFIGURATION
+# ============================================================================
+# Configure how to handle files you want to upload, attach to or embed
+media:
+  - name: images
+    label: Images
+    input: public/media/images
+    output: /media/images
+    path: /media/images
+    categories: [image]
+
+  - name: documents
+    label: Documents
+    input: public/media/documents
+    output: /media/documents
+    path: /media/documents
+    categories: [document, pdf]
+
+  - name: general
+    label: Media
+    input: public/media
+    output: /media
+    path: /media
+
+# ============================================================================
+# COMPONENTS
+# ============================================================================
+# Reusable groups of fields that can be referenced in content entries
+components:
+  # SEO and Meta information component
+  seo:
+    label: SEO & Meta
+    type: object
+    fields:
+      - name: metaTitle
+        label: Meta Title
+        type: string
+        description: Title for search engines and social sharing
+      - name: metaDescription
+        label: Meta Description
+        type: text
+        description: Description for search engines (150-160 chars)
+      - name: keywords
+        label: Keywords
+        type: string
+        description: Comma-separated keywords
+      - name: ogImage
+        label: Open Graph Image
+        type: image
+        description: Image for social media sharing
+
+  # Author component
+  author:
+    label: Author
+    type: object
+    fields:
+      - name: name
+        label: Author Name
+        type: string
+        required: true
+      - name: email
+        label: Email
+        type: string
+        pattern:
+          regex: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+          message: 'Must be a valid email address'
+      - name: bio
+        label: Bio
+        type: text
+      - name: avatar
+        label: Avatar
+        type: image
+
+  # Hero section component
+  hero:
+    label: Hero Section
+    type: object
+    fields:
+      - name: title
+        label: Title
+        type: text
+        required: true
+      - name: subtitle
+        label: Subtitle
+        type: text
+      - name: backgroundImage
+        label: Background Image
+        type: image
+      - name: ctaText
+        label: CTA Button Text
+        type: string
+      - name: ctaLink
+        label: CTA Button Link
+        type: string
+
+  # Content block component
+  contentBlock:
+    label: Content Block
+    type: object
+    fields:
+      - name: heading
+        label: Heading
+        type: string
+        required: true
+      - name: content
+        label: Content
+        type: rich-text
+      - name: image
+        label: Image
+        type: image
+      - name: imagePosition
+        label: Image Position
+        type: select
+        options:
+          - left
+          - right
+          - top
+          - bottom
+        default: left
+
+  # Navigation item component
+  navItem:
+    label: Navigation Item
+    type: object
+    fields:
+      - name: label
+        label: Label
+        type: string
+        required: true
+      - name: href
+        label: URL/Path
+        type: string
+        required: true
+      - name: target
+        label: Link Target
+        type: select
+        options:
+          - '_self'
+          - '_blank'
+          - '_parent'
+          - '_top'
+        default: '_self'
+
+# ============================================================================
+# CONTENT CONFIGURATION
+# ============================================================================
+# Define collections and file-based content structures
+content:
+  # Blog Posts Collection
+  - name: blog
+    label: Blog Posts
+    type: collection
+    path: src/content/blog
+    format: yaml-frontmatter
+    filename: '{year}-{month}-{day}-{primary}.md'
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: slug
+        label: Slug
+        type: string
+        required: true
+      - name: excerpt
+        label: Excerpt
+        type: text
+        required: true
+      - name: author
+        label: Author
+        component: author
+        required: true
+      - name: publishedAt
+        label: Published Date
+        type: date
+        required: true
+      - name: updatedAt
+        label: Updated Date
+        type: date
+      - name: featured
+        label: Featured Post
+        type: boolean
+        default: false
+      - name: tags
+        label: Tags
+        type: string
+        list:
+          min: 1
+          max: 10
+      - name: categories
+        label: Categories
+        type: select
+        options:
+          - Technology
+          - Design
+          - Business
+          - Lifestyle
+          - Other
+        list:
+          min: 1
+          max: 3
+      - name: coverImage
+        label: Cover Image
+        type: image
+      - name: seo
+        label: SEO
+        component: seo
+      - name: body
+        label: Content
+        type: rich-text
+        required: true
+    
+    view:
+      fields: [title, author.name, publishedAt, featured]
+      primary: title
+      sort: [publishedAt, title]
+      search: [title, excerpt, tags, body]
+      default:
+        sort: publishedAt
+        order: desc
+      layout: list
+
+  # Pages Collection
+  - name: pages
+    label: Pages
+    type: collection
+    path: src/content/pages
+    format: yaml-frontmatter
+    filename: '{slug}.md'
+    fields:
+      - name: title
+        label: Page Title
+        type: string
+        required: true
+      - name: slug
+        label: URL Slug
+        type: string
+        required: true
+        pattern:
+          regex: '^[a-z0-9-]+$'
+          message: 'Slug must contain only lowercase letters, numbers, and hyphens'
+      - name: description
+        label: Page Description
+        type: text
+      - name: published
+        label: Published
+        type: boolean
+        default: false
+      - name: order
+        label: Menu Order
+        type: number
+      - name: showInNav
+        label: Show in Navigation
+        type: boolean
+        default: true
+      - name: sections
+        label: Page Sections
+        type: object
+        list:
+          min: 1
+          collapsible:
+            collapsed: true
+            summary: "{fields.type} - {index}"
+        fields:
+          - name: type
+            label: Section Type
+            type: select
+            options:
+              - hero
+              - content
+              - features
+              - testimonials
+              - cta
+            required: true
+          - name: data
+            label: Section Data
+            type: code
+            options:
+              language: json
+      - name: seo
+        label: SEO
+        component: seo
+      - name: body
+        label: Page Content
+        type: rich-text
+    
+    view:
+      fields: [title, slug, published, order]
+      primary: title
+      sort: [order, title]
+      search: [title, description, slug]
+      default:
+        sort: order
+        order: asc
+
+  # Projects/Portfolio Collection
+  - name: projects
+    label: Projects
+    type: collection
+    path: src/content/projects
+    format: yaml-frontmatter
+    filename: '{primary}.md'
+    fields:
+      - name: title
+        label: Project Title
+        type: string
+        required: true
+      - name: description
+        label: Description
+        type: text
+        required: true
+      - name: thumbnail
+        label: Thumbnail
+        type: image
+      - name: images
+        label: Project Images
+        type: image
+        list:
+          min: 1
+          max: 20
+      - name: technologies
+        label: Technologies Used
+        type: string
+        list:
+          min: 1
+      - name: startDate
+        label: Start Date
+        type: date
+      - name: endDate
+        label: End Date
+        type: date
+      - name: status
+        label: Project Status
+        type: select
+        options:
+          - Completed
+          - In Progress
+          - On Hold
+          - Archived
+        default: Completed
+      - name: url
+        label: Project URL
+        type: string
+      - name: gitHubUrl
+        label: GitHub Repository
+        type: string
+      - name: featured
+        label: Featured Project
+        type: boolean
+        default: false
+      - name: body
+        label: Project Details
+        type: rich-text
+    
+    view:
+      fields: [title, status, startDate, featured]
+      primary: title
+      sort: [startDate, title]
+      search: [title, description, technologies]
+      default:
+        sort: startDate
+        order: desc
+
+  # Settings File
+  - name: settings
+    label: Site Settings
+    type: file
+    path: src/data/settings.json
+    format: json
+    fields:
+      - name: siteName
+        label: Site Name
+        type: string
+        required: true
+      - name: siteDescription
+        label: Site Description
+        type: text
+      - name: siteUrl
+        label: Site URL
+        type: string
+        required: true
+      - name: author
+        label: Site Author
+        type: string
+      - name: logo
+        label: Logo
+        type: image
+      - name: favicon
+        label: Favicon
+        type: image
+      - name: navigation
+        label: Navigation Menu
+        type: object
+        list:
+          min: 1
+        fields:
+          - name: label
+            label: Label
+            type: string
+            required: true
+          - name: href
+            label: URL
+            type: string
+            required: true
+          - name: children
+            label: Submenu Items
+            type: object
+            list:
+            fields:
+              - name: label
+                label: Label
+                type: string
+              - name: href
+                label: URL
+                type: string
+      - name: social
+        label: Social Links
+        type: object
+        fields:
+          - name: twitter
+            label: Twitter URL
+            type: string
+          - name: github
+            label: GitHub URL
+            type: string
+          - name: linkedin
+            label: LinkedIn URL
+            type: string
+          - name: instagram
+            label: Instagram URL
+            type: string
+      - name: analytics
+        label: Analytics Configuration
+        type: object
+        fields:
+          - name: googleAnalyticsId
+            label: Google Analytics ID
+            type: string
+          - name: enabled
+            label: Analytics Enabled
+            type: boolean
+            default: true
+
+  # Navigation File
+  - name: navigation
+    label: Navigation
+    type: file
+    path: src/data/navigation.json
+    format: json
+    fields:
+      - name: main
+        label: Main Navigation
+        type: object
+        list:
+          min: 1
+        fields:
+          - name: label
+            label: Label
+            type: string
+            required: true
+          - name: href
+            label: URL
+            type: string
+            required: true
+          - name: order
+            label: Order
+            type: number
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+settings:
+  hide: false
+  content:
+    merge: false

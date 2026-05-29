@@ -1,13 +1,13 @@
 project_id = "mcmzlxdppatjjpxwacco"
 
-[functions.guesty-listings]
+[functions.gmail-send]
 verify_jwt = false
 
-[functions.cms-ai-enhance]
-verify_jwt = true
+[functions.gmail-inbox]
+verify_jwt = false
 
-[functions.cms-ai-agent]
-verify_jwt = true
+[functions.guesty-beapi]
+verify_jwt = false
 
-[functions.pexels-search]
+[functions.guesty-token-refresh]
 verify_jwt = false

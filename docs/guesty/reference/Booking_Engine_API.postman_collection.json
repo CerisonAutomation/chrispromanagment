@@ -1,0 +1,2677 @@
+{
+  "info": {
+    "_postman_id": "a864baa8-ee94-4f45-8456-de11c6eb4fbd",
+    "name": "Booking Engine API",
+    "description": "Booking Engine API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54638795",
+    "_collection_link": "https://go.postman.co/collection/5337135-a864baa8-ee94-4f45-8456-de11c6eb4fbd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "listings",
+      "item": [
+        {
+          "name": "{listing Id}",
+          "item": [
+            {
+              "name": "Get booking engine listing",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/:listingId?fields=_id address.city title accommodates",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    ":listingId"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates",
+                      "description": "The list of the listing fields to return separated by spaces. The fields should be taken from Listing object definition."
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "listingId",
+                      "value": "5d6e7a7ebf8e3800207735ae",
+                      "description": "(Required) ID of listing"
+                    }
+                  ]
+                },
+                "description": "This call returns the listing by ID"
+              },
+              "response": [
+                {
+                  "name": "successful operation",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId?fields=_id address.city title accommodates",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId"
+                      ],
+                      "query": [
+                        {
+                          "key": "fields",
+                          "value": "_id address.city title accommodates"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5d6e7a7ebf8e3800207735ae",
+                          "description": "(Required) ID of listing"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"results\": {\n  \"_id\": \"elit reprehenderit occaecat consectetur\",\n  \"type\": \"SINGLE\",\n  \"propertyType\": \"Other\",\n  \"roomType\": \"Shared room\",\n  \"title\": \"aliqua nulla ut officia occaecat\",\n  \"nickname\": \"occaecat Excepteur nisi proident ut\",\n  \"accommodates\": 72127445,\n  \"address\": {\n   \"city\": \"minim ut tempor\",\n   \"country\": \"elit ullamco ut\",\n   \"full\": \"anim irure\",\n   \"lat\": 93103962.50927654,\n   \"lng\": 56171679.824588805,\n   \"state\": \"anim Ut fug\",\n   \"street\": \"cillum ipsum laborum\"\n  },\n  \"timezone\": \"dolore in\",\n  \"amenities\": [\n   \"Suitable for infants (under 2 years)\",\n   \"Single level home\"\n  ],\n  \"bathrooms\": 5647328,\n  \"bedrooms\": 10610245,\n  \"beds\": -90947770,\n  \"bedType\": \"cupidatat et\",\n  \"defaultCheckInTime\": \"sit enim ut aliquip\",\n  \"defaultCheckOutTime\": \"minim Ut\",\n  \"pictures\": [\n   {\n    \"original\": \"deserunt labore enim nostrud ullamco\",\n    \"large\": \"in mollit\",\n    \"regular\": \"deserunt consectetur magna\",\n    \"thumbnail\": \"elit ex occaecat dolor commodo\"\n   },\n   {\n    \"original\": \"officia deserunt laborum\",\n    \"large\": \"id commodo aliqua tempor\",\n    \"regular\": \"officia cupidatat sunt\",\n    \"thumbnail\": \"veniam laboris id\"\n   }\n  ],\n  \"prices\": {\n   \"basePrice\": 18411049.793230966,\n   \"currency\": \"SGD\",\n   \"monthlyPriceFactor\": -12202181.50970611,\n   \"weeklyPriceFactor\": -22433792.64040959,\n   \"extraPersonFee\": -40478747.75234272,\n   \"cleaningFee\": -8669941.35184367,\n   \"petFee\": 28917559.516734183\n  },\n  \"publicDescription\": {\n   \"guestControls\": {\n    \"allowsChildren\": false,\n    \"allowsInfants\": true,\n    \"allowsPets\": true,\n    \"allowsSmoking\": false,\n    \"allowsEvents\": false\n   },\n   \"space\": \"fugiat sunt dolor in\",\n   \"access\": \"minim labor\",\n   \"neighborhood\": \"id aliqua sit adipisicing\",\n   \"transit\": \"consectetur anim dolore\",\n   \"notes\": \"Ut id\",\n   \"interactionWithGuests\": \"eiusm\",\n   \"summary\": \"non minim\",\n   \"houseRules\": \"aliqua proident cupidatat dolor\"\n  },\n  \"terms\": {\n   \"minNight\": 23778834,\n   \"maxNights\": 21769659,\n   \"cancellation\": \"elit laboris cupidatat adipisicing\"\n  },\n  \"taxes\": [\n   {\n    \"_id\": \"tempor minim in magna ipsum\",\n    \"amount\": -28473956.128943592,\n    \"appliedToAllFees\": true,\n    \"appliedOnFees\": [\n     \"AIR_CONDITIONING\",\n     \"EARLY_CHECKOUT\"\n    ],\n    \"name\": \"ea aliqua cillum\",\n    \"quantifier\": \"PER_GUEST_PER_NIGHT\",\n    \"type\": \"LOCAL_TAX\",\n    \"units\": \"PERCENTAGE\"\n   },\n   {\n    \"_id\": \"in ad eu\",\n    \"amount\": 38894375.33925277,\n    \"appliedToAllFees\": false,\n    \"appliedOnFees\": [\n     \"BABY_BED\",\n     \"EARLY_CHECKOUT\"\n    ],\n    \"name\": \"veniam voluptate et\",\n    \"quantifier\": \"PER_STAY\",\n    \"type\": \"TOURISM_TAX\",\n    \"units\": \"FIXED\"\n   }\n  ]\n }\n}"
+                },
+                {
+                  "name": "Bad request",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId?fields=_id address.city title accommodates",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId"
+                      ],
+                      "query": [
+                        {
+                          "key": "fields",
+                          "value": "_id address.city title accommodates"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5d6e7a7ebf8e3800207735ae",
+                          "description": "(Required) ID of listing"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                },
+                {
+                  "name": "Not authorized",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId?fields=_id address.city title accommodates",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId"
+                      ],
+                      "query": [
+                        {
+                          "key": "fields",
+                          "value": "_id address.city title accommodates"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5d6e7a7ebf8e3800207735ae",
+                          "description": "(Required) ID of listing"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Unauthorized",
+                  "code": 401,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                },
+                {
+                  "name": "Too many requests",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId?fields=_id address.city title accommodates",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId"
+                      ],
+                      "query": [
+                        {
+                          "key": "fields",
+                          "value": "_id address.city title accommodates"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5d6e7a7ebf8e3800207735ae",
+                          "description": "(Required) ID of listing"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Too Many Requests",
+                  "code": 429,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get listing availability calendar",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    ":listingId",
+                    "calendar"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "2021-12-21",
+                      "description": "(Required) Begin of calendar form period in format YYYY-MM-DD"
+                    },
+                    {
+                      "key": "to",
+                      "value": "2021-12-25",
+                      "description": "(Required) End of calendar form period in format YYYY-MM-DD"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8",
+                      "description": "(Required) ID of listing to return"
+                    }
+                  ]
+                },
+                "description": "Return a listing calendar for period"
+              },
+              "response": [
+                {
+                  "name": "successful operation",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "[\n {\n  \"date\": \"7673-51-05\",\n  \"minNights\": 67332991,\n  \"isBaseMinNights\": true,\n  \"status\": \"booked\",\n  \"cta\": false,\n  \"ctd\": false\n },\n {\n  \"date\": \"0932-18-16\",\n  \"minNights\": -60990940,\n  \"isBaseMinNights\": true,\n  \"status\": \"available\",\n  \"cta\": false,\n  \"ctd\": false\n }\n]"
+                },
+                {
+                  "name": "Bad request",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                },
+                {
+                  "name": "Not authorized",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Unauthorized",
+                  "code": 401,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                },
+                {
+                  "name": "Forbidden",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Forbidden",
+                  "code": 403,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                },
+                {
+                  "name": "Listing calendar not found",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Not Found",
+                  "code": 404,
+                  "_postman_previewlanguage": "text",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "text/plain"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "Too many requests",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "description": "Added as a part of security scheme: apikey",
+                        "key": "authorization",
+                        "value": "<API Key>"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/listings/:listingId/calendar?from=2021-12-21&to=2021-12-25",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "listings",
+                        ":listingId",
+                        "calendar"
+                      ],
+                      "query": [
+                        {
+                          "key": "from",
+                          "value": "2021-12-21"
+                        },
+                        {
+                          "key": "to",
+                          "value": "2021-12-25"
+                        }
+                      ],
+                      "variable": [
+                        {
+                          "key": "listingId",
+                          "value": "5bf544a600a9b000389f81d8",
+                          "description": "(Required) ID of listing to return"
+                        }
+                      ]
+                    }
+                  },
+                  "status": "Too Many Requests",
+                  "code": 429,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Get booking engine listings list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&propertyType=APARTMENT&listingType=SINGLE&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "listings"
+              ],
+              "query": [
+                {
+                  "key": "minOccupancy",
+                  "value": "1",
+                  "description": "The minimum value of listing occupancy"
+                },
+                {
+                  "key": "numberOfBedrooms",
+                  "value": "1",
+                  "description": "The minimum amount of listing bedrooms"
+                },
+                {
+                  "key": "numberOfBathrooms",
+                  "value": "1",
+                  "description": "The minimum amount of listing bathrooms"
+                },
+                {
+                  "key": "propertyType",
+                  "value": "APARTMENT",
+                  "description": "The listing property type. All values of propertyType are defined in PropertyTypesQueryParameter definition."
+                },
+                {
+                  "key": "listingType",
+                  "value": "SINGLE",
+                  "description": "The listing type."
+                },
+                {
+                  "key": "roomType",
+                  "value": "PRIVATE_ROOM",
+                  "description": "The listing room type. All values of roomType are defined in RoomTypesQueryParameter definition"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "10",
+                  "description": "Minimum value of listing price. If it provided, the response will have listings which price is great or equal. Should be passed with currency query parameter"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "76890224.78794158",
+                  "description": "Maximum value of listing price. If it provided, the response will have listings which price is less or equal. Should be passed with currency query parameter"
+                },
+                {
+                  "key": "currency",
+                  "value": "EUR",
+                  "description": "Listing price currency. Should be provided with minPrice query parameter"
+                },
+                {
+                  "key": "includeAmenities",
+                  "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN",
+                  "description": "Listing amenities separated by coma which should have listings. All values of amenities query parameters are defined in AmenitiesQueryParameter definition."
+                },
+                {
+                  "key": "excludeAmenities",
+                  "value": "SMOKING_ALLOWED",
+                  "description": "Listing amenities separated by coma which should not have listings. All values of amenities query parameters are defined in AmenitiesQueryParameter definition."
+                },
+                {
+                  "key": "minLng",
+                  "value": "24.052472",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "maxLng",
+                  "value": "24.05687",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "minLat",
+                  "value": "49.830034",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "maxLat",
+                  "value": "49.8366506",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "city",
+                  "value": "Houston",
+                  "description": "City name from the listings address"
+                },
+                {
+                  "key": "country",
+                  "value": "United States",
+                  "description": "Country name from the listings address"
+                },
+                {
+                  "key": "state",
+                  "value": "Texas",
+                  "description": "State name from the listings address"
+                },
+                {
+                  "key": "fields",
+                  "value": "_id address.city title accommodates",
+                  "description": "The list of the listing fields to return separated by spaces. The fields should be taken from Listing object definition."
+                },
+                {
+                  "key": "limit",
+                  "value": "15",
+                  "description": "Limit the number of results within a subset. Default value is 20, max value is 25"
+                },
+                {
+                  "key": "cursor",
+                  "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "description": "Provide cursor received from the response to interate over pages"
+                }
+              ]
+            },
+            "description": "This call returns the list of listings connected to the requester Booking Engine and filtered by given parameters"
+          },
+          "response": [
+            {
+              "name": "successful operation",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&propertyType=APARTMENT&listingType=SINGLE&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"results\": [\n  {\n   \"_id\": \"velit\",\n   \"type\": \"SINGLE\",\n   \"propertyType\": \"Island\",\n   \"roomType\": \"Private room\",\n   \"title\": \"id ea esse incididunt\",\n   \"accommodates\": 56237928,\n   \"address\": {\n    \"city\": \"est ullamco\",\n    \"country\": \"enim exercitation fugiat adipisicing eiusmod\",\n    \"full\": \"consectetur veniam off\",\n    \"lat\": -24136520.350701615,\n    \"lng\": -7089672.67935577,\n    \"state\": \"nisi esse proident laboris\",\n    \"street\": \"id cupidatat\"\n   },\n   \"timezone\": \"et occaecat cu\",\n   \"amenities\": [\n    \"Extra pillows and blankets\",\n    \"Game console\"\n   ],\n   \"bathrooms\": 2,\n   \"bedrooms\": 2,\n   \"beds\": 2,\n   \"picture\": {\n    \"thumbnail\": \"irure dolore\",\n    \"regular\": \"mollit reprehenderit\",\n    \"large\": \"ut\"\n   },\n   \"pictures\": [\n    {\n     \"original\": \"proident magna cillum\",\n     \"large\": \"ipsum\",\n     \"regular\": \"magna culpa irure esse sed\",\n     \"thumbnail\": \"incidid\"\n    },\n    {\n     \"original\": \"ullamco qui\",\n     \"large\": \"aliquip enim ut ex\",\n     \"regular\": \"ex Ut mollit ullamco id\",\n     \"thumbnail\": \"veniam\"\n    }\n   ],\n   \"prices\": {\n    \"basePrice\": 42410345.4800992,\n    \"currency\": \"CAD\",\n    \"monthlyPriceFactor\": -28376333.62214245,\n    \"weeklyPriceFactor\": -40335249.320252985,\n    \"extraPersonFee\": 89581721.25400594,\n    \"cleaningFee\": 86777933.95304164,\n    \"petFee\": 72598873.8416011\n   },\n   \"publicDescription\": {\n    \"summary\": \"quis\"\n   }\n  },\n  {\n   \"_id\": \"aute Excepteur quis officia et\",\n   \"type\": \"SINGLE\",\n   \"propertyType\": \"Tipi\",\n   \"roomType\": \"Shared room\",\n   \"title\": \"cillum\",\n   \"accommodates\": -1447482,\n   \"address\": {\n    \"city\": \"veniam anim ex\",\n    \"country\": \"voluptate eiusmod Ut nisi dolore\",\n    \"full\": \"non proident Lorem exercitation\",\n    \"lat\": -34126422.20708166,\n    \"lng\": 15886550.364118516,\n    \"state\": \"sed mollit dolor\",\n    \"street\": \"quis ut sed\"\n   },\n   \"timezone\": \"et sed\",\n   \"amenities\": [\n    \"Doorman\",\n    \"Wide doorway\"\n   ],\n   \"bathrooms\": 2,\n   \"bedrooms\": 2,\n   \"beds\": 2,\n   \"picture\": {\n    \"thumbnail\": \"et nostrud dolor\",\n    \"regular\": \"aute sed ut dolor sunt\",\n    \"large\": \"sed non\"\n   },\n   \"pictures\": [\n    {\n     \"original\": \"Ut cupidatat tempor\",\n     \"large\": \"in aliquip amet do veniam\",\n     \"regular\": \"ut mi\",\n     \"thumbnail\": \"dolore voluptate commodo\"\n    },\n    {\n     \"original\": \"pariatur\",\n     \"large\": \"pariatur eu exercitation ullamco et\",\n     \"regular\": \"ullamco tempor sed\",\n     \"thumbnail\": \"pariatur eiusmod ad\"\n    }\n   ],\n   \"prices\": {\n    \"basePrice\": -71949329.20074035,\n    \"currency\": \"INR\",\n    \"monthlyPriceFactor\": 32455337.07410258,\n    \"weeklyPriceFactor\": 25588215.318742514,\n    \"extraPersonFee\": -85871037.97704022,\n    \"cleaningFee\": -67645735.82604948,\n    \"petFee\": 89224741.64701542\n   },\n   \"publicDescription\": {\n    \"summary\": \"nostrud culpa\"\n   }\n  }\n ],\n \"pagination\": {\n  \"total\": -65716743,\n  \"cursor\": {\n   \"next\": \"cillum ad qui mollit consequat\"\n  }\n }\n}"
+            },
+            {
+              "name": "Bad request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&propertyType=APARTMENT&listingType=SINGLE&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Not authorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&propertyType=APARTMENT&listingType=SINGLE&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&propertyType=APARTMENT&listingType=SINGLE&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get booking engine available listings list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings/availability?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&listingType=SINGLE&propertyType=APARTMENT&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&checkIn=2021-12-20&checkOut=2021-12-25&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "listings",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "minOccupancy",
+                  "value": "1",
+                  "description": "The minimum value of listing occupancy"
+                },
+                {
+                  "key": "numberOfBedrooms",
+                  "value": "1",
+                  "description": "The minimum amount of listing bedrooms"
+                },
+                {
+                  "key": "numberOfBathrooms",
+                  "value": "1",
+                  "description": "The minimum amount of listing bathrooms"
+                },
+                {
+                  "key": "listingType",
+                  "value": "SINGLE",
+                  "description": "The listing type."
+                },
+                {
+                  "key": "propertyType",
+                  "value": "APARTMENT",
+                  "description": "The listing property type. All values of propertyType are defined in PropertyTypesQueryParameter definition. "
+                },
+                {
+                  "key": "roomType",
+                  "value": "PRIVATE_ROOM",
+                  "description": "The listing room type. All values of roomType are defined in RoomTypesQueryParameter definition"
+                },
+                {
+                  "key": "minPrice",
+                  "value": "10",
+                  "description": "Minimum value of listing price. If it provided, the response will have listings which price is great or equal. Should be passed with currency query parameter"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "76890224.78794158",
+                  "description": "Maximum value of listing price. If it provided, the response will have listings which price is less or equal. Should be passed with currency query parameter"
+                },
+                {
+                  "key": "currency",
+                  "value": "EUR",
+                  "description": "Listing price currency. Should be provided with minPrice query parameter"
+                },
+                {
+                  "key": "includeAmenities",
+                  "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN",
+                  "description": "Listing amenities separated by coma which should have listings. All values of amenities query parameters are defined in AmenitiesQueryParameter definition."
+                },
+                {
+                  "key": "excludeAmenities",
+                  "value": "SMOKING_ALLOWED",
+                  "description": "Listing amenities separated by coma which should not have listings. All values of amenities query parameters are defined in AmenitiesQueryParameter definition."
+                },
+                {
+                  "key": "minLng",
+                  "value": "24.052472",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "maxLng",
+                  "value": "24.05687",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "minLat",
+                  "value": "49.830034",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "maxLat",
+                  "value": "49.8366506",
+                  "description": "Minimum longitude"
+                },
+                {
+                  "key": "city",
+                  "value": "Houston",
+                  "description": "City name from the listings address"
+                },
+                {
+                  "key": "country",
+                  "value": "United States",
+                  "description": "City name from the listings address"
+                },
+                {
+                  "key": "state",
+                  "value": "Texas",
+                  "description": "State name from the listings address"
+                },
+                {
+                  "key": "checkIn",
+                  "value": "2021-12-20",
+                  "description": "(Required) checkin day in format YYYY-MM-DD"
+                },
+                {
+                  "key": "checkOut",
+                  "value": "2021-12-25",
+                  "description": "(Required) checkout day in format YYYY-MM-DD"
+                },
+                {
+                  "key": "fields",
+                  "value": "_id address.city title accommodates",
+                  "description": "The list of the listing fields to return separated by spaces. The fields should be taken from Listing object definition."
+                },
+                {
+                  "key": "limit",
+                  "value": "15",
+                  "description": "Limit the number of results within a subset. Default value is 20, max value is 25"
+                },
+                {
+                  "key": "cursor",
+                  "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "description": "Provide cursor received from the response to interate over pages"
+                }
+              ]
+            },
+            "description": "Find available listings"
+          },
+          "response": [
+            {
+              "name": "successful operation",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/availability?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&listingType=SINGLE&propertyType=APARTMENT&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&checkIn=2021-12-20&checkOut=2021-12-25&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "availability"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-25"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"results\": [\n  {\n   \"_id\": \"enim ea sint velit\",\n   \"type\": \"MTL\",\n   \"propertyType\": \"Bungalow\",\n   \"roomType\": \"Shared room\",\n   \"title\": \"enim minim\",\n   \"accommodates\": -62583404,\n   \"address\": {\n    \"city\": \"sunt eiusmod\",\n    \"country\": \"reprehenderit culpa pariatur in\",\n    \"full\": \"cillum aute\",\n    \"lat\": 80310906.78046936,\n    \"lng\": 32479929.353680387,\n    \"state\": \"reprehenderit proident ullamco\",\n    \"street\": \"nisi in\"\n   },\n   \"timezone\": \"quis ut proident aliqua\",\n   \"allotment\": {\n    \"2021-12-30\": 2,\n    \"2021-12-31\": 2\n   },\n   \"amenities\": [\n    \"Extra pillows and blankets\",\n    \"Smoking allowed\"\n   ],\n   \"bathrooms\": -23825939,\n   \"bedrooms\": -87121791,\n   \"beds\": 40908081,\n   \"picture\": {\n    \"thumbnail\": \"qui\",\n    \"regular\": \"labore officia enim deserunt\",\n    \"large\": \"ipsum nisi elit\"\n   },\n   \"pictures\": [\n    {\n     \"original\": \"magna\",\n     \"large\": \"qui non aliqua dolor\",\n     \"regular\": \"dolore Duis cupidatat exercitation\",\n     \"thumbnail\": \"pariatur in veniam\"\n    },\n    {\n     \"original\": \"nisi voluptate\",\n     \"large\": \"nisi voluptate veniam\",\n     \"regular\": \"in in\",\n     \"thumbnail\": \"aliquip et dolore cillum cupidatat\"\n    }\n   ],\n   \"prices\": {\n    \"basePrice\": 93769416.73250955,\n    \"currency\": \"MXN\",\n    \"monthlyPriceFactor\": 42568672.26059106,\n    \"weeklyPriceFactor\": -50818138.08127,\n    \"extraPersonFee\": -25689913.62220116,\n    \"cleaningFee\": 55664405.95171964,\n    \"petFee\": -72265244.96562967\n   },\n   \"publicDescription\": {\n    \"summary\": \"eu occaecat ea non dolore\"\n   }\n  },\n  {\n   \"_id\": \"in ea\",\n   \"type\": \"MTL\",\n   \"propertyType\": \"Townhouse\",\n   \"roomType\": \"Private room\",\n   \"title\": \"dolor elit ut\",\n   \"accommodates\": 10220559,\n   \"address\": {\n    \"city\": \"ullamco quis sit nisi\",\n    \"country\": \"quis velit\",\n    \"full\": \"consec\",\n    \"lat\": 65110768.19955939,\n    \"lng\": -68930390.28774256,\n    \"state\": \"sit non reprehenderit\",\n    \"street\": \"Ut minim sit cu\"\n   },\n   \"timezone\": \"occaecat nostrud voluptate sit aliquip\",\n   \"allotment\": {\n    \"2021-12-30\": 2,\n    \"2021-12-31\": 2\n   },\n   \"amenities\": [\n    \"Carbon monoxide detector\",\n    \"Dryer\"\n   ],\n   \"bathrooms\": -73322273,\n   \"bedrooms\": -89338969,\n   \"beds\": -3311062,\n   \"picture\": {\n    \"thumbnail\": \"tempor\",\n    \"regular\": \"consequat voluptate sed Ut\",\n    \"large\": \"nostrud veniam esse\"\n   },\n   \"pictures\": [\n    {\n     \"original\": \"anim ad in nostrud in\",\n     \"large\": \"esse laborum\",\n     \"regular\": \"eu aute pariatur\",\n     \"thumbnail\": \"enim cupidatat sint\"\n    },\n    {\n     \"original\": \"aute in commodo esse ad\",\n     \"large\": \"consequat magna est\",\n     \"regular\": \"dolore\",\n     \"thumbnail\": \"tempor proident deserunt ex\"\n    }\n   ],\n   \"prices\": {\n    \"basePrice\": -85533885.85724688,\n    \"currency\": \"ILS\",\n    \"monthlyPriceFactor\": -8498164.96002549,\n    \"weeklyPriceFactor\": 46227301.339794874,\n    \"extraPersonFee\": -37329680.09296722,\n    \"cleaningFee\": 92156201.39119986,\n    \"petFee\": -2089881.383004412\n   },\n   \"publicDescription\": {\n    \"summary\": \"dolore\"\n   }\n  }\n ],\n \"pagination\": {\n  \"total\": -77352850,\n  \"cursor\": {\n   \"next\": \"aliquip laborum minim Ut\"\n  }\n }\n}"
+            },
+            {
+              "name": "Bad request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/availability?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&listingType=SINGLE&propertyType=APARTMENT&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&checkIn=2021-12-20&checkOut=2021-12-25&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "availability"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-25"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Not authorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/availability?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&listingType=SINGLE&propertyType=APARTMENT&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&checkIn=2021-12-20&checkOut=2021-12-25&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "availability"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-25"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/availability?minOccupancy=1&numberOfBedrooms=1&numberOfBathrooms=1&listingType=SINGLE&propertyType=APARTMENT&roomType=PRIVATE_ROOM&minPrice=10&maxPrice=76890224.78794158&currency=EUR&includeAmenities=PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN&excludeAmenities=SMOKING_ALLOWED&minLng=24.052472&maxLng=24.05687&minLat=49.830034&maxLat=49.8366506&city=Houston&country=United States&state=Texas&checkIn=2021-12-20&checkOut=2021-12-25&fields=_id address.city title accommodates&limit=15&cursor=eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ==",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "availability"
+                  ],
+                  "query": [
+                    {
+                      "key": "minOccupancy",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBedrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "numberOfBathrooms",
+                      "value": "1"
+                    },
+                    {
+                      "key": "listingType",
+                      "value": "SINGLE"
+                    },
+                    {
+                      "key": "propertyType",
+                      "value": "APARTMENT"
+                    },
+                    {
+                      "key": "roomType",
+                      "value": "PRIVATE_ROOM"
+                    },
+                    {
+                      "key": "minPrice",
+                      "value": "10"
+                    },
+                    {
+                      "key": "maxPrice",
+                      "value": "76890224.78794158"
+                    },
+                    {
+                      "key": "currency",
+                      "value": "EUR"
+                    },
+                    {
+                      "key": "includeAmenities",
+                      "value": "PETS_ALLOWED,SMOKING_ALLOWED,SUITABLE_FOR_INFANTS,SUITABLE_FOR_CHILDREN"
+                    },
+                    {
+                      "key": "excludeAmenities",
+                      "value": "SMOKING_ALLOWED"
+                    },
+                    {
+                      "key": "minLng",
+                      "value": "24.052472"
+                    },
+                    {
+                      "key": "maxLng",
+                      "value": "24.05687"
+                    },
+                    {
+                      "key": "minLat",
+                      "value": "49.830034"
+                    },
+                    {
+                      "key": "maxLat",
+                      "value": "49.8366506"
+                    },
+                    {
+                      "key": "city",
+                      "value": "Houston"
+                    },
+                    {
+                      "key": "country",
+                      "value": "United States"
+                    },
+                    {
+                      "key": "state",
+                      "value": "Texas"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-25"
+                    },
+                    {
+                      "key": "fields",
+                      "value": "_id address.city title accommodates"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "15"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "eyJuZXh0Q3Vyc29yIjp7Imxpc3RpbmdJZCI6IjYwOWQ2YWI0MjU5ZWQxMDAyZDFlYWRjYiJ9fQ=="
+                    }
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get list of listings cities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/listings/cities?skip=25&limit=100&searchText=york",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "listings",
+                "cities"
+              ],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "25",
+                  "description": "The number of cities to skip. Default value is 0"
+                },
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "description": "Limit the number of results within a subset. Default value is 25, max value is 100"
+                },
+                {
+                  "key": "searchText",
+                  "value": "york",
+                  "description": "Search for given case insensitive text in city name"
+                }
+              ]
+            },
+            "description": "Get list of listings cities with countries"
+          },
+          "response": [
+            {
+              "name": "successful operation",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/cities?skip=25&limit=100&searchText=york",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "cities"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "25"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    },
+                    {
+                      "key": "searchText",
+                      "value": "york"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"results\": [\n  {\n   \"city\": \"officia ad et dolore\",\n   \"country\": \"Ut officia enim est\"\n  },\n  {\n   \"city\": \"mollit proident\",\n   \"country\": \"minim proident nisi\"\n  }\n ],\n \"count\": 59370425,\n \"skip\": 41280978,\n \"limit\": -5947162\n}"
+            },
+            {
+              "name": "Bad request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/cities?skip=25&limit=100&searchText=york",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "cities"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "25"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    },
+                    {
+                      "key": "searchText",
+                      "value": "york"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Not authorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/cities?skip=25&limit=100&searchText=york",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "cities"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "25"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    },
+                    {
+                      "key": "searchText",
+                      "value": "york"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/listings/cities?skip=25&limit=100&searchText=york",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "listings",
+                    "cities"
+                  ],
+                  "query": [
+                    {
+                      "key": "skip",
+                      "value": "25"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    },
+                    {
+                      "key": "searchText",
+                      "value": "york"
+                    }
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reservations",
+      "item": [
+        {
+          "name": "Create reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations"
+              ]
+            },
+            "description": "Create reservation"
+          },
+          "response": [
+            {
+              "name": "successful operation",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/reservations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"_id\": \"deserunt ut Ut\",\n \"status\": \"confirmed\",\n \"confirmationCode\": \"sed mollit\",\n \"errors\": \"COUPON_IS_DISABLED\"\n}"
+            },
+            {
+              "name": "Bad request",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/reservations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Not authorized",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/reservations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Forbidden",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/reservations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"reservation\": {\n        \"listingId\": \"minim\",\n        \"checkInDateLocalized\": \"1992-11-02\",\n        \"checkOutDateLocalized\": \"1988-01-12\",\n        \"guestsCount\": \"veniam in\",\n        \"coupon\": \"voluptate\"\n    },\n    \"guest\": {\n        \"firstName\": \"ad\",\n        \"lastName\": \"pariatur anim occaecat\",\n        \"email\": \"ad nisi velit id\",\n        \"phone\": \"exercitation sed eiusmod sint\"\n    },\n    \"policy\": {\n        \"privacy\": {\n            \"version\": 43872309.61416718,\n            \"dateOfAcceptance\": \"2020-10-15T20:25:51.584Z\",\n            \"isAccepted\": true\n        },\n        \"termsAndConditions\": {\n            \"version\": -10373631.73022832,\n            \"dateOfAcceptance\": \"1957-05-14T13:28:28.768Z\",\n            \"isAccepted\": false\n        },\n        \"marketing\": {\n            \"dateOfAcceptance\": \"1978-12-21T07:22:24.768Z\",\n            \"isAccepted\": true\n        }\n    },\n    \"payment\": {\n        \"token\": \"deserunt\"\n    }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/reservations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations"
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get precalculated reservation money",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "money"
+              ],
+              "query": [
+                {
+                  "key": "listingId",
+                  "value": "5bf544a600a9b000389f81d8",
+                  "description": "(Required) "
+                },
+                {
+                  "key": "checkIn",
+                  "value": "2021-12-15",
+                  "description": "(Required) "
+                },
+                {
+                  "key": "checkOut",
+                  "value": "2021-12-20",
+                  "description": "(Required) "
+                },
+                {
+                  "key": "guestsCount",
+                  "value": "1",
+                  "description": "(Required) "
+                },
+                {
+                  "key": "coupon",
+                  "value": "DISCOUNT_50_OFF"
+                }
+              ]
+            },
+            "description": "Calculate reservation money"
+          },
+          "response": [
+            {
+              "name": "successful operation",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "money"
+                  ],
+                  "query": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-15"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "guestsCount",
+                      "value": "1"
+                    },
+                    {
+                      "key": "coupon",
+                      "value": "DISCOUNT_50_OFF"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"money\": {\n  \"autoPaymentsPolicy\": [\n   {\n    \"_id\": \"sit id fugiat\",\n    \"useGuestCard\": false,\n    \"amount\": 15313799.730876014,\n    \"chargeType\": \"PERCENTAGE\",\n    \"isAuthorizationHold\": false,\n    \"scheduleTo\": {\n     \"timeRelation\": {\n      \"amount\": -9376046.732307851,\n      \"unit\": \"consectetur sed id labore ad\",\n      \"relation\": \"Duis aliquip veniam\"\n     },\n     \"reservationEvent\": \"CONFIRMATION\"\n    }\n   },\n   {\n    \"_id\": \"culpa\",\n    \"useGuestCard\": true,\n    \"amount\": 63596076.478734255,\n    \"chargeType\": \"REST_OF_PAYMENT\",\n    \"isAuthorizationHold\": false,\n    \"scheduleTo\": {\n     \"timeRelation\": {\n      \"amount\": -48559543.41868296,\n      \"unit\": \"pariatur quis id sed\",\n      \"relation\": \"nostrud sint est ut\"\n     },\n     \"reservationEvent\": \"CONFIRMATION\"\n    }\n   }\n  ],\n  \"balanceDue\": -34462602.09894705,\n  \"commission\": -689172.4634502232,\n  \"commissionFormula\": \"dolore irure\",\n  \"commissionIncTax\": 62203344.81422639,\n  \"commissionTax\": -49314437.83684513,\n  \"commissionTaxPercentage\": -19893450.402625307,\n  \"currency\": \"IDR\",\n  \"fareAccommodation\": -15297900.449734181,\n  \"fareAccommodationAdjusted\": 21049452.392833024,\n  \"fareAccommodationAdjustment\": 64179774.61211005,\n  \"fareAccommodationDiscount\": 52792348.48647526,\n  \"fareCleaning\": -20136829.9435253,\n  \"hostPayout\": -32922901.67470604,\n  \"hostPayoutUsd\": -71178196.16305488,\n  \"hostServiceFee\": -44246984.37702514,\n  \"hostServiceFeeIncTax\": 8040457.594552338,\n  \"hostServiceFeeTax\": -91782426.9911716,\n  \"invoiceItems\": [\n   {\n    \"title\": \"Ut\",\n    \"amount\": 93707604.59713745,\n    \"currency\": \"CZK\",\n    \"type\": \"sint occaecat\",\n    \"isLocked\": false,\n    \"normalType\": \"sit tempor esse adipisicing\",\n    \"isTax\": false,\n    \"metadata\": {}\n   },\n   {\n    \"title\": \"dolore irure exercitation minim\",\n    \"amount\": -5189179.011440277,\n    \"currency\": \"ILS\",\n    \"type\": \"sit nis\",\n    \"isLocked\": false,\n    \"normalType\": \"veniam dolor Lorem\",\n    \"isTax\": true,\n    \"metadata\": {}\n   }\n  ],\n  \"netIncome\": 60711115.068602204,\n  \"netIncomeFormula\": \"reprehenderit in\",\n  \"ownerRevenue\": 89819657.34656775,\n  \"ownerRevenueFormula\": \"ut consectetur\",\n  \"payments\": [\n   {\n    \"policyItemId\": \"dolore ea fugiat commodo\",\n    \"shouldBePaidAt\": \"mollit eiusmod\",\n    \"status\": \"sed adipisicing\",\n    \"currency\": \"CNY\",\n    \"event\": \"dolor ea qui\",\n    \"isAuthorizationHold\": false,\n    \"amount\": 93433735.01243794,\n    \"paymentMethodId\": \"mollit Ut\"\n   },\n   {\n    \"policyItemId\": \"in ipsum id proident\",\n    \"shouldBePaidAt\": \"enim deserunt dol\",\n    \"status\": \"amet nisi qui\",\n    \"currency\": \"CAD\",\n    \"event\": \"deserunt aute Excepteur fugiat consectetur\",\n    \"isAuthorizationHold\": true,\n    \"amount\": 65870189.69134739,\n    \"paymentMethodId\": \"laboris in\"\n   }\n  ],\n  \"paymentsDue\": -64330847.636883035,\n  \"subTotalPrice\": -50605918.48035379,\n  \"useAccountRevenueShare\": false\n },\n \"error\": {\n  \"errors\": [\n   \"UNEXPECTED_ERROR\",\n   \"COUPON_NOT_FOUND\"\n  ]\n }\n}"
+            },
+            {
+              "name": "Bad request",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "money"
+                  ],
+                  "query": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-15"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "guestsCount",
+                      "value": "1"
+                    },
+                    {
+                      "key": "coupon",
+                      "value": "DISCOUNT_50_OFF"
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Not authorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "money"
+                  ],
+                  "query": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-15"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "guestsCount",
+                      "value": "1"
+                    },
+                    {
+                      "key": "coupon",
+                      "value": "DISCOUNT_50_OFF"
+                    }
+                  ]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "money"
+                  ],
+                  "query": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-15"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "guestsCount",
+                      "value": "1"
+                    },
+                    {
+                      "key": "coupon",
+                      "value": "DISCOUNT_50_OFF"
+                    }
+                  ]
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            },
+            {
+              "name": "Too many requests",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: apikey",
+                    "key": "authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/reservations/money?listingId=5bf544a600a9b000389f81d8&checkIn=2021-12-15&checkOut=2021-12-20&guestsCount=1&coupon=DISCOUNT_50_OFF",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "reservations",
+                    "money"
+                  ],
+                  "query": [
+                    {
+                      "key": "listingId",
+                      "value": "5bf544a600a9b000389f81d8"
+                    },
+                    {
+                      "key": "checkIn",
+                      "value": "2021-12-15"
+                    },
+                    {
+                      "key": "checkOut",
+                      "value": "2021-12-20"
+                    },
+                    {
+                      "key": "guestsCount",
+                      "value": "1"
+                    },
+                    {
+                      "key": "coupon",
+                      "value": "DISCOUNT_50_OFF"
+                    }
+                  ]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n \"error\": {\n  \"code\": \"incididunt dolore\",\n  \"message\": \"enim dolor\",\n  \"data\": {\n   \"requestId\": \"ut pariatur\"\n  }\n }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "authorization",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "<API Key>",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "/",
+      "type": "string"
+    }
+  ]
+}

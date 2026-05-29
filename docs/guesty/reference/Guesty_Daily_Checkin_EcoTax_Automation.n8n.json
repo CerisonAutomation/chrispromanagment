@@ -1,0 +1,349 @@
+{
+  "name": "Guesty – Daily Check-in Eco-Tax Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "subject:(reservation OR booking) from:(guesty OR noreply) is:unread",
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "078e8c8a-c274-45cd-83b9-89f6fd085546",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jzeASSwdm2kOWx9r",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Guesty reservation email from Gmail Trigger\nconst items = [];\n\nfor (const item of $input.all()) {\n  const subject = item.json.subject || '';\n  const body = item.json.text || item.json.snippet || '';\n  const emailId = item.json.id || '';\n  const threadId = item.json.threadId || '';\n\n  // Extract reservation ID from subject or body\n  // Guesty emails typically include confirmation codes like HXXXXXXXXX or numeric IDs\n  const reservationIdMatch = body.match(/reservation[\\s#:]+([A-Z0-9\\-]{6,})/i)\n    || subject.match(/([A-Z]{1,3}[0-9]{6,})/)\n    || body.match(/confirmation[\\s#:]+([A-Z0-9\\-]{6,})/i);\n\n  const reservationId = reservationIdMatch ? reservationIdMatch[1].trim() : null;\n\n  // Extract guest name\n  const guestMatch = body.match(/guest[\\s:]+([A-Za-z ]{2,40})/i)\n    || body.match(/name[\\s:]+([A-Za-z ]{2,40})/i);\n  const guestName = guestMatch ? guestMatch[1].trim() : 'Guest';\n\n  // Extract check-in date\n  const checkInMatch = body.match(/check[\\s-]?in[\\s:]+([\\d]{1,2}[\\s\\/\\-][A-Za-z\\d]{1,9}[\\s\\/\\-][\\d]{2,4})/i);\n  const checkIn = checkInMatch ? checkInMatch[1].trim() : null;\n\n  // Extract number of adults/guests\n  const adultsMatch = body.match(/(\\d+)\\s*(adult|guest|person)/i);\n  const numAdults = adultsMatch ? parseInt(adultsMatch[1]) : 1;\n\n  items.push({\n    json: {\n      emailId,\n      threadId,\n      subject,\n      reservationId,\n      guestName,\n      checkIn,\n      numAdults,\n      rawBody: body.substring(0, 500)\n    }\n  });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "015ff672-0be2-47d4-bbcc-dfd2bb272b1d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open-api.guesty.com/oauth2/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "=={{ $vars.GUESTY_CLIENT_ID }}"
+            },
+            {
+              "name": "client_secret",
+              "value": "=={{ $vars.GUESTY_CLIENT_SECRET }}"
+            },
+            {
+              "name": "scope",
+              "value": "open-api"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "5511f71c-d681-405a-a9dd-a7e22ca326c8",
+      "name": "Guesty – Get OAuth Token"
+    },
+    {
+      "parameters": {
+        "url": "=https://open-api.guesty.com/v1/reservations/{{ $('Code in JavaScript').item.json.reservationId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Guesty – Get OAuth Token').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        48
+      ],
+      "id": "2662f12f-b98d-4c29-bc11-3bebcd678a46",
+      "name": "Guesty – Fetch Reservation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6b62676c-7a50-4b16-9a9f-616fe6509c81",
+              "leftValue": "={{ $('Guesty – Fetch Reservation').item.json.customFields?.ecoTaxProcessed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        96
+      ],
+      "id": "94495314-5a9e-4cc7-a078-d3b04a8bb4f8",
+      "name": "Already Processed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Compute Eco-Tax based on numAdults and checkIn date\nconst item = $input.first();\nconst reservation = $('Guesty – Fetch Reservation').first().json;\n\nconst numAdults = parseInt(item.json.numAdults) || parseInt(reservation.guestsCount) || 0;\nconst checkIn = item.json.checkIn || reservation.checkIn;\nconst checkOut = reservation.checkOut;\nconst reservationId = item.json.reservationId;\nconst guestName = item.json.guestName || reservation.guest?.fullName || '';\nconst guestEmail = reservation.guest?.email || item.json.guestEmail || '';\n\n// Eco-tax rate: €0.50 per adult per night\nconst ECO_TAX_PER_ADULT_PER_NIGHT = 0.50;\n\nlet nights = 0;\nif (checkIn && checkOut) {\n  const msPerDay = 24 * 60 * 60 * 1000;\n  nights = Math.round((new Date(checkOut) - new Date(checkIn)) / msPerDay);\n}\n\nconst ecoTaxAmount = numAdults * nights * ECO_TAX_PER_ADULT_PER_NIGHT;\n\nreturn [{\n  json: {\n    reservationId,\n    guestName,\n    guestEmail,\n    checkIn,\n    checkOut,\n    numAdults,\n    nights,\n    ecoTaxAmount,\n    ecoTaxFormatted: `€${ecoTaxAmount.toFixed(2)}`,\n    accessToken: $('Guesty – Get OAuth Token').first().json.access_token\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        112
+      ],
+      "id": "6f5abfda-d6cc-4aa5-8cc0-a76fe7424cef",
+      "name": "Compute Eco-Tax"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open-api.guesty.com/v1/reservations/{{ $json.reservationId }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "pre-arrival"
+            },
+            {
+              "name": "body",
+              "value": "Dear {{ $json.guestName }}, your eco-tax for {{ $json.nights }} night(s) with {{ $json.numAdults }} adult(s) is {{ $json.ecoTaxFormatted }}. This is payable upon check-in. Thank you!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        160
+      ],
+      "id": "389675d1-79b4-4d8d-ab08-83bc12a7e8f4",
+      "name": "Guesty – Send Guest Message"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://open-api.guesty.com/v1/reservations/{{ $json.reservationId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $json.accessToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"customFields\": {\n    \"ecoTaxProcessed\": true,\n            \"ecoTaxAmount\": {{ $json.ecoTaxAmount }}  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        208
+      ],
+      "id": "bd3f6df8-88dc-493e-ab8f-060bc891e2f6",
+      "name": "Guesty – Mark Eco-Tax Processed"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Code in JavaScript').item.json.emailId }}",
+        "labelIds": [
+          "Label_7269700456982422833"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        160
+      ],
+      "id": "1790f573-9295-435b-baf7-f146668cdf2c",
+      "name": "Gmail – Label as Processed",
+      "webhookId": "239dfce6-08b4-4ce3-bfd6-d0d71fb121c2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jzeASSwdm2kOWx9r",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Guesty – Get OAuth Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guesty – Get OAuth Token": {
+      "main": [
+        [
+          {
+            "node": "Guesty – Fetch Reservation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guesty – Fetch Reservation": {
+      "main": [
+        [
+          {
+            "node": "Already Processed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Processed?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Compute Eco-Tax",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Eco-Tax": {
+      "main": [
+        [
+          {
+            "node": "Guesty – Send Guest Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guesty – Send Guest Message": {
+      "main": [
+        [
+          {
+            "node": "Gmail – Label as Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail – Label as Processed": {
+      "main": [
+        [
+          {
+            "node": "Guesty – Mark Eco-Tax Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "0698e0ff-3d90-4423-886e-284d70933b48",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cbd4f0b89d5faeb662f83df56d5e2de3b85db04bdec09795b149c49a0bb1f6c2"
+  },
+  "id": "NOBLaHdu5XB33TRG",
+  "tags": []
+}
