@@ -65,7 +65,7 @@ export const CmsCommandRepository = {
       rows.map((row) =>
         supabase
           .from("cms_content")
-          .update({ content: row.content, is_visible: row.is_visible, section_label: row.section_label })
+          .update({ content: row.content as Json, is_visible: row.is_visible, section_label: row.section_label })
           .eq("id", row.id)
       )
     );
