@@ -10,7 +10,6 @@ build/
 dist/
 
 # ─── Environment — NEVER COMMIT SECRETS ──────────────────────────────────────
-.env.example
 .env
 .env.local
 .env.development
@@ -38,10 +37,11 @@ yarn-debug.log*
 pnpm-debug.log*
 bun-debug.log*
 
-# ─── Lock Files — bun is the package manager ────────────────────────────────
-pnpm-lock.yaml
-package-lock.json
+# ─── Lock Files — pnpm is the workspace package manager ─────────────────────
+bun.lock
+bun.lockb
 yarn.lock
+package-lock.json
 
 # ─── Root-level Junk / Scaffold / Port Artifacts ─────────────────────────────
 3001
