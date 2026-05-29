@@ -23,19 +23,22 @@ async function fetchAll(): Promise<SectionMap> {
   if (_cache)   return _cache;
   if (_promise) return _promise;
 
-  _promise = supabase
-    .from("cms_content")
-    .select("*")
-    .eq("is_visible", true)
-    .order("sort_order")
-    .then(({ data, error }) => {
-      _promise = null;
+  _promise = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from("cms_content")
+        .select("*")
+        .eq("is_visible", true)
+        .order("sort_order");
       if (error) throw error;
       const map: SectionMap = {};
       (data ?? []).forEach((row) => { map[row.section_key] = row as CmsRow; });
       _cache = map;
       return map;
-    });
+    } finally {
+      _promise = null;
+    }
+  })();
 
   return _promise;
 }
