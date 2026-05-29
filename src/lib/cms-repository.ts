@@ -95,7 +95,7 @@ export const CmsCommandRepository = {
       .insert({
         label:         label.trim() || `Snapshot ${new Date().toLocaleString()}`,
         note:          note.trim() || null,
-        snapshot,
+        snapshot:      snapshot as Json,
         content_count: rowsResult.data.length,
         image_count:   0,
         setting_count: 0,
