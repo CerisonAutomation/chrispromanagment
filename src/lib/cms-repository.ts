@@ -48,7 +48,7 @@ export const CmsCommandRepository = {
   ): Promise<Result<SaveResult>> {
     const { data, error } = await supabase
       .from("cms_content")
-      .update(patch)
+      .update({ ...patch, content: patch.content as Json })
       .eq("id", id)
       .select("section_key, updated_at")
       .single();
