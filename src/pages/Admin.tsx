@@ -31,16 +31,18 @@ export default function Admin() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      // Fix: use count queries with correct column references
       supabase.from("owner_inquiries").select("*", { count: "exact", head: true }),
       supabase.from("cms_content").select("*",     { count: "exact", head: true }),
-      supabase.from("guesty_listings").select("*", { count: "exact", head: true }).eq("active", true),
+      supabase.functions.invoke("guesty-listings", { body: {} }),
       supabase.from("cms_versions").select("*",    { count: "exact", head: true }),
     ]).then(([inq, cms, lst, ver]) => {
+      const listingCount = Array.isArray((lst.data as { properties?: unknown[] } | null)?.properties)
+        ? ((lst.data as { properties: unknown[] }).properties.length)
+        : 0;
       setStats({
         inquiries: inq.count ?? 0,
         cmsBlocks: cms.count ?? 0,
-        listings:  lst.count ?? 0,
+        listings:  listingCount,
         versions:  ver.count ?? 0,
       });
     });
