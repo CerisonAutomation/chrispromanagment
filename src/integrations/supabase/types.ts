@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      listing_availability: {
+        Row: {
+          id: number
+          guestyListingId: string
+          start_date: string
+          end_date: string
+          status: "booked" | "blocked" | "owner_block"
+          reservation_id: string | null
+          note: string | null
+          updated_at: string
+        }
+        Insert: {
+          guestyListingId: string
+          start_date: string
+          end_date: string
+          status?: "booked" | "blocked" | "owner_block"
+          reservation_id?: string | null
+          note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          guestyListingId?: string
+          start_date?: string
+          end_date?: string
+          status?: "booked" | "blocked" | "owner_block"
+          reservation_id?: string | null
+          note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_availability_guestyListingId_fkey"
+            columns: ["guestyListingId"]
+            isOneToOne: false
+            referencedRelation: "guesty_listings"
+            referencedColumns: ["guestyListingId"]
+          }
+        ]
+      }
       cms_content: {
         Row: {
           content: Json

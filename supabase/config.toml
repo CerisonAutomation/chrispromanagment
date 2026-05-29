@@ -2,3 +2,12 @@ project_id = "mcmzlxdppatjjpxwacco"
 
 [functions.guesty-listings]
 verify_jwt = false
+
+[functions.cms-ai-enhance]
+verify_jwt = true
+
+[functions.cms-ai-agent]
+verify_jwt = true
+
+[functions.pexels-search]
+verify_jwt = false
