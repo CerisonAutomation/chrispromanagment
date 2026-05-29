@@ -97,35 +97,44 @@ export default function ListingDetail() {
     if (!id) return;
     setLoading(true);
     void (async () => {
-      const [{ data: l, error: lErr }, { data: a }] = await Promise.all([
-        supabase.from("guesty_listings").select("*").eq("guestyListingId", id).single(),
-        supabase.from("listing_availability").select("start_date,end_date").eq("guestyListingId", id).gte("end_date", new Date().toISOString().split("T")[0]).order("start_date"),
-      ]);
-      if (lErr) { toast.error("Property not found"); setLoading(false); return; }
-      if (l) {
-        const listingData = {
-          guestyListingId: l.guestyListingId, nickname: l.nickname, title: l.title,
-          thumbnailUrl: l.thumbnailUrl, image_urls: (l as Record<string,unknown>)["image_urls"] as string[] ?? [],
-          description: (l as Record<string,unknown>)["description"] as string ?? null,
-          city: l.city, country: l.country, bedrooms: l.bedrooms,
-          bathrooms: (l as Record<string,unknown>)["bathrooms"] as number ?? null,
-          accommodates: l.accommodates, basePrice: l.basePrice as string | null,
-          currency: l.currency ?? "EUR", amenities: l.amenities ?? [],
-          minNights: (l as Record<string,unknown>)["minNights"] as number ?? 2,
-          tags: (l as Record<string,unknown>)["tags"] as string[] ?? [],
-        };
-        // Pexels fallback when Guesty provides no images
-        if (!listingData.thumbnailUrl && listingData.image_urls.length === 0) {
-          const query = [listingData.city ?? "Malta", "villa", "property"].filter(Boolean).join(" ");
-          const photos = await searchPexels(query, 4, "landscape");
-          if (photos.length > 0) {
-            listingData.thumbnailUrl = photos[0]?.src.large ?? null;
-            listingData.image_urls   = photos.slice(1).map((p) => p.src.large).filter(Boolean);
-          }
+      // Fetch from Guesty via edge function (source of truth)
+      const { data: fn, error: fnErr } = await supabase.functions.invoke("guesty-listings", { body: { id } });
+      if (fnErr) { toast.error("Property not found"); setLoading(false); return; }
+      type GuestyP = { id?: string; _id?: string; nickname?: string; title?: string; picture?: { thumbnail?: string; large?: string }; pictures?: { original?: string; large?: string; thumbnail?: string }[]; publicDescription?: { summary?: string }; address?: { city?: string; country?: string }; bedrooms?: number; bathrooms?: number; accommodates?: number; prices?: { basePrice?: number; currency?: string }; amenities?: string[]; terms?: { minNights?: number }; tags?: string[] };
+      const all = (fn?.properties ?? []) as GuestyP[];
+      const p = all.find((x) => (x.id ?? x._id) === id) ?? all[0];
+      if (!p) { toast.error("Property not found"); setLoading(false); return; }
+
+      const listingData: Listing = {
+        guestyListingId: p.id ?? p._id ?? id,
+        nickname:        p.nickname ?? p.title ?? "Property",
+        title:           p.title ?? null,
+        thumbnailUrl:    p.picture?.thumbnail ?? p.picture?.large ?? null,
+        image_urls:      (p.pictures ?? []).map((pic) => pic.large ?? pic.original ?? pic.thumbnail ?? "").filter(Boolean),
+        description:     p.publicDescription?.summary ?? null,
+        city:            p.address?.city ?? null,
+        country:         p.address?.country ?? null,
+        bedrooms:        p.bedrooms ?? null,
+        bathrooms:       p.bathrooms ?? null,
+        accommodates:    p.accommodates ?? null,
+        basePrice:       p.prices?.basePrice ? String(p.prices.basePrice) : null,
+        currency:        p.prices?.currency ?? "EUR",
+        amenities:       p.amenities ?? [],
+        minNights:       p.terms?.minNights ?? 2,
+        tags:            p.tags ?? [],
+      };
+
+      // Pexels fallback when Guesty provides no images
+      if (!listingData.thumbnailUrl && listingData.image_urls.length === 0) {
+        const query = [listingData.city ?? "Malta", "villa", "property"].filter(Boolean).join(" ");
+        const photos = await searchPexels(query, 4, "landscape");
+        if (photos.length > 0) {
+          listingData.thumbnailUrl = photos[0]?.src.large ?? null;
+          listingData.image_urls   = photos.slice(1).map((ph) => ph.src.large).filter(Boolean);
         }
-        setListing(listingData);
       }
-      if (a) setBlocked(a as BlockedRange[]);
+      setListing(listingData);
+      setBlocked([]); // availability data not yet wired
       setLoading(false);
     })();
   }, [id]);
