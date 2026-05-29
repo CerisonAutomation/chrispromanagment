@@ -1,5 +1,6 @@
 // CMS Repository — CQRS. All methods return Result<T,E>. No throws into UI.
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { ok, err } from "./cms-types";
 import type { Result, CmsRow, CmsVersion, SaveResult } from "./cms-types";
 import { invalidateCmsCache } from "@/hooks/use-cms-content";
