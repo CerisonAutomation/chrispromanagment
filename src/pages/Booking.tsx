@@ -25,12 +25,7 @@ const EMPTY_DEF:  EmptyCms  = { empty_title: "No properties available", empty_bo
 const TRUST_ICONS = [ShieldCheck, CheckCircle2, HeadphonesIcon, CreditCard];
 
 async function fetchProperties(): Promise<Property[]> {
-  // Try DB cache first — instant, no cold start
-  const { data, error } = await supabase.from("guesty_listings").select("*").eq("active", true).order("nickname");
-  if (!error && data && data.length > 0) {
-    return data.map((r) => ({ id: r.guestyListingId, title: r.title ?? r.nickname, nickname: r.nickname, picture: r.thumbnailUrl ?? undefined, bedrooms: r.bedrooms ?? undefined, accommodates: r.accommodates ?? undefined, city: r.city ?? undefined, pricePerNight: r.basePrice ? Number(r.basePrice) : undefined, currency: r.currency ?? "EUR" }));
-  }
-  // Fallback: live Guesty edge fn
+  // Guesty is the source of truth — fetch via edge function (cached server-side)
   const { data: fn, error: fnErr } = await supabase.functions.invoke("guesty-listings", { body: {} });
   if (fnErr) throw fnErr;
   return (fn?.properties ?? []).map((p: { id?: string; _id?: string; title?: string; nickname?: string; picture?: { thumbnail?: string }; bedrooms?: number; accommodates?: number; address?: { city?: string }; pricePerNight?: number; currency?: string }) => ({ id: p.id ?? p._id ?? "", title: p.title ?? p.nickname ?? "Property", nickname: p.nickname, picture: p.picture?.thumbnail ?? undefined, bedrooms: p.bedrooms, accommodates: p.accommodates, city: p.address?.city, pricePerNight: p.pricePerNight ?? undefined, currency: p.currency ?? "EUR" }));
