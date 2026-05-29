@@ -120,7 +120,7 @@ export const CmsCommandRepository = {
       Object.entries(snapshot).map(([sectionKey, v]) =>
         supabase
           .from("cms_content")
-          .update({ content: v.content, is_visible: v.is_visible, section_label: v.section_label })
+          .update({ content: v.content as Json, is_visible: v.is_visible, section_label: v.section_label })
           .eq("section_key", sectionKey)
       )
     );
