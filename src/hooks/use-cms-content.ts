@@ -72,7 +72,7 @@ export function useCmsContent() {
   }, []);
 
   const get = useCallback(
-    <T extends Record<string, unknown>>(key: string, fallback: T = {} as T): T => {
+    <T extends object>(key: string, fallback: T): T => {
       const row = data[key];
       if (!row) return fallback;
       return { ...fallback, ...(row.content as T) };
