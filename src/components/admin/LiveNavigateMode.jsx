@@ -237,6 +237,28 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
                     className="bg-[#08080a] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[140px] resize-none focus:border-[#D4AF37]/50"
                   />
                 </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-[#4a4a4e] mb-1.5 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" /> AI Actions</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {AI_ACTIONS.map((a) => {
+                      const Icon = a.icon;
+                      const busy = aiBusy === a.id;
+                      const disabled = !!aiBusy || !draft?.trim();
+                      return (
+                        <button
+                          key={a.id}
+                          onClick={() => runAi(a)}
+                          disabled={disabled}
+                          className="flex items-center justify-center gap-1.5 h-8 px-2 text-[10px] font-medium rounded border border-[#1e1e22] bg-[#08080a] text-[#A1A1AA] hover:text-[#D4AF37] hover:border-[#D4AF37]/40 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          title={`${a.label} the selected text with AI (context: <${focused.tag}> on ${focused.url || url})`}
+                        >
+                          {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" />}
+                          {a.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <Button onClick={applyEdit} className="w-full h-9 bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b] text-xs font-semibold">
                   <Save className="w-3.5 h-3.5 mr-1.5" />Save Live Edit
                 </Button>
