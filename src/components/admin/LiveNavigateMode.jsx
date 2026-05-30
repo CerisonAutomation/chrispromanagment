@@ -2,12 +2,23 @@
 // Communicates with EditModeBridge in the iframe via postMessage.
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowLeft, ArrowRight, RefreshCw, ExternalLink, Pause, Play, MousePointer2, X, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, RefreshCw, ExternalLink, Pause, Play, MousePointer2, X, Save, Sparkles, Loader2, Minimize2, Maximize2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+
+// Context-aware AI actions: route through the existing block-ai-action edge
+// function by wrapping the focused text as a synthetic single-field block.
+// Context passed: page URL + the surrounding DOM tag, so the model knows
+// whether it's rewriting a heading, paragraph, button label, etc.
+const AI_ACTIONS = [
+  { id: "improve",  label: "Improve",  icon: Sparkles,   prompt: "Improve the copy in this {tag} text. Keep the brand voice premium, warm, concise, conversion-focused. Return only the rewritten text in the `text` field." },
+  { id: "shorter",  label: "Shorter",  icon: Minimize2,  prompt: "Make this {tag} text noticeably shorter while preserving meaning and tone. Return only the rewritten text in the `text` field." },
+  { id: "longer",   label: "Expand",   icon: Maximize2,  prompt: "Expand this {tag} text with one or two extra evocative sentences in the same brand voice. Return only the rewritten text in the `text` field." },
+  { id: "rewrite",  label: "Rewrite",  icon: Wand2,      prompt: "Rewrite this {tag} text in a different angle, same intent, same length. Return only the rewritten text in the `text` field." },
+];
 
 export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   const iframeRef = useRef(null);
@@ -17,6 +28,43 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   const [focused, setFocused] = useState(null); // { selector, text, tag, url }
   const [draft, setDraft] = useState("");
   const [iframeKey, setIframeKey] = useState(0);
+  const [aiBusy, setAiBusy] = useState(null); // action id while running
+
+  const runAi = useCallback(async (action) => {
+    if (!focused || !draft?.trim()) return;
+    setAiBusy(action.id);
+    try {
+      const tag = focused.tag || "text";
+      const promptTemplate = action.prompt.replace("{tag}", tag);
+      const { data, error } = await supabase.functions.invoke("block-ai-action", {
+        body: {
+          blockType: "inlineText",
+          fields: { text: { type: "textarea", label: "Text" } },
+          content: { text: draft },
+          action: action.id,
+          promptTemplate,
+          context: {
+            siteName: "Christiano Vincenti Property Management",
+            extra: `This text lives inside a <${tag}> element on the page ${focused.url || url}. Match the surrounding tone.`,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const next = typeof data?.content?.text === "string" ? data.content.text : "";
+      if (!next) throw new Error("AI returned empty text");
+      setDraft(next);
+      try { iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: next }, "*"); } catch {}
+      toast.success(`AI ${action.label.toLowerCase()} applied`);
+    } catch (e) {
+      const msg = e?.message || String(e);
+      if (msg.includes("Rate limited")) toast.error("AI rate-limited — try again in a moment");
+      else if (msg.includes("credits")) toast.error("AI credits exhausted — top up in Settings → Workspace → Usage");
+      else toast.error(`AI failed: ${msg}`);
+    } finally {
+      setAiBusy(null);
+    }
+  }, [focused, draft, url]);
 
   const buildSrc = useCallback((path) => {
     const sep = path.includes("?") ? "&" : "?";
@@ -188,6 +236,28 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
                     }}
                     className="bg-[#08080a] border-[#1e1e22] text-[#f0ede8] text-xs min-h-[140px] resize-none focus:border-[#D4AF37]/50"
                   />
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-[#4a4a4e] mb-1.5 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5 text-[#D4AF37]" /> AI Actions</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {AI_ACTIONS.map((a) => {
+                      const Icon = a.icon;
+                      const busy = aiBusy === a.id;
+                      const disabled = !!aiBusy || !draft?.trim();
+                      return (
+                        <button
+                          key={a.id}
+                          onClick={() => runAi(a)}
+                          disabled={disabled}
+                          className="flex items-center justify-center gap-1.5 h-8 px-2 text-[10px] font-medium rounded border border-[#1e1e22] bg-[#08080a] text-[#A1A1AA] hover:text-[#D4AF37] hover:border-[#D4AF37]/40 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          title={`${a.label} the selected text with AI (context: <${focused.tag}> on ${focused.url || url})`}
+                        >
+                          {busy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" />}
+                          {a.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <Button onClick={applyEdit} className="w-full h-9 bg-[#D4AF37] hover:bg-[#E5C158] text-[#0a0a0b] text-xs font-semibold">
                   <Save className="w-3.5 h-3.5 mr-1.5" />Save Live Edit
