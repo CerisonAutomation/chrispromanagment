@@ -28,6 +28,43 @@ export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   const [focused, setFocused] = useState(null); // { selector, text, tag, url }
   const [draft, setDraft] = useState("");
   const [iframeKey, setIframeKey] = useState(0);
+  const [aiBusy, setAiBusy] = useState(null); // action id while running
+
+  const runAi = useCallback(async (action) => {
+    if (!focused || !draft?.trim()) return;
+    setAiBusy(action.id);
+    try {
+      const tag = focused.tag || "text";
+      const promptTemplate = action.prompt.replace("{tag}", tag);
+      const { data, error } = await supabase.functions.invoke("block-ai-action", {
+        body: {
+          blockType: "inlineText",
+          fields: { text: { type: "textarea", label: "Text" } },
+          content: { text: draft },
+          action: action.id,
+          promptTemplate,
+          context: {
+            siteName: "Christiano Vincenti Property Management",
+            extra: `This text lives inside a <${tag}> element on the page ${focused.url || url}. Match the surrounding tone.`,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const next = typeof data?.content?.text === "string" ? data.content.text : "";
+      if (!next) throw new Error("AI returned empty text");
+      setDraft(next);
+      try { iframeRef.current?.contentWindow?.postMessage({ type: "cvpm:edit-push", selector: focused.selector, text: next }, "*"); } catch {}
+      toast.success(`AI ${action.label.toLowerCase()} applied`);
+    } catch (e) {
+      const msg = e?.message || String(e);
+      if (msg.includes("Rate limited")) toast.error("AI rate-limited — try again in a moment");
+      else if (msg.includes("credits")) toast.error("AI credits exhausted — top up in Settings → Workspace → Usage");
+      else toast.error(`AI failed: ${msg}`);
+    } finally {
+      setAiBusy(null);
+    }
+  }, [focused, draft, url]);
 
   const buildSrc = useCallback((path) => {
     const sep = path.includes("?") ? "&" : "?";
