@@ -2,12 +2,23 @@
 // Communicates with EditModeBridge in the iframe via postMessage.
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowLeft, ArrowRight, RefreshCw, ExternalLink, Pause, Play, MousePointer2, X, Save } from "lucide-react";
+import { ArrowLeft, ArrowRight, RefreshCw, ExternalLink, Pause, Play, MousePointer2, X, Save, Sparkles, Loader2, Minimize2, Maximize2, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+
+// Context-aware AI actions: route through the existing block-ai-action edge
+// function by wrapping the focused text as a synthetic single-field block.
+// Context passed: page URL + the surrounding DOM tag, so the model knows
+// whether it's rewriting a heading, paragraph, button label, etc.
+const AI_ACTIONS = [
+  { id: "improve",  label: "Improve",  icon: Sparkles,   prompt: "Improve the copy in this {tag} text. Keep the brand voice premium, warm, concise, conversion-focused. Return only the rewritten text in the `text` field." },
+  { id: "shorter",  label: "Shorter",  icon: Minimize2,  prompt: "Make this {tag} text noticeably shorter while preserving meaning and tone. Return only the rewritten text in the `text` field." },
+  { id: "longer",   label: "Expand",   icon: Maximize2,  prompt: "Expand this {tag} text with one or two extra evocative sentences in the same brand voice. Return only the rewritten text in the `text` field." },
+  { id: "rewrite",  label: "Rewrite",  icon: Wand2,      prompt: "Rewrite this {tag} text in a different angle, same intent, same length. Return only the rewritten text in the `text` field." },
+];
 
 export const LiveNavigateMode = ({ initialUrl = "/" }) => {
   const iframeRef = useRef(null);
