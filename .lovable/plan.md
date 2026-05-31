@@ -1,44 +1,59 @@
-# CMS / AI Editor — Rolling Plan (v3)
+# CMS / AI Editor — Rolling Plan (v4)
 
-Slices ship one per turn. Each slice = measurable diff, 1-command rollback, edge-function rate-limit toasts surfaced.
+One slice per turn. Each slice = measurable diff, 1-command rollback.
 
-## ✅ Shipped this turn — Slice A: Context-aware AI inline actions
+## ✅ Shipped this turn — Phase 3a foundation + hero carousel rebuild
 
-**File:** `src/components/admin/LiveNavigateMode.jsx`
-- Added `Improve / Shorter / Expand / Rewrite` buttons to the live-edit side panel.
-- Routes through existing `block-ai-action` edge function as a synthetic single-field block (`{text}`).
-- Context passed: surrounding DOM tag + current URL → tone-matched rewrites for headings vs body vs buttons.
-- 429/402 surfaced as toasts. No new tables, no new edge function, no migration.
-- Rollback: revert `LiveNavigateMode.jsx`.
+### `src/components/BlockRenderer.jsx` (new) — one block, one renderer
+- Single canonical renderer used by both editor canvas and public pages.
+- Resolves `block.type` against `LIVE_BLOCKS` (editor map) + `EXTRA_BLOCKS`
+  (specialized blocks like `hero_carousel`) so registering a renderer once
+  makes it available everywhere.
+- Wraps every block in `BlockErrorBoundary` — one broken block can't take
+  down a page. Unknown types render a visible warning in editor mode and
+  return null in public mode.
+- Exports `<BlockList blocks={...} />` for public pages to do
+  `const { data } = useCmsPage("home"); return <BlockList blocks={data.blocks} />;`
+  once Phase 3b lands.
+
+### `src/components/blocks/CarouselHero.jsx` (rewritten)
+- v1 shipped with literal `\"` escapes — file would not compile if imported.
+- Ken Burns slow-zoom on active slide, crossfade between slides.
+- Top progress bar tied to `interval`, restarts on slide change / pause.
+- Pause-on-hover, pause-on-focus, pause-when-tab-hidden.
+- Keyboard nav (← → Home End) when section is focused.
+- Touch swipe (>50px threshold).
+- First image eager + `fetchpriority="high"`; rest lazy + async decode.
+- 100dvh hard-stop section (respects project no-scroll-snap rule).
+- Honors `prefers-reduced-motion` — disables Ken Burns and autoplay timer.
+- Registered as `hero_carousel` in `EXTRA_BLOCKS` inside `BlockRenderer`.
+
+Rollback: revert the two files; no schema, no edge-function, no plan-level changes.
 
 ## 🟡 Queued — one per turn, in order
 
-### Slice B: Cmd+K AI command palette
-- New `<AICommandPalette />` mounted in `AdminPage.jsx`.
-- `Cmd+K` opens; presets ("Rewrite for SEO", "Make shorter", "Translate to Italian") + free-form prompt.
-- Targets currently-focused live-edit selection. Reuses `block-ai-action`.
-- Risk: low. Files: 1 new component, 1 edit to AdminPage.
+### Phase 3b: Dynamic Header/Footer from `cms_content`
+- Replace hardcoded JSX in `Header.jsx` / `Footer.jsx` with `<BlockList />`
+  reading the `header` / `footer` rows from `cms_content`.
+- Editors can change site chrome the same way they edit any page.
+- Risk: medium (touches global chrome). Keep current files as fallback
+  while wiring; flip the import last.
 
-### Slice C: Multi-step page generator
-- New edge function `cms-page-generate`: outline → block skeletons → fill copy (3 LLM calls).
-- Reads block registry catalog, returns `{ blocks: [...] }` validated against block schemas.
-- "Generate page" button in PageEditor opens prompt modal, streams progress.
-- Risk: medium (new function, multi-step latency). Add timeout + cancel.
+### Phase 3c: New blocks pack
+Once Phase 3b is stable, ship as one slice:
+- `splitFeature`, `logoMarquee`, `parallaxQuote`, `comparisonTable`,
+  `stickyScroll`. Each one = registry entry + one renderer; appears in
+  editor + public automatically thanks to `BlockRenderer`.
 
-### Slice D: Auto-nav + internal linking AI
-- New edge function `cms-nav-suggest`: reads all `cms_content` pages, returns proposed `NavItem[]` + `InternalLinkSuggestion[]`.
-- New admin tab "AI Navigation" — reviewer UI, apply-on-confirm writes to `cms_settings`.
-- Header/Footer components read nav from `cms_settings` (replaces hardcoded items).
-- Risk: medium (touches global chrome).
-
-### Phase 3: Editor consolidation + mirror canvas
-- `LiveNavigateMode` becomes canonical. `PageEditor.jsx` demoted to thin shell.
-- `LiveBlocks.jsx` (1619 lines) → split per-category, replace `switch(block.type)` with `<BlockRenderer />` from registry.
-- Header/Footer dynamic from `cms_content` (no hardcoded layout in components).
-- Risk: high. Do AFTER slices B–D land and are stable for 24h.
+### Slice B: Cmd+K AI command palette (from v3 plan, unchanged)
+### Slice C: Multi-step page generator (from v3 plan, unchanged)
+### Slice D: Auto-nav + internal linking AI (from v3 plan, unchanged)
 
 ## Explicitly out of scope (rejected, do not re-propose)
-- Single-file "OmniBuilder v4" rewrite — bricks the editor, no rollback.
-- TypeScript migration of the editor — separate decision.
-- New deps: Puck, @dnd-kit (drag-and-drop ships later if needed), react-helmet-async.
-- Streaming AI in inline editor — defer to Slice C where it matters.
+- Single-turn "OMNIAUDIT" rewrites — bricks editor, no rollback.
+- Next.js / `middleware.ts` / Puck / `@dnd-kit` — this project is Vite + React.
+  Architecture from the uploaded `*_src_*.txt` files belongs to a different
+  stack and cannot be copied wholesale.
+- TypeScript migration of editor — separate decision.
+- New deps: Puck, @dnd-kit, react-helmet-async.
+- Streaming AI inline — defer to Slice C.
