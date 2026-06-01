@@ -22,7 +22,7 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export const CarouselHero = ({ data = {} }) => {
+export const CarouselHero = ({ data = {}, children }) => {
   const slides = Array.isArray(data.slides) ? data.slides : [];
   const autoplay = data.autoplay !== false;
   const interval = Math.max(2000, Number(data.interval) || 6000);
@@ -218,6 +218,13 @@ export const CarouselHero = ({ data = {} }) => {
             <ChevronRight className="w-6 h-6" />
           </button>
         </>
+      )}
+
+      {/* Bottom overlay slot (e.g. search bar) */}
+      {children && (
+        <div className="absolute bottom-20 md:bottom-24 left-0 right-0 z-20 px-6 md:px-12 lg:px-20 pointer-events-none">
+          <div className="max-w-6xl mx-auto pointer-events-auto">{children}</div>
+        </div>
       )}
 
       {/* Dots */}
