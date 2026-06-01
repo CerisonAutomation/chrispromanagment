@@ -95,100 +95,33 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0F0F10] overflow-x-hidden">
-      {/* ============ HERO SECTION ============ */}
-      <section 
-        ref={heroRef}
-        className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden" 
-        data-testid="hero-section"
-      >
-        {/* Parallax Background */}
-        <div 
-          className="absolute inset-0 will-change-transform"
-          style={{ transform: `translateY(${scrollY * 0.3}px)` }}
+      {/* ============ HERO CAROUSEL + SEARCH ============ */}
+      <section ref={heroRef} data-testid="hero-section" className="relative">
+        <CarouselHero
+          data={{
+            slides: (cms.hero?.slides && cms.hero.slides.length > 0) ? cms.hero.slides : DEFAULT_HERO_SLIDES,
+            interval: 7000,
+            kenBurns: true,
+            showProgress: true,
+            showArrows: true,
+            showDots: true,
+            ariaLabel: "Malta luxury stays",
+          }}
         >
-          <img 
-            src={cms.hero?.backgroundImage || "https://images.unsplash.com/photo-1771218830084-fdd272e149a1?w=1920&q=80"}
-            alt="Luxury villa Malta" 
-            className="w-full h-[120%] object-cover"
-            loading="eager"
-            fetchpriority="high"
-          />
-        </div>
-        
-        {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F10] via-[#0F0F10]/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F10]/60 to-transparent" />
-
-        {/* Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-32 pb-20">
-          <div className="max-w-3xl">
-            {/* Badge */}
-            <div className="inline-block px-4 py-2 border border-[#D4AF37]/30 bg-[#D4AF37]/5 backdrop-blur-sm mb-6 animate-fade-in">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-medium">
-                Malta's Premier Property Management
-              </span>
-            </div>
-            
-            {/* Headline */}
-            <h1 className="font-['Playfair_Display'] text-[clamp(2.5rem,8vw,5rem)] text-[#F5F5F0] mb-6 leading-[1.05] animate-fade-in-up">
-              Your Home in Malta,
-              <br />
-              <span className="text-gold-gradient italic">Looked After Like a Hotel</span>
-            </h1>
-            
-            {/* Subheadline */}
-            <p className="text-[clamp(1rem,2.5vw,1.25rem)] text-[#A1A1AA] mb-10 max-w-2xl animate-fade-in-up leading-relaxed opacity-0 stagger-2">
-              {cms.hero?.subheadline || "Handpicked luxury accommodations across Malta's most sought-after locations. Experience exceptional stays with personal attention."}
-            </p>
-            
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in-up opacity-0 stagger-3">
-              <Button
-                onClick={() => openOwnerModal()}
-                className="bg-[#D4AF37] text-[#0F0F10] hover:bg-[#E5C158] rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6 font-semibold btn-gold-glow group"
-                data-testid="hero-owner-btn"
-              >
-                <Building className="w-4 h-4 mr-2" />
-                List Your Property
-                <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                onClick={() => navigate("/properties")}
-                variant="outline"
-                className="border-white/30 text-[#F5F5F0] hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-transparent rounded-none uppercase text-sm tracking-[0.15em] px-8 py-6"
-                data-testid="hero-book-btn"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                Book a Stay
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap items-center gap-8 md:gap-12 animate-fade-in-up opacity-0 stagger-4">
-              {[
-                { value: "9+", label: "Years Superhost" },
-                { value: "100%", label: "Response Rate" },
-                { value: "4.9", label: "Average Rating" },
-              ].map((stat, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <span className="font-['Playfair_Display'] text-[clamp(1.75rem,4vw,2.5rem)] text-[#D4AF37]">{stat.value}</span>
-                  <span className="text-sm text-[#A1A1AA] leading-tight">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          <HorizontalSearchBar className="shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]" />
+        </CarouselHero>
 
         {/* Scroll Indicator */}
-        <button 
+        <button
           onClick={() => scrollToSection('owners')}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-scroll-indicator hidden md:flex flex-col items-center gap-2 text-[#A1A1AA] hover:text-[#D4AF37] transition-colors cursor-pointer"
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-1 text-[#A1A1AA] hover:text-[#D4AF37] transition-colors cursor-pointer"
           aria-label="Scroll to next section"
         >
-          <span className="text-xs uppercase tracking-widest">Scroll</span>
-          <ChevronDown className="w-5 h-5" />
+          <span className="text-[10px] uppercase tracking-widest">Scroll</span>
+          <ChevronDown className="w-4 h-4 animate-bounce" />
         </button>
       </section>
+
 
       {/* ============ PROPERTY OWNERS SECTION ============ */}
       <section 
