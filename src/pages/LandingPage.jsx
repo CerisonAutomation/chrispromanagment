@@ -7,9 +7,37 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchWidget } from "@/components/SearchWidget";
+import { HorizontalSearchBar } from "@/components/HorizontalSearchBar";
 import { PropertyCard } from "@/components/PropertyCard";
+import { CarouselHero } from "@/components/blocks/CarouselHero";
 import { useModal } from "@/context/ModalContext";
 import { useCMS } from "@/context/CMSContext";
+
+// Curated Malta hero slides — used when CMS has none yet.
+const DEFAULT_HERO_SLIDES = [
+  {
+    image: "https://images.unsplash.com/photo-1602941525436-bd3a40e7d7cd?w=1920&q=80",
+    alt: "Valletta harbour at golden hour",
+    badge: "Malta's Premier Property Management",
+    headline: "Your Home in Malta, Looked After Like a Hotel",
+    subheadline: "Handpicked luxury stays across the Mediterranean's most sought-after island.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1564594985645-4427056e22e2?w=1920&q=80",
+    alt: "Mediterranean coastline",
+    badge: "9+ Years Superhost",
+    headline: "Stays Worth Remembering",
+    subheadline: "From boutique apartments to seafront villas — every property personally inspected.",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1571406384350-3ec1fc24cd9b?w=1920&q=80",
+    alt: "Mdina silent city",
+    badge: "Personally Curated",
+    headline: "Discover the Real Malta",
+    subheadline: "Valletta, Sliema, St Julian's, Mdina, Gozo — concierge service included.",
+  },
+];
+
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
