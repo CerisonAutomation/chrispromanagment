@@ -1,6 +1,14 @@
-# CMS / AI Editor — Rolling Plan (v4)
+# CMS / AI Editor — Rolling Plan (v5)
 
 One slice per turn. Each slice = measurable diff, 1-command rollback.
+
+## ✅ Shipped this turn — Landing hero = CarouselHero + search overlay
+- `LandingPage.jsx`: static parallax hero replaced with `<CarouselHero>` driven
+  by `cms.hero.slides` (3 curated Malta fallbacks). Ken Burns zoom, progress
+  bar, dots, arrows, keyboard + swipe inherited from the unified block.
+- `CarouselHero` now accepts `children` as a bottom overlay slot;
+  `HorizontalSearchBar` is mounted there so search lives directly on the hero.
+- Rollback: revert `LandingPage.jsx` + the `children` addition in `CarouselHero.jsx`.
 
 ## ✅ Shipped this turn — Phase 3a foundation + hero carousel rebuild
 
