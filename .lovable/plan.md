@@ -1,8 +1,17 @@
-# CMS / AI Editor — Rolling Plan (v5)
+# CMS / AI Editor — Rolling Plan (v6)
 
 One slice per turn. Each slice = measurable diff, 1-command rollback.
 
-## ✅ Shipped this turn — Landing hero = CarouselHero + search overlay
+## ✅ Shipped this turn — Phase 3b: dynamic Header/Footer via cms_content (opt-in)
+- `Header.jsx` / `Footer.jsx`: if a `header` / `footer` row in `cms_content`
+  contains `{ blocks: [...] }`, the chrome renders via `<BlockList />` from
+  `BlockRenderer`. Otherwise the existing hardcoded chrome ships unchanged.
+- Zero-risk wiring: opt-in by data presence. No row = no behavior change.
+  Editors gain full control once they create a row; rollback = remove the row.
+- Next: Phase 3c (new blocks pack — splitFeature, logoMarquee, parallaxQuote,
+  comparisonTable, stickyScroll).
+
+## ✅ Shipped previously — Landing hero = CarouselHero + search overlay
 - `LandingPage.jsx`: static parallax hero replaced with `<CarouselHero>` driven
   by `cms.hero.slides` (3 curated Malta fallbacks). Ken Burns zoom, progress
   bar, dots, arrows, keyboard + swipe inherited from the unified block.

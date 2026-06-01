@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useModal } from "@/context/ModalContext";
 import { useCMS } from "@/context/CMSContext";
+import { BlockList } from "@/components/BlockRenderer";
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -120,6 +121,23 @@ export const Header = () => {
 
   // WHITE LOGO - Use actual white logo image
   const WHITE_LOGO = cms.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png";
+
+  // Phase 3b: dynamic header override via cms_content row `header` with { blocks: [...] }
+  const headerBlocks = Array.isArray(cms.header?.blocks) ? cms.header.blocks : null;
+  if (headerBlocks && headerBlocks.length > 0) {
+    return (
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-[#0F0F10]/95 backdrop-blur-xl border-b border-white/5"
+            : "bg-gradient-to-b from-[#0F0F10]/80 to-transparent"
+        }`}
+        data-testid="header-dynamic"
+      >
+        <BlockList blocks={headerBlocks} />
+      </header>
+    );
+  }
 
   return (
     <header

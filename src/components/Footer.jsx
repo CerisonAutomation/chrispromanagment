@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, MessageCircle } from "lucide-react";
 import { useCMS } from "@/context/CMSContext";
 import { useModal } from "@/context/ModalContext";
+import { BlockList } from "@/components/BlockRenderer";
 
 export const Footer = () => {
   const { cms } = useCMS();
@@ -9,6 +10,16 @@ export const Footer = () => {
 
   // WHITE LOGO - Same as Header
   const WHITE_LOGO = cms.brand?.logoWhite || "https://primary.jwwb.nl/public/i/m/x/temp-jszjykaojetbmrgovpoe/image-high-82icb0.png";
+
+  // Phase 3b: dynamic footer override via cms_content row `footer` with { blocks: [...] }
+  const footerBlocks = Array.isArray(cms.footer?.blocks) ? cms.footer.blocks : null;
+  if (footerBlocks && footerBlocks.length > 0) {
+    return (
+      <footer className="bg-[#0F0F10] border-t border-white/5" data-testid="footer-dynamic">
+        <BlockList blocks={footerBlocks} />
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-[#0F0F10] border-t border-white/5" data-testid="footer">
