@@ -2,7 +2,19 @@
 
 One slice per turn. Each slice = measurable diff, 1-command rollback.
 
-## ✅ Shipped this turn — ZENITH ORACLE page generator (adapted, no Puck)
+## ✅ Shipped this turn — Page Generator admin UI at `/admin/page-generator`
+- New `src/components/admin/PageGeneratorPanel.jsx`: form (slug, brief,
+  audience, style) → calls `generatePage()` → previews the returned
+  blocks → "Save as draft" upserts `cms_content` row
+  `page_<slug>_draft` with `{ blocks, root }` (same shape the existing
+  draft endpoints already consume, so LiveNavigateMode picks it up).
+- Surfaces `warnings.droppedUnknownTypes` from the edge function so
+  operators see when the AI tried to emit an unregistered block.
+- Route added in `src/App.jsx` ABOVE the `/admin/*` catch-all.
+- Rollback: delete the panel + route line; the generator function and
+  client helper from the previous slice keep working unchanged.
+
+## ✅ Shipped previously — ZENITH ORACLE page generator (adapted, no Puck)
 - New edge function `supabase/functions/cms-ai-page-generate/index.ts`.
   Adapts the ZENITH ORACLE system prompt to emit OUR block JSON
   (`{ root, blocks: [{ id, type, data, visible }] }`) using only types
