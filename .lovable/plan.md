@@ -1,6 +1,20 @@
-# CMS / AI Editor — Rolling Plan (v6)
+# CMS / AI Editor — Rolling Plan (v7)
 
 One slice per turn. Each slice = measurable diff, 1-command rollback.
+
+## ✅ Shipped this turn — ZENITH ORACLE page generator (adapted, no Puck)
+- New edge function `supabase/functions/cms-ai-page-generate/index.ts`.
+  Adapts the ZENITH ORACLE system prompt to emit OUR block JSON
+  (`{ root, blocks: [{ id, type, data, visible }] }`) using only types
+  registered in `blockRegistry` — no Puck, no `Navbar`/`Hero` rename.
+- The client sends the live catalog (`type`, `label`, `category`,
+  `defaults`) at request time, so adding a block to the registry makes
+  it instantly generatable without redeploying the function.
+- Server-side sanitation: unknown types are dropped, ids + `visible`
+  flag are enforced. `warnings.droppedUnknownTypes` surfaces removals.
+- New client helper `src/lib/aiPageGenerator.js → generatePage({...})`.
+  Future Slice C wires it into the editor's "New page from prompt" UI.
+- Rollback: delete the new function dir + the new client file.
 
 ## ✅ Shipped this turn — Phase 3b: dynamic Header/Footer via cms_content (opt-in)
 - `Header.jsx` / `Footer.jsx`: if a `header` / `footer` row in `cms_content`
