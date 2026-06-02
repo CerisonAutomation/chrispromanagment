@@ -13,6 +13,7 @@ import { ConfirmationPage } from "@/pages/ConfirmationPage";
 import { PropertyOwnersPage } from "@/pages/PropertyOwnersPage";
 import { MapPage } from "@/pages/MapPageLeaflet";
 import AdminPage from "@/pages/AdminPage";
+import PageGeneratorPanel from "@/components/admin/PageGeneratorPanel";
 import AuthPage from "@/pages/AuthPage";
 import { StickyCallToAction } from "@/components/StickyCallToAction";
 
@@ -88,6 +89,7 @@ function AppContent() {
           <Route path="/map" element={<MapPage />} />
           <Route path="/en/map" element={<MapPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin/page-generator" element={<PageGeneratorPanel />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/*" element={<AdminPage />} />
         </Routes>
