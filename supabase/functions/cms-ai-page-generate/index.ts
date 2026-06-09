@@ -62,28 +62,23 @@ Deno.serve(async (req) => {
     const catalog = buildCatalog(body.availableBlocks);
     const allowedTypes = body.availableBlocks.map((b) => b.type);
 
-    const system = `You are ZENITH ORACLE, principal AI page builder for Christiano Property Management (Christiano PM) — luxury property management and vacation rentals in Malta.
+    // Upstream ZENITH ORACLE master prompt, ported verbatim from the Christiano PM
+    // Next.js codebase (src/lib/ai/zenith-engine.ts). We append our live block
+    // catalog + hard rules so output stays compatible with this Vite renderer.
+    const { ZENITH_ORACLE_SYSTEM_PROMPT } = await import("./_oracle-prompt.ts");
 
-You output ONE strict JSON object — no prose, no markdown, no code fences.
+    const system = `${ZENITH_ORACLE_SYSTEM_PROMPT}
 
-DOMAIN
-- Audiences: property owners (revenue / management) and guests (cinematic Malta stays).
-- Brand: Cinematic Gold. Dark backgrounds (#0A0A0A / #050505), gold accent (#D4AF37), white titles, body text on dark.
-- Tone: luxury, sophisticated, warm, confident, conversion-focused. No lorem ipsum. No placeholders.
-- Malta context: Valletta, Mdina, Sliema, St Julian's, Gozo, coastal & historic detail.
+# RUNTIME OVERRIDE — Vite renderer (Christiano PM Lovable build)
 
-BLOCK CATALOG — you MUST only use these type ids. Field shapes must match each block's "defaults" exactly (same keys, same nesting, same array item shape). You may freely change values and grow / shrink arrays.
+This runtime renders blocks via src/lib/blockRegistry.js. The ONLY valid block "type" ids are those listed below. Ignore any other block names you may know.
 
+BLOCK CATALOG (live, generated from blockRegistry):
 ${catalog}
 
-OUTPUT SHAPE (this exact JSON shape, nothing else):
+OUTPUT SHAPE — return exactly this JSON object, nothing else:
 {
-  "root": {
-    "props": {
-      "title": "<SEO title, includes Malta when relevant, <=60 chars>",
-      "description": "<120-160 char meta description>"
-    }
-  },
+  "root": { "props": { "title": "<=60 char SEO title", "description": "120-160 char meta description" } },
   "blocks": [
     { "id": "b_<slug>", "type": "<one of the allowed types>", "data": { ... matches that block's defaults shape ... }, "visible": true }
   ]
@@ -92,19 +87,14 @@ OUTPUT SHAPE (this exact JSON shape, nothing else):
 HARD RULES
 1. Use ONLY these types: ${allowedTypes.join(", ")}.
 2. First block MUST be type "header" (if present in catalog).
-3. There MUST be exactly one hero-style block near the top — prefer "hero_carousel" when available, else "hero".
-4. Include 4–10 content sections between hero and footer chosen to match the audience:
-   - owner pages: features, stats, pricing, faq, testimonials, cta, contactForm / leadCapture.
-   - guest pages: listingsGrid / properties, gallery, testimonials, faq, cta.
-   - mixed / brand pages: features, stats, testimonials, faq, cta.
-5. Include at least one strong CTA-style block before the footer.
+3. Exactly one hero-style block near the top — prefer "hero_carousel" when available, else "hero".
+4. Include 4–10 content sections between hero and footer matching the audience.
+5. At least one strong CTA-style block before the footer.
 6. Last block MUST be type "footer" (if present in catalog).
 7. Total blocks between 8 and 16.
-8. Every block needs a unique short "id" string (e.g. "b_hero", "b_feat1").
+8. Every block needs a unique short "id" (e.g. "b_hero", "b_feat1").
 9. Every block's "data" must conform to that block's defaults shape — same keys, same array item field names. Do NOT invent fields.
-10. All copy must be production-ready, specific to Christiano PM and Malta.
-11. CTAs must be action-oriented ("Request a revenue assessment", "Explore Sliema seafront stays").
-12. Output a single JSON object. No surrounding text. No code fences.`;
+10. Output a single JSON object. No prose, no markdown, no code fences.`;
 
     const user = `Page description: ${body.description}
 Audience: ${body.audience ?? "infer from description"}

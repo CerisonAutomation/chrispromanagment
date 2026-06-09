@@ -1,0 +1,437 @@
+/**
+ * AI Block Schemas — Zod validation for AI-generated page blocks
+ *
+ * Provides two schema systems:
+ *
+ * 1. **Flat ContentBlock schemas** (NEW) — Each block is a flat object with
+ *    a `type` discriminator. Used by the AI pipeline and discriminated union.
+ *
+ * 2. **Props-only schemas** (LEGACY) — Validate just the `props` portion of
+ *    the older `{ type, variant, props }` block format. Kept for backward
+ *    compatibility with existing CMS / editor code.
+ *
+ * @module blocks/schema
+ */
+
+import { z } from 'zod';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 1. Flat ContentBlock Schemas (with `type` discriminator)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * HeroBlockSchema — Full-width hero section with headline, CTA, and background.
+ * Used as the top section on most pages.
+ */
+export const HeroBlockSchema = z.object({
+  type: z.literal('hero'),
+  title: z.string().optional().default('Your property,'),
+  subtitle: z.string().optional().default(''),
+  badge: z.string().optional().default(''),
+  backgroundImage: z.string().optional().default(''),
+  ctaLabel: z.string().optional().default('Browse Properties'),
+  ctaHref: z.string().optional().default('/properties'),
+  headlineAccent: z.string().optional().default('perfected.'),
+});
+
+/**
+ * ListingGridBlockSchema — Grid of property listing cards.
+ * Can be pre-filled with listing IDs or auto-hydrated from Guesty.
+ */
+export const ListingGridBlockSchema = z.object({
+  type: z.literal('listing-grid'),
+  title: z.string().optional().default('Featured Properties'),
+  description: z.string().optional().default(''),
+  listings: z.array(z.object({
+    listingId: z.string(),
+    slug: z.string().optional(),
+  })).optional().default([]),
+  filters: z.object({
+    city: z.string().optional(),
+    minOccupancy: z.number().optional(),
+  }).optional(),
+});
+
+/**
+ * TextBlockSchema — Generic content block (type: "content").
+ * Named TextBlockSchema to avoid collision with the ContentBlockSchema union.
+ */
+export const TextBlockSchema = z.object({
+  type: z.literal('content'),
+  title: z.string().optional().default(''),
+  body: z.string().optional().default(''),
+  layout: z.enum(['full', 'split']).optional().default('full'),
+});
+
+/**
+ * CTABlockSchema — Call-to-action conversion block.
+ */
+export const CTABlockSchema = z.object({
+  type: z.literal('cta'),
+  headline: z.string().optional().default('Let us manage your property'),
+  description: z.string().optional().default(''),
+  primaryLabel: z.string().optional().default('Start the Conversation'),
+  primaryHref: z.string().optional().default('#'),
+  secondaryLabel: z.string().optional(),
+  secondaryHref: z.string().optional(),
+});
+
+/**
+ * TestimonialBlockSchema — Social proof section with guest reviews.
+ */
+export const TestimonialBlockSchema = z.object({
+  type: z.literal('testimonials'),
+  title: z.string().optional().default('What Our Guests Say'),
+  testimonials: z.array(z.object({
+    name: z.string().optional().default(''),
+    text: z.string().optional().default(''),
+    rating: z.number().min(0).max(5).optional().default(5),
+    date: z.string().optional().default(''),
+  })).optional().default([]),
+});
+
+/**
+ * FAQBlockSchema — Frequently asked questions section.
+ */
+export const FAQBlockSchema = z.object({
+  type: z.literal('faq'),
+  title: z.string().optional().default('Frequently Asked Questions'),
+  items: z.array(z.object({
+    q: z.string(),
+    a: z.string(),
+  })).optional().default([]),
+});
+
+/**
+ * StatsBlockSchema — Key metrics / numbers section.
+ */
+export const StatsBlockSchema = z.object({
+  type: z.literal('stats'),
+  items: z.array(z.object({
+    value: z.string(),
+    label: z.string(),
+  })).optional().default([]),
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Discriminated Union — The canonical ContentBlock type
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * ContentBlockSchema — A z.discriminatedUnion on "type" that encompasses
+ * every block type the AI pipeline can produce.
+ *
+ * Use this to validate entire page block arrays and to derive the
+ * `ContentBlock` type.
+ */
+export const ContentBlockSchema = z.discriminatedUnion('type', [
+  HeroBlockSchema,
+  ListingGridBlockSchema,
+  TextBlockSchema,
+  CTABlockSchema,
+  TestimonialBlockSchema,
+  FAQBlockSchema,
+  StatsBlockSchema,
+]);
+
+/** Inferred TypeScript type for any valid AI-generated block */
+export type ContentBlock = z.infer<typeof ContentBlockSchema>;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 2. Legacy Props-Only Schemas (backward compatibility)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// These validate the `props` portion of the older { type, variant, props }
+// block format used by the CMS / editor. They do NOT include a `type` field.
+
+const UrlSchema = z.string().url().optional().or(z.literal(''));
+const StringOrEmpty = z.string().optional().default('');
+const BooleanDefault = z.boolean().optional().default(false);
+
+export const CTASchema = z.object({
+  label: z.string().min(1),
+  href: z.string().optional().default('#'),
+  variant: z.enum(['primary', 'secondary', 'outline', 'ghost']).optional().default('primary'),
+}).passthrough();
+
+export const ImageSchema = z.object({
+  src: z.string().optional().default(''),
+  alt: z.string().optional().default(''),
+  url: z.string().optional().default(''),
+}).passthrough();
+
+export const HeroPropsSchema = z.object({
+  headline: z.string().optional().default('Your property,'),
+  headlineAccent: z.string().optional().default('perfected.'),
+  subheadline: z.string().optional().default(''),
+  badge: z.string().optional().default(''),
+  primaryCTA: CTASchema.optional(),
+  secondaryCTA: CTASchema.optional(),
+  backgroundImage: UrlSchema,
+  images: z.array(ImageSchema).optional().default([]),
+  imageOpacity: z.number().min(0).max(100).optional().default(18),
+  imageGrayscale: z.number().min(0).max(100).optional().default(30),
+  showScrollIndicator: BooleanDefault,
+  carouselInterval: z.number().optional().default(7000),
+}).passthrough();
+
+export const ListingGridPropsSchema = z.object({
+  heading: z.string().optional().default('Featured Properties'),
+  cols: z.number().min(1).max(6).optional().default(3),
+  showPrices: BooleanDefault,
+  showRatings: BooleanDefault,
+  useGuesty: BooleanDefault,
+  limit: z.number().optional().default(12),
+  sortBy: z.enum(['price', 'name', 'rating', 'location']).optional().default('price'),
+  sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+  listings: z.array(z.object({
+    id: z.string().optional(),
+    title: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    price: z.number().optional(),
+    currency: z.string().optional().default('EUR'),
+    image: z.string().optional().default(''),
+    bedrooms: z.number().optional(),
+    bathrooms: z.number().optional(),
+    guests: z.number().optional(),
+    rating: z.number().optional(),
+    href: z.string().optional().default('#'),
+  }).passthrough()).optional().default([]),
+}).passthrough();
+
+export const ContentPropsSchema = z.object({
+  label: StringOrEmpty,
+  heading: z.string().optional().default(''),
+  body: z.string().optional().default(''),
+  align: z.enum(['left', 'center', 'right']).optional().default('left'),
+  maxWidth: z.number().optional().default(680),
+  size: z.enum(['sm', 'md', 'lg']).optional().default('md'),
+  imageUrl: UrlSchema,
+  imageLeft: BooleanDefault,
+}).passthrough();
+
+export const CTAPropsSchema = z.object({
+  heading: z.string().optional().default('Let us manage your property'),
+  body: z.string().optional().default(''),
+  btn: z.string().optional().default('Start the Conversation'),
+  btnHref: z.string().optional().default('#'),
+  style: z.enum(['center', 'split', 'minimal']).optional().default('center'),
+  bg: z.enum(['surface', 'dark', 'gradient']).optional().default('surface'),
+  secondaryBtn: z.string().optional(),
+  secondaryBtnHref: z.string().optional(),
+  image: UrlSchema,
+}).passthrough();
+
+export const TestimonialPropsSchema = z.object({
+  heading: z.string().optional().default('What Our Guests Say'),
+  items: z.array(z.object({
+    name: z.string().optional().default(''),
+    location: z.string().optional().default(''),
+    rating: z.number().min(0).max(5).optional().default(5),
+    quote: z.string().optional().default(''),
+    avatar: z.string().optional().default(''),
+    date: z.string().optional().default(''),
+  }).passthrough()).optional().default([]),
+  variant: z.enum(['cards', 'spotlight', 'carousel']).optional().default('cards'),
+}).passthrough();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Block Schema Registry
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Maps block type strings to their Zod validation schemas.
+ * Supports both the new flat ContentBlock schemas and the legacy
+ * props-only schemas. The pipeline uses this to validate blocks
+ * regardless of format.
+ *
+ * Block types not in this registry pass through without validation.
+ */
+export const BlockSchemaRegistry: Record<string, z.ZodTypeAny> = {
+  // ── Flat ContentBlock schemas (new pipeline) ──
+  hero: HeroBlockSchema,
+  'listing-grid': ListingGridBlockSchema,
+  content: TextBlockSchema,
+  cta: CTABlockSchema,
+  testimonials: TestimonialBlockSchema,
+  faq: FAQBlockSchema,
+  stats: StatsBlockSchema,
+
+  // ── Legacy aliases (map old block type names to schemas) ──
+  'hero-split': HeroBlockSchema,
+  'hero-video': HeroBlockSchema,
+  'property-grid': ListingGridBlockSchema,
+  'guesty-listings': ListingGridBlockSchema,
+  properties: ListingGridBlockSchema,
+  text: TextBlockSchema,
+  about: TextBlockSchema,
+  'image-text': TextBlockSchema,
+  columns: TextBlockSchema,
+  quote: TextBlockSchema,
+  'cta-split': CTABlockSchema,
+  banner: CTABlockSchema,
+};
+
+/**
+ * Legacy props-only schema registry.
+ * Used by validateBlockProps / safeValidateBlockProps for the
+ * older { type, variant, props } block format.
+ */
+export const PropsSchemaRegistry: Record<string, z.ZodTypeAny> = {
+  hero: HeroPropsSchema,
+  'hero-split': HeroPropsSchema,
+  'hero-video': HeroPropsSchema,
+  'property-grid': ListingGridPropsSchema,
+  'guesty-listings': ListingGridPropsSchema,
+  properties: ListingGridPropsSchema,
+  text: ContentPropsSchema,
+  about: ContentPropsSchema,
+  'image-text': ContentPropsSchema,
+  columns: ContentPropsSchema,
+  quote: ContentPropsSchema,
+  cta: CTAPropsSchema,
+  'cta-split': CTAPropsSchema,
+  banner: CTAPropsSchema,
+  testimonials: TestimonialPropsSchema,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Validation Helpers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Validate a flat ContentBlock against the ContentBlockSchema union.
+ * Returns the validated block or the original on failure.
+ */
+export function validateContentBlock(block: unknown): ContentBlock | null {
+  try {
+    return ContentBlockSchema.parse(block) as ContentBlock;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validate an array of flat ContentBlocks.
+ * Returns all valid blocks; invalid ones are silently dropped.
+ */
+export function validateContentBlocks(blocks: unknown[]): ContentBlock[] {
+  if (!Array.isArray(blocks)) return [];
+  return blocks
+    .map((b) => validateContentBlock(b))
+    .filter((b): b is ContentBlock => b !== null);
+}
+
+/**
+ * Validate block props (legacy format) against the PropsSchemaRegistry.
+ * Returns the validated (and defaulted) props, or the original props
+ * if no schema exists or validation fails.
+ */
+export function validateBlockProps(
+  blockType: string,
+  props: Record<string, unknown>
+): { validated: Record<string, unknown>; errors: string[] } {
+  const schema = PropsSchemaRegistry[blockType];
+  if (!schema) {
+    return { validated: props, errors: [] };
+  }
+
+  try {
+    const validated = schema.parse(props) as Record<string, unknown>;
+    return { validated, errors: [] };
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      const errors = err.issues.map(
+        (issue) => `${issue.path.join('.')}: ${issue.message}`
+      );
+      return { validated: props, errors };
+    }
+    return { validated: props, errors: ['Unknown validation error'] };
+  }
+}
+
+/**
+ * Safely validate block props, falling back to original on any error.
+ * Never throws — always returns a valid props object.
+ */
+export function safeValidateBlockProps(
+  blockType: string,
+  props: Record<string, unknown>
+): Record<string, unknown> {
+  try {
+    return validateBlockProps(blockType, props).validated;
+  } catch {
+    return props;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Format Conversion Helpers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Legacy BlockData format used by CMS / editor.
+ * Blocks have a separate `type` and `props` structure.
+ */
+export interface BlockData {
+  type: string;
+  variant?: string;
+  props: Record<string, unknown>;
+  visible?: boolean;
+  id?: string;
+}
+
+/**
+ * Convert a flat ContentBlock to the legacy BlockData format.
+ * The `type` field is extracted, and remaining fields become `props`.
+ */
+export function contentBlockToBlockData(block: ContentBlock): BlockData {
+  const { type, ...props } = block;
+  return {
+    type,
+    props: props as Record<string, unknown>,
+    visible: true,
+    id: `${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  };
+}
+
+/**
+ * Convert a legacy BlockData to a flat ContentBlock.
+ * Merges `type` and `props` into a single flat object.
+ * Returns null if the result doesn't validate.
+ */
+export function blockDataToContentBlock(block: BlockData): ContentBlock | null {
+  try {
+    const flat = { type: block.type, ...(block.props || {}) };
+    return ContentBlockSchema.parse(flat) as ContentBlock;
+  } catch {
+    // If the legacy block type isn't in the union, wrap it as a content block
+    try {
+      return TextBlockSchema.parse({
+        type: 'content',
+        title: String(block.props?.heading || block.props?.title || ''),
+        body: String(block.props?.body || block.props?.text || ''),
+        layout: 'full',
+      }) as ContentBlock;
+    } catch {
+      return null;
+    }
+  }
+}
+
+/**
+ * Convert an array of ContentBlocks to BlockData format.
+ */
+export function contentBlocksToBlockData(blocks: ContentBlock[]): BlockData[] {
+  return blocks.map(contentBlockToBlockData);
+}
+
+/**
+ * Convert an array of BlockData to ContentBlock format.
+ * Invalid blocks are silently dropped.
+ */
+export function blockDataToContentBlocks(blocks: BlockData[]): ContentBlock[] {
+  return blocks
+    .map(blockDataToContentBlock)
+    .filter((b): b is ContentBlock => b !== null);
+}

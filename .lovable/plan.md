@@ -1,102 +1,44 @@
-# CMS / AI Editor — Rolling Plan (v7)
+## Reality check
 
-One slice per turn. Each slice = measurable diff, 1-command rollback.
+The uploaded `project.zip` is a **Next.js 15 App Router** project (Prisma, Vercel Blob, Upstash Redis/QStash, Stripe, multi-provider AI SDK) with **353 TS/TSX files**, **28 block source files (~8.9k lines)**, a full editor suite, and a dedicated Zenith Oracle prompt module.
 
-## ✅ Shipped this turn — Page Generator admin UI at `/admin/page-generator`
-- New `src/components/admin/PageGeneratorPanel.jsx`: form (slug, brief,
-  audience, style) → calls `generatePage()` → previews the returned
-  blocks → "Save as draft" upserts `cms_content` row
-  `page_<slug>_draft` with `{ blocks, root }` (same shape the existing
-  draft endpoints already consume, so LiveNavigateMode picks it up).
-- Surfaces `warnings.droppedUnknownTypes` from the edge function so
-  operators see when the AI tried to emit an unregistered block.
-- Route added in `src/App.jsx` ABOVE the `/admin/*` catch-all.
-- Rollback: delete the panel + route line; the generator function and
-  client helper from the previous slice keep working unchanged.
+This project is **Vite + React Router + Supabase + Guesty** (no Next server runtime, no Prisma, no Vercel Blob). A literal "merge everything" is not possible — Next API routes, server components, server actions, Prisma, and Blob storage have no 1:1 in this stack and would silently break Guesty/Stripe/CMS that already work.
 
-## ✅ Shipped previously — ZENITH ORACLE page generator (adapted, no Puck)
-- New edge function `supabase/functions/cms-ai-page-generate/index.ts`.
-  Adapts the ZENITH ORACLE system prompt to emit OUR block JSON
-  (`{ root, blocks: [{ id, type, data, visible }] }`) using only types
-  registered in `blockRegistry` — no Puck, no `Navbar`/`Hero` rename.
-- The client sends the live catalog (`type`, `label`, `category`,
-  `defaults`) at request time, so adding a block to the registry makes
-  it instantly generatable without redeploying the function.
-- Server-side sanitation: unknown types are dropped, ids + `visible`
-  flag are enforced. `warnings.droppedUnknownTypes` surfaces removals.
-- New client helper `src/lib/aiPageGenerator.js → generatePage({...})`.
-  Future Slice C wires it into the editor's "New page from prompt" UI.
-- Rollback: delete the new function dir + the new client file.
+I will do a **staged, equivalence-preserving port**, not a copy-paste. Nothing currently working gets regressed.
 
-## ✅ Shipped this turn — Phase 3b: dynamic Header/Footer via cms_content (opt-in)
-- `Header.jsx` / `Footer.jsx`: if a `header` / `footer` row in `cms_content`
-  contains `{ blocks: [...] }`, the chrome renders via `<BlockList />` from
-  `BlockRenderer`. Otherwise the existing hardcoded chrome ships unchanged.
-- Zero-risk wiring: opt-in by data presence. No row = no behavior change.
-  Editors gain full control once they create a row; rollback = remove the row.
-- Next: Phase 3c (new blocks pack — splitFeature, logoMarquee, parallaxQuote,
-  comparisonTable, stickyScroll).
+## Stage 1 — this turn (safe, additive)
 
-## ✅ Shipped previously — Landing hero = CarouselHero + search overlay
-- `LandingPage.jsx`: static parallax hero replaced with `<CarouselHero>` driven
-  by `cms.hero.slides` (3 curated Malta fallbacks). Ken Burns zoom, progress
-  bar, dots, arrows, keyboard + swipe inherited from the unified block.
-- `CarouselHero` now accepts `children` as a bottom overlay slot;
-  `HorizontalSearchBar` is mounted there so search lives directly on the hero.
-- Rollback: revert `LandingPage.jsx` + the `children` addition in `CarouselHero.jsx`.
+1. Copy the **Zenith Oracle prompt** verbatim from `src/lib/zenith/oracle-prompt.ts` into `supabase/functions/cms-ai-page-generate/_oracle-prompt.ts` and use it as the system prompt (replacing the inline one), keeping our live `availableBlocks` catalog injection. Locks in the upstream prompt without changing our renderer contract.
+2. Copy `agent-ctx/` and the upstream `src/components/blocks/registry.ts` + `src/lib/blocks/schema.ts` into `docs/zenith/` as **reference only** — used by future stages to map block types.
+3. Write `docs/zenith/PORT_PLAN.md` listing every upstream block → our `blockRegistry` mapping (port / alias / skip), so later stages are mechanical.
 
-## ✅ Shipped this turn — Phase 3a foundation + hero carousel rebuild
+Rollback: `rm -rf supabase/functions/cms-ai-page-generate/_oracle-prompt.ts docs/zenith` and revert the one import in the edge function.
 
-### `src/components/BlockRenderer.jsx` (new) — one block, one renderer
-- Single canonical renderer used by both editor canvas and public pages.
-- Resolves `block.type` against `LIVE_BLOCKS` (editor map) + `EXTRA_BLOCKS`
-  (specialized blocks like `hero_carousel`) so registering a renderer once
-  makes it available everywhere.
-- Wraps every block in `BlockErrorBoundary` — one broken block can't take
-  down a page. Unknown types render a visible warning in editor mode and
-  return null in public mode.
-- Exports `<BlockList blocks={...} />` for public pages to do
-  `const { data } = useCmsPage("home"); return <BlockList blocks={data.blocks} />;`
-  once Phase 3b lands.
+## Stage 2 — next turn (block parity)
 
-### `src/components/blocks/CarouselHero.jsx` (rewritten)
-- v1 shipped with literal `\"` escapes — file would not compile if imported.
-- Ken Burns slow-zoom on active slide, crossfade between slides.
-- Top progress bar tied to `interval`, restarts on slide change / pause.
-- Pause-on-hover, pause-on-focus, pause-when-tab-hidden.
-- Keyboard nav (← → Home End) when section is focused.
-- Touch swipe (>50px threshold).
-- First image eager + `fetchpriority="high"`; rest lazy + async decode.
-- 100dvh hard-stop section (respects project no-scroll-snap rule).
-- Honors `prefers-reduced-motion` — disables Ken Burns and autoplay timer.
-- Registered as `hero_carousel` in `EXTRA_BLOCKS` inside `BlockRenderer`.
+For each upstream block missing locally (e.g. `premium-blocks`, `conversion-premium-blocks`, `renovation-blocks`, `location-blocks`), port to `src/components/blocks/*.jsx` and register in `src/lib/blockRegistry.js`. Strict JSX/Tailwind only — no `next/image`, no `next/link`, no server components. Each block ships with defaults + zod schema so the Oracle can emit them.
 
-Rollback: revert the two files; no schema, no edge-function, no plan-level changes.
+## Stage 3 — editor parity (optional)
 
-## 🟡 Queued — one per turn, in order
+Port `command-palette`, `template-library`, `version-history`, `unified-ai-panel` into `src/components/admin/` as additive panels behind `/admin`. No replacement of `LiveNavigateMode`.
 
-### Phase 3b: Dynamic Header/Footer from `cms_content`
-- Replace hardcoded JSX in `Header.jsx` / `Footer.jsx` with `<BlockList />`
-  reading the `header` / `footer` rows from `cms_content`.
-- Editors can change site chrome the same way they edit any page.
-- Risk: medium (touches global chrome). Keep current files as fallback
-  while wiring; flip the import last.
+## Stage 4 — API surface (only what's missing)
 
-### Phase 3c: New blocks pack
-Once Phase 3b is stable, ship as one slice:
-- `splitFeature`, `logoMarquee`, `parallaxQuote`, `comparisonTable`,
-  `stickyScroll`. Each one = registry entry + one renderer; appears in
-  editor + public automatically thanks to `BlockRenderer`.
+Only port API routes that don't already exist as Supabase edge functions: `cache/warm`, `cache/invalidate`, `listings/[id]/calendar` (if not covered by `guesty-beapi`). Skip Prisma — keep Supabase as the DB.
 
-### Slice B: Cmd+K AI command palette (from v3 plan, unchanged)
-### Slice C: Multi-step page generator (from v3 plan, unchanged)
-### Slice D: Auto-nav + internal linking AI (from v3 plan, unchanged)
+## Explicitly NOT doing
 
-## Explicitly out of scope (rejected, do not re-propose)
-- Single-turn "OMNIAUDIT" rewrites — bricks editor, no rollback.
-- Next.js / `middleware.ts` / Puck / `@dnd-kit` — this project is Vite + React.
-  Architecture from the uploaded `*_src_*.txt` files belongs to a different
-  stack and cannot be copied wholesale.
-- TypeScript migration of editor — separate decision.
-- New deps: Puck, @dnd-kit, react-helmet-async.
-- Streaming AI inline — defer to Slice C.
+- No Next.js install, no app router, no server components.
+- No Prisma, no Vercel Blob (we use Supabase storage/JSON).
+- No wholesale `cp -r src → src` (would break ~80% of files: `'use client'`, `next/*` imports, server-only APIs).
+- No Puck (per project memory).
+
+## Technical details
+
+- Upstream stack: Next 15, Prisma, Vercel Blob, Upstash Redis/QStash, ai-sdk multi-provider, Stripe, Tailwind, Radix.
+- Local stack: Vite 5, React Router, Supabase (DB + edge functions + auth), Guesty BE-API, Lovable AI Gateway, Framer Motion, Tailwind, Radix.
+- Oracle prompt file is 17 lines — trivial to lift. Block registry is 319 lines and references TSX blocks — needs per-block port, not bulk copy.
+
+## Ask
+
+Confirm Stage 1 (Oracle prompt + reference docs) and I'll ship it this turn. Stages 2–4 will each be their own turn so you can review.
