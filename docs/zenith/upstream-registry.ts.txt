@@ -1,0 +1,319 @@
+'use client';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHRISTIANO PM — Block Component Registry v5
+// CONSOLIDATED: Imports from 5 barrel files instead of 19 individual files
+// Single source of truth: maps BlockType → React Component
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import type { BlockType } from '@/lib/cms-blocks';
+
+// ─── CONSOLIDATED IMPORTS (5 files instead of 19) ─────────────────────────────
+
+// 01+14: Hero & Navigation
+import {
+  BlockNav, BlockHero, BlockHeroCarousel, BlockHeroSplit, BlockHeroVideo, BlockBanner,
+  BlockScrollNav, BlockStickyNav, BlockBreadcrumbTrail, BlockProgressNav,
+} from './blocks-hero';
+
+// 02+03+04+05+06+19: Content, Properties, Social, Business, Media, Location
+import {
+  BlockText, BlockColumns, BlockAbout, BlockQuote, BlockImageText,
+  BlockOwners, BlockServices, BlockRichText,
+  BlockPropertyGrid, BlockPropertyFeatured, BlockPropertyCard, BlockPropertyMap,
+  BlockBookingWidget, BlockAvailability,
+  BlockProperties, BlockPropertiesHeader, BlockPropertiesSearch, BlockPropertiesGrid,
+  BlockPropertiesMapCTA, BlockSearchBar, BlockMapSection,
+  BlockPropertyGallery, BlockPropertyInfo, BlockPropertyDescription,
+  BlockPropertyAmenities, BlockPropertyBooking, BlockPropertyRules, BlockPropertyLocationMap,
+  BlockMapPageHeader, BlockMapInteractive,
+  BlockStats, BlockFeatures, BlockTestimonials, BlockTeam, BlockLogos, BlockComparison,
+  BlockPricing, BlockFAQ, BlockTimeline, BlockProcess,
+  BlockImage, BlockGallery, BlockVideo, BlockMapEmbed,
+  BlockLocationGrid, BlockLocationMap, BlockNeighborhoodGuide, BlockAreaHighlights,
+  BlockDistanceMatrix, BlockLocalTips, BlockPropertyLocations, BlockLocationHero,
+} from './blocks-content';
+
+// 07+10+13+17: Conversion, Integration, Renovation, Conversion Premium
+import {
+  BlockCTA, BlockCTASplit, BlockContact, BlockForm, BlockNewsletter,
+  BlockGuestyListings, BlockGuestyBooking, BlockGoogleMap, BlockSocialFeed, BlockStripePayment,
+  BlockRenovationCompare, BlockRenovationGallery, BlockRenovationStory, BlockRenovationStats,
+  BlockFloatingCTA, BlockExitIntent, BlockCountdownTimer, BlockSocialProof,
+  BlockGuaranteeBadge, BlockCalculator, BlockPricingToggle, BlockComparisonTable,
+} from './blocks-conversion';
+
+// 08+11+16: Utility, Layout, Premium
+import {
+  BlockFooter, BlockDivider, BlockSpacer, BlockHTML, BlockScript,
+  BlockSectionWrapper, BlockGridLayout, BlockSidebarLayout, BlockCardGrid,
+  BlockFullScreenSection, BlockSplitSection, BlockAsymmetricLayout, BlockMasonryGrid,
+  BlockDiagonalSection, BlockCurvedSection, BlockAccordion, BlockTabs,
+  BlockContentCarousel, BlockLogoCloud, BlockNumberedSteps, BlockIconGrid,
+  BlockSideBySide, BlockKeyMetrics, BlockVideoBackground, BlockImageReveal,
+} from './blocks-layout';
+
+// 09+12+15+18: Interactive, Workflow, New Interactive, Animation
+import {
+  BlockStatusCard, BlockFindingsList, BlockCollapsibleSection, BlockProgressIndicator,
+  BlockStatusTree, BlockActionBar, BlockExpandableLogs, BlockAlertBanner,
+  BlockApprovalWorkflow, BlockStatusMessage,
+  BlockReviewStatusTree, BlockReviewFindings, BlockCollapsibleCard, BlockMergeReadiness,
+  BlockWorkflowStatus, BlockPRActionBar, BlockPRProgressIndicator, BlockStatsDashboard,
+  BlockScrollReveal, BlockParallaxImage, BlockMagneticButton, BlockTiltCard,
+  BlockCountUp, BlockTypewriter, BlockMarquee, BlockTextReveal,
+  BlockScrollVideo, BlockParallaxDepth, BlockRevealText, BlockStaggerGrid,
+  BlockMorphShape, BlockGlitchText, BlockSpotlightCard, BlockWavyDivider,
+} from './blocks-interactive';
+
+// ─── Legacy aliases ──────────────────────────────────────────────────────────
+const BlockSiteHeader = BlockNav;
+const BlockSiteFooter = BlockFooter;
+const BlockNavigation = BlockNav;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGISTRY — BlockType → Component
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const BLOCK_REGISTRY: Record<BlockType, React.ComponentType<{ props: Record<string, unknown> }>> = {
+  // ── 01 Hero & Navigation ──
+  'nav':                BlockNav,
+  'hero':               BlockHero,
+  'hero-carousel':      BlockHeroCarousel,
+  'hero-split':         BlockHeroSplit,
+  'hero-video':         BlockHeroVideo,
+  'banner':             BlockBanner,
+
+  // ── 02 Content ──
+  'text':               BlockText,
+  'columns':            BlockColumns,
+  'about':              BlockAbout,
+  'quote':              BlockQuote,
+  'image-text':         BlockImageText,
+  'owners':             BlockOwners,
+  'services':           BlockServices,
+  'rich-text':          BlockRichText,
+
+  // ── 03 Properties ──
+  'property-grid':      BlockPropertyGrid,
+  'property-featured':  BlockPropertyFeatured,
+  'property-card':      BlockPropertyCard,
+  'property-map':       BlockPropertyMap,
+  'booking-widget':     BlockBookingWidget,
+  'availability':       BlockAvailability,
+
+  // ── 04 Social Proof ──
+  'stats':              BlockStats,
+  'features':           BlockFeatures,
+  'testimonials':       BlockTestimonials,
+  'team':               BlockTeam,
+  'logos':              BlockLogos,
+  'comparison':         BlockComparison,
+
+  // ── 05 Business ──
+  'pricing':            BlockPricing,
+  'faq':                BlockFAQ,
+  'timeline':           BlockTimeline,
+  'process':            BlockProcess,
+
+  // ── 06 Media ──
+  'image':              BlockImage,
+  'gallery':            BlockGallery,
+  'video':              BlockVideo,
+  'map-embed':          BlockMapEmbed,
+
+  // ── 07 Conversion ──
+  'cta':                BlockCTA,
+  'cta-split':          BlockCTASplit,
+  'contact':            BlockContact,
+  'form':               BlockForm,
+  'newsletter':         BlockNewsletter,
+
+  // ── 08 Utility ──
+  'footer':             BlockFooter,
+  'divider':            BlockDivider,
+  'spacer':             BlockSpacer,
+  'html':               BlockHTML,
+  'script':             BlockScript,
+
+  // ── 09 Interactive ──
+  'status-card':        BlockStatusCard,
+  'findings-list':      BlockFindingsList,
+  'collapsible-section':BlockCollapsibleSection,
+  'progress-indicator': BlockProgressIndicator,
+  'status-tree':        BlockStatusTree,
+  'action-bar':         BlockActionBar,
+  'expandable-logs':    BlockExpandableLogs,
+  'alert-banner':       BlockAlertBanner,
+  'approval-workflow':  BlockApprovalWorkflow,
+  'status-message':     BlockStatusMessage,
+
+  // ── 10 Integration ──
+  'guesty-listings':    BlockGuestyListings,
+  'guesty-booking':     BlockGuestyBooking,
+  'google-map':         BlockGoogleMap,
+  'social-feed':        BlockSocialFeed,
+  'stripe-payment':     BlockStripePayment,
+
+  // ── 11 Layout ──
+  'section-wrapper':    BlockSectionWrapper,
+  'grid-layout':        BlockGridLayout,
+  'sidebar-layout':     BlockSidebarLayout,
+  'card-grid':          BlockCardGrid,
+
+  // ── 12 Workflow ──
+  'review-status-tree':   BlockReviewStatusTree,
+  'review-findings':      BlockReviewFindings,
+  'collapsible-card':     BlockCollapsibleCard,
+  'merge-readiness':      BlockMergeReadiness,
+  'workflow-status':      BlockWorkflowStatus,
+  'pr-action-bar':        BlockPRActionBar,
+  'pr-progress-indicator': BlockPRProgressIndicator,
+  'stats-dashboard':      BlockStatsDashboard,
+
+  // ── 13 Renovation ──
+  'renovation-compare':  BlockRenovationCompare,
+  'renovation-gallery':  BlockRenovationGallery,
+  'renovation-story':    BlockRenovationStory,
+  'renovation-stats':    BlockRenovationStats,
+
+  // ── 14 Navigation ──
+  'scroll-nav':         BlockScrollNav,
+  'sticky-nav':         BlockStickyNav,
+  'breadcrumb-trail':   BlockBreadcrumbTrail,
+  'progress-nav':       BlockProgressNav,
+
+  // ── 15 New Interactive ──
+  'scroll-reveal':      BlockScrollReveal,
+  'parallax-image':     BlockParallaxImage,
+  'magnetic-button':    BlockMagneticButton,
+  'tilt-card':          BlockTiltCard,
+  'count-up':           BlockCountUp,
+  'typewriter':         BlockTypewriter,
+  'marquee':            BlockMarquee,
+  'text-reveal':        BlockTextReveal,
+
+  // ── 16 Premium ──
+  'fullscreen-section':   BlockFullScreenSection,
+  'split-section':        BlockSplitSection,
+  'asymmetric-layout':    BlockAsymmetricLayout,
+  'masonry-grid':         BlockMasonryGrid,
+  'diagonal-section':     BlockDiagonalSection,
+  'curved-section':       BlockCurvedSection,
+  'accordion':            BlockAccordion,
+  'tabs':                 BlockTabs,
+  'content-carousel':     BlockContentCarousel,
+  'logo-cloud':           BlockLogoCloud,
+  'numbered-steps':       BlockNumberedSteps,
+  'icon-grid':            BlockIconGrid,
+  'side-by-side':         BlockSideBySide,
+  'key-metrics':          BlockKeyMetrics,
+  'video-background':     BlockVideoBackground,
+  'image-reveal':         BlockImageReveal,
+
+  // ── 17 Conversion Premium ──
+  'floating-cta':         BlockFloatingCTA,
+  'exit-intent':          BlockExitIntent,
+  'countdown-timer':      BlockCountdownTimer,
+  'social-proof':         BlockSocialProof,
+  'guarantee-badge':      BlockGuaranteeBadge,
+  'calculator':           BlockCalculator,
+  'pricing-toggle':       BlockPricingToggle,
+  'comparison-table':     BlockComparisonTable,
+
+  // ── 18 Animation ──
+  'scroll-video':         BlockScrollVideo,
+  'parallax-depth':       BlockParallaxDepth,
+  'reveal-text':          BlockRevealText,
+  'stagger-grid':         BlockStaggerGrid,
+  'morph-shape':          BlockMorphShape,
+  'glitch-text':         BlockGlitchText,
+  'spotlight-card':       BlockSpotlightCard,
+  'wavy-divider':         BlockWavyDivider,
+
+  // ── 19 Location ──
+  'location-grid':        BlockLocationGrid,
+  'location-map':         BlockLocationMap,
+  'neighborhood-guide':   BlockNeighborhoodGuide,
+  'area-highlights':      BlockAreaHighlights,
+  'distance-matrix':      BlockDistanceMatrix,
+  'local-tips':           BlockLocalTips,
+  'property-locations':   BlockPropertyLocations,
+  'location-hero':        BlockLocationHero,
+
+  // ── Legacy (maps to modern equivalents) ──
+  'site-header':        BlockSiteHeader,
+  'site-footer':        BlockSiteFooter,
+  'navigation':         BlockNavigation,
+  'search-bar':         BlockSearchBar,
+  'map-section':        BlockMapSection,
+  'properties':         BlockProperties,
+  'properties-header':  BlockPropertiesHeader,
+  'properties-search':  BlockPropertiesSearch,
+  'properties-grid':    BlockPropertiesGrid,
+  'properties-map-cta': BlockPropertiesMapCTA,
+  'property-gallery':   BlockPropertyGallery,
+  'property-info':      BlockPropertyInfo,
+  'property-description': BlockPropertyDescription,
+  'property-amenities': BlockPropertyAmenities,
+  'property-booking':   BlockPropertyBooking,
+  'property-rules':     BlockPropertyRules,
+  'property-location-map': BlockPropertyLocationMap,
+  'map-page-header':    BlockMapPageHeader,
+  'map-interactive':    BlockMapInteractive,
+};
+
+// ─── Helper: resolve a block type to its renderable component ────────────────
+
+export function resolveBlock(type: BlockType): React.ComponentType<{ props: Record<string, unknown> }> | null {
+  return BLOCK_REGISTRY[type] || null;
+}
+
+// ─── Re-exports from consolidated files ──────────────────────────────────────
+// All block components are available for direct import if needed
+
+export {
+  BlockNav, BlockHero, BlockHeroCarousel, BlockHeroSplit, BlockHeroVideo, BlockBanner,
+  BlockScrollNav, BlockStickyNav, BlockBreadcrumbTrail, BlockProgressNav,
+} from './blocks-hero';
+
+export {
+  BlockText, BlockColumns, BlockAbout, BlockQuote, BlockImageText,
+  BlockOwners, BlockServices, BlockRichText,
+  BlockPropertyGrid, BlockPropertyFeatured, BlockPropertyCard, BlockPropertyMap,
+  BlockBookingWidget, BlockAvailability,
+  BlockStats, BlockFeatures, BlockTestimonials, BlockTeam, BlockLogos, BlockComparison,
+  BlockPricing, BlockFAQ, BlockTimeline, BlockProcess,
+  BlockImage, BlockGallery, BlockVideo, BlockMapEmbed,
+  BlockLocationGrid, BlockLocationMap, BlockNeighborhoodGuide, BlockAreaHighlights,
+  BlockDistanceMatrix, BlockLocalTips, BlockPropertyLocations, BlockLocationHero,
+} from './blocks-content';
+
+export {
+  BlockCTA, BlockCTASplit, BlockContact, BlockForm, BlockNewsletter,
+  BlockGuestyListings, BlockGuestyBooking, BlockGoogleMap, BlockSocialFeed, BlockStripePayment,
+  BlockRenovationCompare, BlockRenovationGallery, BlockRenovationStory, BlockRenovationStats,
+  BlockFloatingCTA, BlockExitIntent, BlockCountdownTimer, BlockSocialProof,
+  BlockGuaranteeBadge, BlockCalculator, BlockPricingToggle, BlockComparisonTable,
+} from './blocks-conversion';
+
+export {
+  BlockFooter, BlockDivider, BlockSpacer, BlockHTML, BlockScript,
+  BlockSectionWrapper, BlockGridLayout, BlockSidebarLayout, BlockCardGrid,
+  BlockFullScreenSection, BlockSplitSection, BlockAsymmetricLayout, BlockMasonryGrid,
+  BlockDiagonalSection, BlockCurvedSection, BlockAccordion, BlockTabs,
+  BlockContentCarousel, BlockLogoCloud, BlockNumberedSteps, BlockIconGrid,
+  BlockSideBySide, BlockKeyMetrics, BlockVideoBackground, BlockImageReveal,
+} from './blocks-layout';
+
+export {
+  BlockStatusCard, BlockFindingsList, BlockCollapsibleSection, BlockProgressIndicator,
+  BlockStatusTree, BlockActionBar, BlockExpandableLogs, BlockAlertBanner,
+  BlockApprovalWorkflow, BlockStatusMessage,
+  BlockReviewStatusTree, BlockReviewFindings, BlockCollapsibleCard, BlockMergeReadiness,
+  BlockWorkflowStatus, BlockPRActionBar, BlockPRProgressIndicator, BlockStatsDashboard,
+  BlockScrollReveal, BlockParallaxImage, BlockMagneticButton, BlockTiltCard,
+  BlockCountUp, BlockTypewriter, BlockMarquee, BlockTextReveal,
+  BlockScrollVideo, BlockParallaxDepth, BlockRevealText, BlockStaggerGrid,
+  BlockMorphShape, BlockGlitchText, BlockSpotlightCard, BlockWavyDivider,
+} from './blocks-interactive';
